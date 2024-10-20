@@ -1,0 +1,7 @@
+{
+  "go.toolsEnvVars": {},
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/vendor": true
+  }
+}
