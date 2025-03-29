@@ -1,17 +1,55 @@
 import { parse, Program } from "acorn";
 import { is, traverse } from "estree-toolkit";
 import Sval from "sval";
-import { identifyChunkLoadingFunctionAndExpression } from "./fingerprinting";
+import {
+  getViteChunks,
+  identifyChunkLoadingFunctionAndExpression,
+} from "./fingerprinting";
 import { getChunkFunctionCode } from "./transformer";
 
 export const discoverChunks = (
   code: string,
   bruteforceLimit: number
 ): string[] => {
-  const ast = parse(code, {
-    ecmaVersion: "latest",
-  });
+  let sourceType: "module" | "script" = "script";
+  let ast: Program;
 
+  try {
+    ast = parse(code, {
+      ecmaVersion: "latest",
+      sourceType: "module",
+    });
+    sourceType = "module";
+  } catch (err) {
+    ast = parse(code, {
+      ecmaVersion: "latest",
+      sourceType: "script",
+    });
+  }
+
+  const webpackChunks = webpackCunkDiscovery(ast, sourceType, bruteforceLimit);
+  if (webpackChunks.length !== 0) {
+    return webpackChunks;
+  }
+
+  return viteChunkDiscovery(ast, sourceType, bruteforceLimit);
+};
+
+const viteChunkDiscovery = (
+  ast: Program,
+  sourceType: "module" | "script",
+  bruteforceLimit: number
+): string[] => {
+  const chunks = new Set(getViteChunks(ast));
+
+  return [...chunks];
+};
+
+const webpackCunkDiscovery = (
+  ast: Program,
+  sourceType: "module" | "script",
+  bruteforceLimit: number
+): string[] => {
   const chunkFunctionContext = identifyChunkLoadingFunctionAndExpression(ast);
   if (!chunkFunctionContext) {
     return [];
@@ -24,6 +62,7 @@ export const discoverChunks = (
 
   const parsedFunction = parse(chunkFunctionCode, {
     ecmaVersion: "latest",
+    sourceType: sourceType,
   });
 
   const possibleParams = getChunkFunctionPossibleParams(

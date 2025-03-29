@@ -38,10 +38,10 @@ func (s *scopeChecker) IsInScope(url string) bool {
 	return false
 }
 
-func initializeScope(options jxscouttypes.Options) []string {
+func initializeScope(patterns []string) []string {
 	scopeRegex := []string{}
 
-	for _, url := range options.ScopePatterns {
+	for _, url := range patterns {
 		scopeRegex = append(scopeRegex, wildCardToRegexp(url))
 	}
 

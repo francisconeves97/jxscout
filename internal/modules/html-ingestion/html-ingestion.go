@@ -17,7 +17,7 @@ import (
 )
 
 type htmlIngestionModule struct {
-	sdk      jxscouttypes.ModuleSDK
+	sdk      *jxscouttypes.ModuleSDK
 	cacheTTL time.Duration
 }
 
@@ -27,7 +27,7 @@ func NewHTMLIngestionModule(cacheTTL time.Duration) jxscouttypes.Module {
 	}
 }
 
-func (m *htmlIngestionModule) Initialize(sdk jxscouttypes.ModuleSDK) error {
+func (m *htmlIngestionModule) Initialize(sdk *jxscouttypes.ModuleSDK) error {
 	m.sdk = sdk
 
 	go func() {
@@ -80,17 +80,18 @@ func (m *htmlIngestionModule) handleIngestionRequest(req ingestion.IngestionRequ
 	// note: some requests might be incorrectly dropped if some flaky error happens in between, but should be fine
 	m.sdk.Cache.Set(req.Request.URL, true, m.cacheTTL)
 
-	htmlPath, err := url.JoinPath(req.Request.URL, "(index).html")
+	htmlPath, err := common.NormalizeHTMLURL(req.Request.URL)
 	if err != nil {
 		return errutil.Wrap(err, "failed to join html path with (index).html")
 	}
 
 	// TODO: better structure contexts
 	m.sdk.AssetService.AsyncSaveAsset(context.Background(), assetservice.Asset{
-		URL:         htmlPath,
-		Content:     req.Response.Body,
-		Namespace:   common.NamespaceRaw,
-		ContentType: common.ContentTypeHTML,
+		URL:            htmlPath,
+		Content:        req.Response.Body,
+		ContentType:    common.ContentTypeHTML,
+		Project:        m.sdk.Options.ProjectName,
+		RequestHeaders: req.Request.Headers,
 	})
 
 	extractedJS, err := extractJS(req.Response.Body, req.Request.URL)
@@ -105,10 +106,14 @@ func (m *htmlIngestionModule) handleIngestionRequest(req ingestion.IngestionRequ
 		}
 
 		m.sdk.AssetService.AsyncSaveAsset(context.Background(), assetservice.Asset{
-			URL:         inlinePath,
-			Content:     content,
-			Namespace:   common.NamespaceRaw,
-			ContentType: common.ContentTypeJS,
+			URL:            inlinePath,
+			Content:        content,
+			ContentType:    common.ContentTypeJS,
+			Project:        m.sdk.Options.ProjectName,
+			RequestHeaders: req.Request.Headers,
+			Parent: &assetservice.Asset{
+				URL: htmlPath,
+			},
 		})
 	}
 
