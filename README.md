@@ -9,7 +9,8 @@
 - **Asset Organization**: Automatically saves and organizes relevant static assets (HTML, JavaScript) into an intuitive folder structure.
 - **Webpack Chunks Pre-Fetching**: Detects and pre-fetches Webpack chunks for comprehensive analysis.
 - **Code Beautification**: Automatically beautifies JavaScript files, enhancing readability and facilitating easier vulnerability detection.
-- **Future Enhancements (TODO)** 🛠️: code optimization, source map discovery, data extraction, and more.
+- **Source Map Discovery**: Automatically reverses application source code if .map files are available.
+- **Future Enhancements (TODO)** 🛠️: code optimization, data extraction, and more.
 
 ## Requirements
 
@@ -22,6 +23,7 @@ To install, just run the below command or download pre-compiled binary from [rel
 
 ```
 go install github.com/francisconeves97/jxscout/cmd/jxscout@latest
+bun install -g prettier reverse-sourcemap
 ```
 
 ### Caido Setup

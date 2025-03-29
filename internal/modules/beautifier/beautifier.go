@@ -13,7 +13,7 @@ import (
 )
 
 type beautifierModule struct {
-	sdk   jxscouttypes.ModuleSDK
+	sdk   *jxscouttypes.ModuleSDK
 	queue concurrentqueue.Queue[assetservice.Asset]
 }
 
@@ -23,7 +23,7 @@ func NewBeautifier(concurrency int) *beautifierModule {
 	}
 }
 
-func (m *beautifierModule) Initialize(sdk jxscouttypes.ModuleSDK) error {
+func (m *beautifierModule) Initialize(sdk *jxscouttypes.ModuleSDK) error {
 	m.sdk = sdk
 
 	go func() {

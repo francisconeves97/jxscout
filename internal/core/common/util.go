@@ -1,10 +1,16 @@
 package common
 
 import (
+	"crypto/sha256"
+	"fmt"
 	"net/http"
 	"net/url"
+	"os"
+	"path"
 	"regexp"
 	"strings"
+
+	"github.com/francisconeves97/jxscout/internal/core/errutil"
 )
 
 func StrPtr(s *string) string {
@@ -30,6 +36,19 @@ func NormalizeURL(rawURL string) string {
 	parsedURL.Path = strings.TrimSuffix(parsedURL.Path, "/")
 
 	return parsedURL.String()
+}
+
+func NormalizeHTMLURL(rawURL string) (string, error) {
+	if strings.TrimSpace(rawURL) == "" {
+		return "", nil
+	}
+
+	htmlPath, err := url.JoinPath(NormalizeURL(rawURL), "(index).html")
+	if err != nil {
+		return "", errutil.Wrap(err, "failed to join html path with (index).html")
+	}
+
+	return htmlPath, nil
 }
 
 // TODO: make this more robust. e.g. toilet blah blah would match because of let keyword
@@ -82,4 +101,22 @@ func IsRelativePath(str string) bool {
 	}
 
 	return true
+}
+
+func Hash(content string) string {
+	hasher := sha256.New()
+	hasher.Write([]byte(content))
+	return fmt.Sprintf("%x", hasher.Sum(nil))
+}
+
+func GetWorkingDirectory() string {
+	home := os.Getenv("HOME")
+
+	return path.Join(home, "jxscout")
+}
+
+func GetPrivateDirectory() string {
+	home := os.Getenv("HOME")
+
+	return path.Join(home, ".jxscout")
 }

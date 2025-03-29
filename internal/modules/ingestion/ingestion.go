@@ -9,14 +9,14 @@ import (
 )
 
 type ingestionModule struct {
-	sdk jxscouttypes.ModuleSDK
+	sdk *jxscouttypes.ModuleSDK
 }
 
 func NewIngestionModule() jxscouttypes.Module {
 	return &ingestionModule{}
 }
 
-func (m *ingestionModule) Initialize(sdk jxscouttypes.ModuleSDK) error {
+func (m *ingestionModule) Initialize(sdk *jxscouttypes.ModuleSDK) error {
 	m.sdk = sdk
 
 	sdk.Router.Post("/ingest", m.handleIngestionEndpoint)

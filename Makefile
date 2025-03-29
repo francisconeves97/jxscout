@@ -1,7 +1,7 @@
 install:
 	go mod vendor
 	bun install --frozen-lockfile
-	bun install -g prettier
+	bun install -g prettier reverse-sourcemap
 
 clean:
 	rm -rf dist/

@@ -9,8 +9,10 @@ import (
 	"net/url"
 	"os"
 	"os/exec"
+	"path"
 	"path/filepath"
 	"strings"
+	"sync"
 
 	assetservice "github.com/francisconeves97/jxscout/internal/core/asset-service"
 	"github.com/francisconeves97/jxscout/internal/core/common"
@@ -23,7 +25,7 @@ import (
 var chunkDiscovererBinary []byte
 
 type chunkDiscovererModule struct {
-	sdk                       jxscouttypes.ModuleSDK
+	sdk                       *jxscouttypes.ModuleSDK
 	queue                     concurrentqueue.Queue[assetservice.Asset]
 	chunkDiscovererBinaryPath string
 }
@@ -34,7 +36,7 @@ func NewChunkDiscovererModule(concurrency int, chunkBruteForceLimit int) *chunkD
 	}
 }
 
-func (m *chunkDiscovererModule) Initialize(sdk jxscouttypes.ModuleSDK) error {
+func (m *chunkDiscovererModule) Initialize(sdk *jxscouttypes.ModuleSDK) error {
 	m.sdk = sdk
 
 	go func() {
@@ -46,7 +48,7 @@ func (m *chunkDiscovererModule) Initialize(sdk jxscouttypes.ModuleSDK) error {
 
 	m.initializeQueueHandler()
 
-	saveDir := "extracted"
+	saveDir := path.Join(common.GetPrivateDirectory(), "extracted")
 
 	// Create the directory if it doesn't exist
 	if err := os.MkdirAll(saveDir, 0755); err != nil {
@@ -128,7 +130,16 @@ func (s *chunkDiscovererModule) discoverPossibleChunks(asset assetservice.Asset)
 		// Find the common part between the original path and the chunk
 		commonIndex := -1
 		for i := len(originalPathParts) - 1; i >= 0; i-- {
-			if len(chunkParts) > 0 && originalPathParts[i] == chunkParts[0] {
+			firstPart := ""
+
+			for _, part := range chunkParts {
+				if strings.TrimSpace(part) != "" {
+					firstPart = part
+					break
+				}
+			}
+
+			if len(chunkParts) > 0 && originalPathParts[i] == firstPart && strings.TrimSpace(originalPathParts[i]) != "" && strings.TrimSpace(firstPart) != "" {
 				commonIndex = i
 				break
 			}
@@ -157,13 +168,37 @@ func (s *chunkDiscovererModule) discoverPossibleChunks(asset assetservice.Asset)
 
 	s.sdk.Logger.Debug("discovered possible chunks", "chunks", chunks, "asset_url", asset.URL)
 
+	wg := &sync.WaitGroup{}
+
 	for _, chunk := range chunks {
-		s.sdk.AssetService.AsyncFetchAndSave(context.Background(), assetservice.AsyncFetchAndSaveRequest{
-			URL:         chunk,
-			ParentURL:   asset.GetParentURL(),
-			ContentType: common.ContentTypeJS,
-			Namespace:   common.NamespaceRaw,
-		})
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+
+			content, found, err := s.sdk.AssetFetcher.RateLimitedGet(context.Background(), chunk, asset.RequestHeaders)
+			if err != nil {
+				s.sdk.Logger.Error("failed to perform get request", "err", err)
+				return
+			}
+			if !found {
+				s.sdk.Logger.Debug("asset not found", "asset_url", chunk)
+				return
+			}
+
+			asset := assetservice.Asset{
+				URL:         chunk,
+				ContentType: common.ContentTypeJS,
+				Content:     content,
+			}
+
+			if common.StrPtr(asset.GetParentURL()) != "" {
+				asset.Parent = &assetservice.Asset{
+					URL: *asset.GetParentURL(),
+				}
+			}
+
+			s.sdk.AssetService.AsyncSaveAsset(context.Background(), asset)
+		}()
 	}
 
 	return nil

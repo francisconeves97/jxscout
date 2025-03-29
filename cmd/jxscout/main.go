@@ -24,7 +24,7 @@ func main() {
 	)
 
 	flagSet.CreateGroup("jxscout", "jxscout configuration",
-		flagSet.StringVar(&options.WorkingDirectory, "working-directory", "", "directory where static files will be downloaded to"),
+		flagSet.StringVar(&options.ProjectName, "project-name", "default", "directory where static files will be downloaded to"),
 		flagSet.StringSliceVar(&options.ScopePatterns, "scope", nil, `comma separated list of domains to consider for saving and analyzing html (e.g. "*google.com*,*facebook.com*")`, goflags.FileCommaSeparatedStringSliceOptions),
 		flagSet.BoolVar(&options.Verbose, "verbose", true, "set to true to output logs"),
 		flagSet.BoolVar(&options.Debug, "debug", false, "set to true to output debug logs"),
@@ -44,6 +44,18 @@ func main() {
 	flagSet.CreateGroup("cache", "cache configuration",
 		flagSet.DurationVar(&options.JavascriptRequestsCacheTTL, "js-requests-cache-ttl", time.Hour, "defines the time to wait until a js file is downloaded and processed again"),
 		flagSet.DurationVar(&options.HTMLRequestsCacheTTL, "html-requests-cache-ttl", time.Hour, "defines the time to wait until a html file is downloaded and processed again"),
+	)
+
+	flagSet.CreateGroup("git commiter", "git commiter configuration",
+		flagSet.DurationVar(&options.GitCommitInterval, "git-commit-interval", time.Minute*5, "defines the interval between jxscout automatically commits saved files"),
+	)
+
+	flagSet.CreateGroup("rate limiting", "rate limiting configuration",
+		flagSet.IntVar(&options.RateLimiterMaxRequestsPerSecond, "rate-limiter-max-requests-per-second", 20, "defines the max requests per second for rate limited requests"),
+	)
+
+	flagSet.CreateGroup("js ingestion", "js ingestion configuration",
+		flagSet.BoolVar(&options.DownloadReferedJS, "download-refered-js", false, "defines if all refered JS should be downloaded, even if it's out of scope"),
 	)
 
 	if err := flagSet.Parse(); err != nil {

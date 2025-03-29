@@ -11,9 +11,5 @@ func validateOptions(options jxscouttypes.Options) error {
 		return errors.New("port option is required")
 	}
 
-	if options.WorkingDirectory == "" {
-		return errors.New("working directory option is required")
-	}
-
 	return nil
 }

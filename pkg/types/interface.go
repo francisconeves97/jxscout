@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	assetfetcher "github.com/francisconeves97/jxscout/internal/core/asset-fetcher"
 	assetservice "github.com/francisconeves97/jxscout/internal/core/asset-service"
 	"github.com/francisconeves97/jxscout/internal/core/cache"
 	"github.com/francisconeves97/jxscout/internal/core/eventbus"
@@ -38,8 +39,8 @@ type Cache = cache.Cache
 type Options struct {
 	// Port is the port where jxscout will be running
 	Port int
-	// WorkingDirectory is used by jxscout as the root where files will be saved
-	WorkingDirectory string
+	// ProjectName directory where static files will be downloaded to
+	ProjectName string
 	// ScopePatterns is a list of wildcard patterns used for filtering requests (e.g. {"*google.com*", "*facebook.com*"})
 	ScopePatterns goflags.StringSlice
 	// Verbose defines if the server should output logs
@@ -62,26 +63,39 @@ type Options struct {
 	JavascriptRequestsCacheTTL time.Duration
 	// HTMLRequestsCacheTTL defines the time to wait until a html file is downloaded and processed again
 	HTMLRequestsCacheTTL time.Duration
+	// GitCommitInterval defines the interval between commits on the working directory
+	GitCommitInterval time.Duration
+	// RateLimiterMaxRequestsPerSecond defines the max requests per second for rate limited requests
+	RateLimiterMaxRequestsPerSecond int
+	// DownloadReferedJS defines if all JS, including out of scope JS, should be downloaded as long as it is refered by a domain in scope
+	DownloadReferedJS bool
 }
 
 // AssetService interface
 type AssetService = assetservice.AssetService
 type Asset = assetservice.Asset
 
+// AssetFetcher interface
+type AssetFetcher = assetfetcher.AssetFetcher
+
+type FileService = assetservice.FileService
+
 // ModuleSDK are the exposed dependencies that modules can use
 type ModuleSDK struct {
 	EventBus     EventBus
 	Router       Router
 	AssetService AssetService
+	AssetFetcher AssetFetcher
 	Options      Options
 	HTTPServer   HTTPServer
 	Cache        Cache
 	Logger       *slog.Logger
 	Scope        Scope
+	FileService  FileService
 }
 
 type Module interface {
-	Initialize(sdk ModuleSDK) error
+	Initialize(sdk *ModuleSDK) error
 }
 
 type JXScout interface {

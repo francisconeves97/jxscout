@@ -15,17 +15,19 @@ import (
 )
 
 type jsIngestionModule struct {
-	sdk      jxscouttypes.ModuleSDK
-	cacheTTL time.Duration
+	sdk               *jxscouttypes.ModuleSDK
+	cacheTTL          time.Duration
+	downloadReferedJS bool
 }
 
-func NewJSIngestionModule(cacheTTL time.Duration) jxscouttypes.Module {
+func NewJSIngestionModule(cacheTTL time.Duration, downloadReferedJS bool) jxscouttypes.Module {
 	return &jsIngestionModule{
-		cacheTTL: cacheTTL,
+		cacheTTL:          cacheTTL,
+		downloadReferedJS: downloadReferedJS,
 	}
 }
 
-func (m *jsIngestionModule) Initialize(sdk jxscouttypes.ModuleSDK) error {
+func (m *jsIngestionModule) Initialize(sdk *jxscouttypes.ModuleSDK) error {
 	m.sdk = sdk
 
 	go func() {
@@ -78,13 +80,27 @@ func (m *jsIngestionModule) handleIngestionRequest(req ingestion.IngestionReques
 	// note: some requests might be incorrectly dropped if some flaky error happens in between, but should be fine
 	m.sdk.Cache.Set(req.Request.URL, true, m.cacheTTL)
 
+	var parentURL string
+	referer := m.getReferer(req)
+	if referer != "" {
+		parentURL, err = common.NormalizeHTMLURL(m.getReferer(req))
+		if err != nil {
+			m.sdk.Logger.Error("failed to normalize html url", "err", err)
+		}
+	}
+
+	if parentURL == "" {
+		parentURL = common.NormalizeURL(m.getReferer(req))
+	}
+
 	m.sdk.AssetService.AsyncSaveAsset(context.Background(), assetservice.Asset{
-		URL:         req.Request.URL,
-		Content:     req.Response.Body,
-		Namespace:   common.NamespaceRaw,
-		ContentType: common.ContentTypeJS,
+		URL:            req.Request.URL,
+		Content:        req.Response.Body,
+		ContentType:    common.ContentTypeJS,
+		Project:        m.sdk.Options.ProjectName,
+		RequestHeaders: req.Request.Headers,
 		Parent: &assetservice.Asset{
-			URL: m.getReferer(req),
+			URL: parentURL,
 		},
 	})
 
@@ -94,7 +110,9 @@ func (m *jsIngestionModule) handleIngestionRequest(req ingestion.IngestionReques
 func (m *jsIngestionModule) getReferer(req ingestion.IngestionRequest) string {
 	headers := req.Request.Headers
 
-	return headers["Referer"]
+	referer := headers["Referer"]
+
+	return referer
 }
 
 func (m *jsIngestionModule) getContentType(req ingestion.IngestionRequest) string {
@@ -108,9 +126,14 @@ func (m *jsIngestionModule) validateIngestionRequest(req *ingestion.IngestionReq
 		return errors.New("received nil request")
 	}
 
-	// check if referer is in scope
-	if !m.sdk.Scope.IsInScope(m.getReferer(*req)) {
-		return errors.New("request is not in scope")
+	if m.downloadReferedJS {
+		if !m.sdk.Scope.IsInScope(req.Request.URL) && !m.sdk.Scope.IsInScope(m.getReferer(*req)) {
+			return errors.New("request is not in scope")
+		}
+	} else {
+		if !m.sdk.Scope.IsInScope(req.Request.URL) {
+			return errors.New("request is not in scope")
+		}
 	}
 
 	if strings.HasSuffix(req.Request.URL, ".map") {

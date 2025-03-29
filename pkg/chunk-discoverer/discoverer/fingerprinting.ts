@@ -11,6 +11,7 @@ import {
 } from "estree-toolkit/dist/generated/types";
 
 const LOADING_CHUNK_FINGERPRINT = "Loading chunk ";
+const VITE_MAP_DEPS_FINGERPRINT = "__vite__mapDeps";
 
 export interface ChunkLoadingFingerprintContext {
   functionContext: ChunkLoadingFunctionContext;
@@ -315,4 +316,39 @@ export const matchesFunctionDeclarationChunkBuilderFunction = (
   }
 
   return hasJSLiteral(path);
+};
+
+// Vite
+export const getViteChunks = (ast: Program): string[] => {
+  const chunks: string[] = [];
+
+  traverse(ast, {
+    Identifier(path) {
+      if (path.node?.name !== VITE_MAP_DEPS_FINGERPRINT) {
+        return;
+      }
+
+      const variableDeclarator = path.parentPath;
+      if (!is.variableDeclarator(variableDeclarator)) {
+        return;
+      }
+
+      variableDeclarator.traverse({
+        Literal(path) {
+          if (typeof path.node?.value !== "string") {
+            return;
+          }
+
+          const value = path.node.value;
+          if (value.includes(".js")) {
+            chunks.push(value);
+          }
+        },
+      });
+
+      this.stop();
+    },
+  });
+
+  return chunks;
 };
