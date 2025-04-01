@@ -40,6 +40,9 @@ github.com/google/shlex
 # github.com/gorilla/css v1.0.0
 ## explicit
 github.com/gorilla/css/scanner
+# github.com/gorilla/websocket v1.5.3
+## explicit; go 1.12
+github.com/gorilla/websocket
 # github.com/jmoiron/sqlx v1.4.0
 ## explicit; go 1.10
 github.com/jmoiron/sqlx
