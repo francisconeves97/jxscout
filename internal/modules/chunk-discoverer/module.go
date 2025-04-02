@@ -166,8 +166,9 @@ func (s *chunkDiscovererModule) discoverPossibleChunks(asset assetservice.Asset)
 		chunks = append(chunks, newURL.String())
 	}
 
-	s.sdk.Logger.Debug("discovered possible chunks", "chunks", chunks, "asset_url", asset.URL)
-
+	if len(chunks) > 0 {
+		s.sdk.Logger.Info("discovered possible chunks 🔎", "chunks", chunks, "asset_url", asset.URL)
+	}
 	wg := &sync.WaitGroup{}
 
 	for _, chunk := range chunks {

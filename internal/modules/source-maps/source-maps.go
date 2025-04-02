@@ -102,6 +102,8 @@ func (s *sourceMapsModule) sourceMapDiscover(ctx context.Context, asset assetser
 		return errors.Wrapf(err, "failed to save source map for asset %s", asset.URL)
 	}
 
+	s.sdk.Logger.Info("discovered source map 💼", "path", filePath, "asset_url", asset.URL)
+
 	cmd := exec.Command("reverse-sourcemap", filePath, "--output-dir", path.Join(common.GetWorkingDirectory(), s.sdk.Options.ProjectName, sourceMapsFolder, sourceMapsReversed), "--recursive")
 	if err := cmd.Start(); err != nil {
 		return errutil.Wrap(err, "error starting command")

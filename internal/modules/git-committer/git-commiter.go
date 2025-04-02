@@ -95,6 +95,6 @@ func (m *gitCommiterModule) commit() error {
 		return errutil.Wrap(err, "failed to create snapshot commit")
 	}
 
-	m.sdk.Logger.Info("created snapshot commit", "message", commitMessage)
+	m.sdk.Logger.Info("created snapshot commit 💾", "message", commitMessage)
 	return nil
 }

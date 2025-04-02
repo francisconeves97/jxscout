@@ -28,6 +28,7 @@ import (
 )
 
 type jxscout struct {
+	logBuffer    *logBuffer
 	log          *slog.Logger
 	eventBus     jxscouttypes.EventBus
 	options      jxscouttypes.Options
@@ -51,7 +52,10 @@ func NewJXScout(options jxscouttypes.Options) (jxscouttypes.JXScout, error) {
 		return nil, errutil.Wrap(err, "provided options are not valid")
 	}
 
-	logger := initializeLogger(options)
+	// buffer that stores logs to show in the UI
+	logBuffer := newLogBuffer(options.LogBufferSize)
+
+	logger := initializeLogger(logBuffer, options)
 
 	scopeRegex := initializeScope(options.ScopePatterns)
 
@@ -77,12 +81,13 @@ func NewJXScout(options jxscouttypes.Options) (jxscouttypes.JXScout, error) {
 	cache := cache.NewInMemoryCache()
 
 	assetFetcher := assetfetcher.NewAssetFetcher(assetfetcher.AssetFetcherOptions{
-		RateLimitingMaxRequestsPerSecond: options.RateLimiterMaxRequestsPerSecond,
+		RateLimitingMaxRequestsPerMinute: options.RateLimitingMaxRequestsPerMinute,
 	})
 
 	jxscout := &jxscout{
 		options:      options,
-		log:          initializeLogger(options),
+		logBuffer:    logBuffer,
+		log:          logger,
 		eventBus:     eventBus,
 		assetService: assetService,
 		modules:      []jxscouttypes.Module{},

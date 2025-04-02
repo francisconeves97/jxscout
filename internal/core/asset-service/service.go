@@ -150,7 +150,7 @@ func (s *assetService) handleSaveAssetRequest(ctx context.Context, asset Asset) 
 		return errutil.Wrap(err, "failed to publish asset saved even")
 	}
 
-	s.log.DebugContext(ctx, "saved file successfully", "path", path, "asset_url", asset.URL)
+	s.log.InfoContext(ctx, "saved file successfully", "path", path, "asset_url", asset.URL)
 
 	return nil
 }
