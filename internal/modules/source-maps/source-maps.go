@@ -84,6 +84,10 @@ func (m *sourceMapsModule) subscribeAssetSavedEvent() error {
 }
 
 func (s *sourceMapsModule) sourceMapDiscover(ctx context.Context, asset assetservice.Asset) error {
+	if asset.IsInlineJS {
+		return nil
+	}
+
 	sourceMapPath := fmt.Sprintf("%s.map", asset.URL)
 
 	res, ok, err := s.sdk.AssetFetcher.RateLimitedGet(ctx, sourceMapPath, nil)

@@ -29,6 +29,8 @@ type Asset struct {
 	Project string
 	// RequestHeaders are the headers that were used to make this request
 	RequestHeaders map[string]string
+	// IsInlineJS is true if the asset is an inline js
+	IsInlineJS bool
 	// Parent is the asset that loaded the current asset, nil if it doesn't exist. (e.g. html page loading a js script)
 	Parent *Asset
 

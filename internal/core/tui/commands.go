@@ -104,6 +104,16 @@ func (t *TUI) RegisterDefaultCommands() {
 			return nil, nil
 		},
 	})
+
+	t.RegisterCommand(Command{
+		Name:        "clear-logs",
+		Description: "Clears the log buffer",
+		Usage:       "clear-logs",
+		Execute: func(args []string) (tea.Cmd, error) {
+			t.logBuffer.Clear()
+			return nil, nil
+		},
+	})
 }
 
 // RegisterCommand registers a new command with the TUI

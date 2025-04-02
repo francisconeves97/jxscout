@@ -31,6 +31,7 @@ type TUI struct {
 
 type LogBuffer interface {
 	String() string
+	Clear()
 }
 
 func New(logBuffer LogBuffer) *TUI {

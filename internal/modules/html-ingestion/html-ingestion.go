@@ -111,6 +111,7 @@ func (m *htmlIngestionModule) handleIngestionRequest(req ingestion.IngestionRequ
 			ContentType:    common.ContentTypeJS,
 			Project:        m.sdk.Options.ProjectName,
 			RequestHeaders: req.Request.Headers,
+			IsInlineJS:     true,
 			Parent: &assetservice.Asset{
 				URL: htmlPath,
 			},
