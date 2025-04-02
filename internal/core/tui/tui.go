@@ -7,6 +7,7 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
 
 type Command struct {
@@ -114,24 +115,21 @@ func (t *TUI) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	case tea.WindowSizeMsg:
 		if !t.logsPanelViewportReady {
-			// Since this program is using the full size of the viewport we
-			// need to wait until we've received the window dimensions before
-			// we can initialize the viewport. The initial dimensions come in
-			// quickly, though asynchronously, which is why we wait for them
-			// here.
-			t.logsPanelViewport = viewport.New(msg.Width/2, msg.Height/2)
-			// t.logsPanelViewport.HalfViewUp()
+			t.logsPanelViewport = viewport.New(msg.Width, msg.Height/2)
+			t.logsPanelViewport.Style = lipgloss.NewStyle().
+				Border(lipgloss.NormalBorder()).
+				BorderForeground(lipgloss.Color("62"))
 			t.logsPanelViewportReady = true
 		} else {
-			t.logsPanelViewport.Width = msg.Width / 2
+			t.logsPanelViewport.Width = msg.Width
 			t.logsPanelViewport.Height = msg.Height / 2
 		}
-
 	}
 
 	t.input, cmd = t.input.Update(msg)
 	cmds = append(cmds, cmd)
 
+	// Update logs panel content and viewport
 	t.logsPanelViewport.SetContent(t.logBuffer.String())
 	t.logsPanelViewport, cmd = t.logsPanelViewport.Update(msg)
 	cmds = append(cmds, cmd)
@@ -144,9 +142,22 @@ func (t *TUI) View() string {
 	var s strings.Builder
 
 	if t.logsPanelShown && t.logsPanelViewportReady {
-		s.WriteString("=== Logs ===\n")
+		// Create a styled header
+		header := lipgloss.NewStyle().
+			Bold(true).
+			Foreground(lipgloss.Color("205")).
+			Padding(0, 1).
+			Render("Logs")
+
+		// Create a styled footer with scroll info
+		footer := lipgloss.NewStyle().
+			Foreground(lipgloss.Color("241")).
+			Padding(0, 1).
+			Render(fmt.Sprintf("Showing %d/%d lines", t.logsPanelViewport.YOffset+1, t.logsPanelViewport.TotalLineCount()))
+
+		s.WriteString(header + "\n")
 		s.WriteString(t.logsPanelViewport.View())
-		s.WriteString("\n=== End Logs ===\n\n")
+		s.WriteString(footer + "\n\n")
 	}
 
 	if t.output == "" {
