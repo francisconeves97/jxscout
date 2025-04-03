@@ -134,7 +134,7 @@ func (t *TUI) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	cmds = append(cmds, cmd)
 
 	// Update logs panel content and viewport
-	str := lipgloss.NewStyle().Width(t.logsPanelViewport.Width).Render(fmt.Sprintf("%s\n\n\n\n\n", t.logBuffer.String()))
+	str := lipgloss.NewStyle().Width(t.logsPanelViewport.Width).Render(fmt.Sprintf("%s\n", t.logBuffer.String()))
 	t.logsPanelViewport.SetContent(str)
 	if t.autoScroll {
 		t.logsPanelViewport.GotoBottom()

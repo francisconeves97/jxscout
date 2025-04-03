@@ -25,7 +25,6 @@ func (t *TUI) Run() error {
 	p := tea.NewProgram(
 		t,
 		tea.WithAltScreen(),
-		tea.WithMouseCellMotion(),
 	)
 	if _, err := p.Run(); err != nil {
 		return errutil.Wrap(err, "error running program")
