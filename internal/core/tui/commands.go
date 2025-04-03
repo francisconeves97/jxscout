@@ -14,6 +14,7 @@ import (
 func (t *TUI) RegisterDefaultCommands() {
 	t.RegisterCommand(Command{
 		Name:        "clear",
+		ShortName:   "c",
 		Description: "Clears the output",
 		Usage:       "clear",
 		Execute: func(args []string) (tea.Cmd, error) {
@@ -24,6 +25,7 @@ func (t *TUI) RegisterDefaultCommands() {
 
 	t.RegisterCommand(Command{
 		Name:        "hello",
+		ShortName:   "h",
 		Description: "Prints a hello world message",
 		Usage:       "hello [name]",
 		Execute: func(args []string) (tea.Cmd, error) {
@@ -38,6 +40,7 @@ func (t *TUI) RegisterDefaultCommands() {
 
 	t.RegisterCommand(Command{
 		Name:        "help",
+		ShortName:   "?",
 		Description: "Shows help information for commands",
 		Usage:       "help [command]",
 		Execute: func(args []string) (tea.Cmd, error) {
@@ -57,6 +60,7 @@ func (t *TUI) RegisterDefaultCommands() {
 
 	t.RegisterCommand(Command{
 		Name:        "exit",
+		ShortName:   "q",
 		Description: "Exits the application",
 		Usage:       "exit",
 		Execute: func(args []string) (tea.Cmd, error) {
@@ -67,6 +71,7 @@ func (t *TUI) RegisterDefaultCommands() {
 
 	t.RegisterCommand(Command{
 		Name:        "logs",
+		ShortName:   "l",
 		Description: "Toggle logs panel",
 		Usage:       "logs",
 		Execute: func(args []string) (tea.Cmd, error) {
@@ -77,6 +82,7 @@ func (t *TUI) RegisterDefaultCommands() {
 
 	t.RegisterCommand(Command{
 		Name:        "logs-file-path",
+		ShortName:   "lfp",
 		Description: "Shows the path to the log file",
 		Usage:       "logs-file-path",
 		Execute: func(args []string) (tea.Cmd, error) {
@@ -88,6 +94,7 @@ func (t *TUI) RegisterDefaultCommands() {
 
 	t.RegisterCommand(Command{
 		Name:        "clear-log-file",
+		ShortName:   "clf",
 		Description: "Clears the log file",
 		Usage:       "clear-log-file",
 		Execute: func(args []string) (tea.Cmd, error) {
@@ -107,6 +114,7 @@ func (t *TUI) RegisterDefaultCommands() {
 
 	t.RegisterCommand(Command{
 		Name:        "clear-logs",
+		ShortName:   "cl",
 		Description: "Clears the log buffer",
 		Usage:       "clear-logs",
 		Execute: func(args []string) (tea.Cmd, error) {
@@ -117,6 +125,7 @@ func (t *TUI) RegisterDefaultCommands() {
 
 	t.RegisterCommand(Command{
 		Name:        "toggle-logs-autoscroll",
+		ShortName:   "tla",
 		Description: "Toggles auto scroll for logs",
 		Usage:       "toggle-logs-autoscroll",
 		Execute: func(args []string) (tea.Cmd, error) {
@@ -129,6 +138,9 @@ func (t *TUI) RegisterDefaultCommands() {
 // RegisterCommand registers a new command with the TUI
 func (t *TUI) RegisterCommand(cmd Command) {
 	t.commands[cmd.Name] = cmd
+	if cmd.ShortName != "" {
+		t.commands[cmd.ShortName] = cmd
+	}
 }
 
 // ExecuteCommand executes a command with the given arguments
@@ -183,7 +195,11 @@ func (t *TUI) GetHelp() string {
 
 	// Display remaining commands in alphabetical order
 	for _, name := range cmdNames {
-		t.writeCommandHelp(&help, t.commands[name])
+		cmd := t.commands[name]
+		// Only show the full name version to avoid duplicates
+		if cmd.Name == name {
+			t.writeCommandHelp(&help, cmd)
+		}
 	}
 
 	return help.String()
@@ -191,7 +207,11 @@ func (t *TUI) GetHelp() string {
 
 // writeCommandHelp writes the help text for a command to the builder
 func (t *TUI) writeCommandHelp(builder *strings.Builder, cmd Command) {
-	builder.WriteString(fmt.Sprintf("\n%s - %s\n", cmd.Name, cmd.Description))
+	builder.WriteString(fmt.Sprintf("\n%s", cmd.Name))
+	if cmd.ShortName != "" {
+		builder.WriteString(fmt.Sprintf(" (%s)", cmd.ShortName))
+	}
+	builder.WriteString(fmt.Sprintf(" - %s\n", cmd.Description))
 	builder.WriteString(fmt.Sprintf("  Usage: %s\n", cmd.Usage))
 }
 

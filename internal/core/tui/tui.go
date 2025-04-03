@@ -12,6 +12,7 @@ import (
 
 type Command struct {
 	Name        string
+	ShortName   string
 	Description string
 	Usage       string
 	Execute     func(args []string) (tea.Cmd, error)
