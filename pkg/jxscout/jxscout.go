@@ -146,9 +146,15 @@ func (s *jxscout) Start() error {
 		return errutil.Wrap(err, "failed to initialize modules")
 	}
 
-	s.log.Info("server listening", "port", s.options.Port)
+	s.log.Info("starting server", "port", s.options.Port)
 
-	go http.ListenAndServe(fmt.Sprintf(":%d", s.options.Port), r)
+	go func() {
+		err := http.ListenAndServe(fmt.Sprintf(":%d", s.options.Port), r)
+		if err != nil {
+			s.log.Error("failed to start server", "port", s.options.Port, "error", err)
+			return
+		}
+	}()
 
 	s.runPrompt()
 

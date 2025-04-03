@@ -114,6 +114,16 @@ func (t *TUI) RegisterDefaultCommands() {
 			return nil, nil
 		},
 	})
+
+	t.RegisterCommand(Command{
+		Name:        "toggle-logs-autoscroll",
+		Description: "Toggles auto scroll for logs",
+		Usage:       "toggle-logs-autoscroll",
+		Execute: func(args []string) (tea.Cmd, error) {
+			t.autoScroll = !t.autoScroll
+			return nil, nil
+		},
+	})
 }
 
 // RegisterCommand registers a new command with the TUI

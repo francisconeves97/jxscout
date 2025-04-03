@@ -27,6 +27,7 @@ type TUI struct {
 	logsPanelShown         bool
 	logsPanelViewport      viewport.Model
 	logsPanelViewportReady bool
+	autoScroll             bool
 }
 
 type LogBuffer interface {
@@ -42,6 +43,7 @@ func New(logBuffer LogBuffer) *TUI {
 		historyIndex:   -1,
 		logBuffer:      logBuffer,
 		logsPanelShown: true,
+		autoScroll:     true,
 	}
 	t.input.Prompt = "> "
 	t.input.Placeholder = "Enter command..."
@@ -133,7 +135,9 @@ func (t *TUI) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	// Update logs panel content and viewport
 	str := lipgloss.NewStyle().Width(t.logsPanelViewport.Width).Render(fmt.Sprintf("%s\n\n\n\n\n", t.logBuffer.String()))
 	t.logsPanelViewport.SetContent(str)
-	t.logsPanelViewport.GotoBottom()
+	if t.autoScroll {
+		t.logsPanelViewport.GotoBottom()
+	}
 	t.logsPanelViewport, cmd = t.logsPanelViewport.Update(msg)
 	cmds = append(cmds, cmd)
 
@@ -145,20 +149,22 @@ func (t *TUI) View() string {
 	var s strings.Builder
 
 	if t.logsPanelShown && t.logsPanelViewportReady {
-		// Create a styled header
 		header := lipgloss.NewStyle().
 			Bold(true).
 			Foreground(lipgloss.Color("205")).
 			Padding(0, 1).
 			Render("Logs")
 
-		// Create a styled footer with scroll info
+		autoScrollText := "Auto-scroll: ON"
+		if !t.autoScroll {
+			autoScrollText = "Auto-scroll: OFF"
+		}
 		footer := lipgloss.NewStyle().
 			Foreground(lipgloss.Color("241")).
 			Padding(0, 1).
 			Width(t.logsPanelViewport.Width).
 			Align(lipgloss.Right).
-			Render(fmt.Sprintf("Scroll (%.0f%%)", t.logsPanelViewport.ScrollPercent()*100))
+			Render(fmt.Sprintf("%s | Scroll (%.0f%%)", autoScrollText, t.logsPanelViewport.ScrollPercent()*100))
 
 		s.WriteString(header + "\n")
 		s.WriteString(t.logsPanelViewport.View())
