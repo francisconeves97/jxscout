@@ -131,7 +131,9 @@ func (t *TUI) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	cmds = append(cmds, cmd)
 
 	// Update logs panel content and viewport
-	t.logsPanelViewport.SetContent(t.logBuffer.String())
+	str := lipgloss.NewStyle().Width(t.logsPanelViewport.Width).Render(fmt.Sprintf("%s\n\n\n\n\n", t.logBuffer.String()))
+	t.logsPanelViewport.SetContent(str)
+	t.logsPanelViewport.GotoBottom()
 	t.logsPanelViewport, cmd = t.logsPanelViewport.Update(msg)
 	cmds = append(cmds, cmd)
 
@@ -154,11 +156,13 @@ func (t *TUI) View() string {
 		footer := lipgloss.NewStyle().
 			Foreground(lipgloss.Color("241")).
 			Padding(0, 1).
-			Render(fmt.Sprintf("Showing %d/%d lines", t.logsPanelViewport.YOffset+1, t.logsPanelViewport.TotalLineCount()))
+			Width(t.logsPanelViewport.Width).
+			Align(lipgloss.Right).
+			Render(fmt.Sprintf("Scroll (%.0f%%)", t.logsPanelViewport.ScrollPercent()*100))
 
 		s.WriteString(header + "\n")
 		s.WriteString(t.logsPanelViewport.View())
-		s.WriteString(footer + "\n\n")
+		s.WriteString("\n" + footer + "\n\n")
 	}
 
 	if t.output == "" {
