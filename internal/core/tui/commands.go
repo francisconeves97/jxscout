@@ -78,7 +78,9 @@ func (t *TUI) RegisterDefaultCommands() {
 				// Show current configuration
 				t.printCurrentConfig()
 				t.writeLineToOutput("\nTo update options, use: config option=value [option=value ...]")
-				t.writeLineToOutput("Example: config project-name=netflix debug=true")
+				t.writeLineToOutput("To reset an option to default, use: config option=default")
+				t.writeLineToOutput("To manage scope patterns, use: config scope=add:pattern or config scope=remove:pattern")
+				t.writeLineToOutput("Example: config project-name=netflix debug=true scope=add:*google.com*")
 				return nil, nil
 			}
 
@@ -95,6 +97,89 @@ func (t *TUI) RegisterDefaultCommands() {
 				option := parts[0]
 				value := parts[1]
 
+				// Check if we're resetting to default
+				if value == "default" {
+					switch option {
+					case "port":
+						currentOptions.Port = 3333
+					case "project-name":
+						currentOptions.ProjectName = "default"
+					case "scope":
+						currentOptions.ScopePatterns = nil
+					case "debug":
+						currentOptions.Debug = false
+					case "fetch-concurrency":
+						currentOptions.AssetFetchConcurrency = 5
+					case "save-concurrency":
+						currentOptions.AssetSaveConcurrency = 5
+					case "beautifier-concurrency":
+						currentOptions.BeautifierConcurrency = 5
+					case "chunk-discoverer-concurrency":
+						currentOptions.ChunkDiscovererConcurrency = 5
+					case "chunk-discoverer-bruteforce-limit":
+						currentOptions.ChunkDiscovererBruteForceLimit = 3000
+					case "js-requests-cache-ttl":
+						currentOptions.JavascriptRequestsCacheTTL = time.Hour
+					case "html-requests-cache-ttl":
+						currentOptions.HTMLRequestsCacheTTL = time.Hour
+					case "git-commit-interval":
+						currentOptions.GitCommitInterval = time.Minute * 5
+					case "rate-limiter-max-requests-per-minute":
+						currentOptions.RateLimitingMaxRequestsPerMinute = 1200
+					case "download-refered-js":
+						currentOptions.DownloadReferedJS = false
+					case "log-buffer-size":
+						currentOptions.LogBufferSize = 1000
+					case "log-file-max-size-mb":
+						currentOptions.LogFileMaxSizeMB = 10
+					default:
+						return nil, fmt.Errorf("unknown option: %s", option)
+					}
+					continue
+				}
+
+				// Special handling for scope patterns
+				if option == "scope" {
+					if strings.HasPrefix(value, "add:") {
+						// Add a new pattern
+						pattern := strings.TrimPrefix(value, "add:")
+						if pattern == "" {
+							return nil, fmt.Errorf("empty scope pattern")
+						}
+						// Check if pattern already exists
+						for _, existing := range currentOptions.ScopePatterns {
+							if existing == pattern {
+								return nil, fmt.Errorf("scope pattern already exists: %s", pattern)
+							}
+						}
+						currentOptions.ScopePatterns = append(currentOptions.ScopePatterns, pattern)
+					} else if strings.HasPrefix(value, "remove:") {
+						// Remove a pattern
+						pattern := strings.TrimPrefix(value, "remove:")
+						if pattern == "" {
+							return nil, fmt.Errorf("empty scope pattern")
+						}
+						// Find and remove the pattern
+						found := false
+						newPatterns := make([]string, 0, len(currentOptions.ScopePatterns))
+						for _, existing := range currentOptions.ScopePatterns {
+							if existing == pattern {
+								found = true
+								continue
+							}
+							newPatterns = append(newPatterns, existing)
+						}
+						if !found {
+							return nil, fmt.Errorf("scope pattern not found: %s", pattern)
+						}
+						currentOptions.ScopePatterns = newPatterns
+					} else {
+						// Replace all patterns (original behavior)
+						currentOptions.ScopePatterns = strings.Split(value, ",")
+					}
+					continue
+				}
+
 				// Update the appropriate option
 				switch option {
 				case "port":
@@ -105,8 +190,6 @@ func (t *TUI) RegisterDefaultCommands() {
 					currentOptions.Port = port
 				case "project-name":
 					currentOptions.ProjectName = value
-				case "scope":
-					currentOptions.ScopePatterns = strings.Split(value, ",")
 				case "debug":
 					debug, err := strconv.ParseBool(value)
 					if err != nil {
