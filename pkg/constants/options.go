@@ -81,7 +81,7 @@ const (
 	DescriptionPort = "the port where jxscout will listen for requests"
 
 	// Jxscout configuration
-	DescriptionProjectName = "your project name - this creates a folder to store all your assets"
+	DescriptionProjectName = "name of your project folder where downloaded files will be stored"
 	DescriptionScope       = "comma-separated list of patterns to filter requests (e.g. *google*,*youtube*)"
 	DescriptionDebug       = "turn on detailed logs for troubleshooting"
 
