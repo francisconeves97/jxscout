@@ -398,118 +398,105 @@ func (t *TUI) printCurrentConfig() {
 	t.writeLineToOutput("Current configuration:")
 
 	// Helper function to format and wrap a line
-	formatLine := func(flag, value, path, desc string) string {
-		var line string
-		if path != "" {
-			line = fmt.Sprintf("  %s: %s | %s | %s", flag, value, path, desc)
-		} else {
-			line = fmt.Sprintf("  %s: %s | %s", flag, value, desc)
-		}
-		return wordwrap.String(line, maxWidth)
+	formatLine := func(flag, value, desc string) string {
+		return wordwrap.String(fmt.Sprintf("  %s: %s %s %s", flag, value, descStyle.Render("|"), desc), maxWidth)
 	}
 
 	// Server configuration
 	t.writeLineToOutput(formatLine(
 		constants.FlagPort,
 		fmt.Sprintf("%d", currentOptions.Port),
-		"",
 		descStyle.Render(constants.DescriptionPort)))
 
 	// Jxscout configuration
 	t.writeLineToOutput(formatLine(
 		constants.FlagProjectName,
 		currentOptions.ProjectName,
-		descStyle.Render(path.Join(common.GetWorkingDirectory(), currentOptions.ProjectName)),
-		descStyle.Render(constants.DescriptionProjectName)))
+		descStyle.Render(
+			fmt.Sprintf(
+				"%s | %s",
+				path.Join(common.GetWorkingDirectory(), currentOptions.ProjectName),
+				constants.DescriptionProjectName))))
+
+	scopeValue := strings.Join(currentOptions.ScopePatterns, ",")
+	if len(scopeValue) == 0 {
+		scopeValue = "<empty>"
+	}
 
 	t.writeLineToOutput(formatLine(
 		constants.FlagScope,
-		strings.Join(currentOptions.ScopePatterns, ","),
-		"",
+		scopeValue,
 		descStyle.Render(constants.DescriptionScope)))
 
 	t.writeLineToOutput(formatLine(
 		constants.FlagDebug,
 		fmt.Sprintf("%v", currentOptions.Debug),
-		"",
 		descStyle.Render(constants.DescriptionDebug)))
 
 	// Concurrency configuration
 	t.writeLineToOutput(formatLine(
 		constants.FlagAssetFetchConcurrency,
 		fmt.Sprintf("%d", currentOptions.AssetFetchConcurrency),
-		"",
 		descStyle.Render(constants.DescriptionAssetFetchConcurrency)))
 
 	t.writeLineToOutput(formatLine(
 		constants.FlagAssetSaveConcurrency,
 		fmt.Sprintf("%d", currentOptions.AssetSaveConcurrency),
-		"",
 		descStyle.Render(constants.DescriptionAssetSaveConcurrency)))
 
 	t.writeLineToOutput(formatLine(
 		constants.FlagBeautifierConcurrency,
 		fmt.Sprintf("%d", currentOptions.BeautifierConcurrency),
-		"",
 		descStyle.Render(constants.DescriptionBeautifierConcurrency)))
 
 	t.writeLineToOutput(formatLine(
 		constants.FlagChunkDiscovererConcurrency,
 		fmt.Sprintf("%d", currentOptions.ChunkDiscovererConcurrency),
-		"",
 		descStyle.Render(constants.DescriptionChunkDiscovererConcurrency)))
 
 	// Chunk discovery configuration
 	t.writeLineToOutput(formatLine(
 		constants.FlagChunkDiscovererBruteForceLimit,
 		fmt.Sprintf("%d", currentOptions.ChunkDiscovererBruteForceLimit),
-		"",
 		descStyle.Render(constants.DescriptionChunkDiscovererBruteForceLimit)))
 
 	// Cache configuration
 	t.writeLineToOutput(formatLine(
 		constants.FlagJavascriptRequestsCacheTTL,
 		fmt.Sprintf("%v", currentOptions.JavascriptRequestsCacheTTL),
-		"",
 		descStyle.Render(constants.DescriptionJavascriptRequestsCacheTTL)))
 
 	t.writeLineToOutput(formatLine(
 		constants.FlagHTMLRequestsCacheTTL,
 		fmt.Sprintf("%v", currentOptions.HTMLRequestsCacheTTL),
-		"",
 		descStyle.Render(constants.DescriptionHTMLRequestsCacheTTL)))
 
 	// Git commiter configuration
 	t.writeLineToOutput(formatLine(
 		constants.FlagGitCommitInterval,
 		fmt.Sprintf("%v", currentOptions.GitCommitInterval),
-		"",
 		descStyle.Render(constants.DescriptionGitCommitInterval)))
 
 	// Rate limiting configuration
 	t.writeLineToOutput(formatLine(
 		constants.FlagRateLimitingMaxRequestsPerMinute,
 		fmt.Sprintf("%d", currentOptions.RateLimitingMaxRequestsPerMinute),
-		"",
 		descStyle.Render(constants.DescriptionRateLimitingMaxRequestsPerMinute)))
 
 	// JS ingestion configuration
 	t.writeLineToOutput(formatLine(
 		constants.FlagDownloadReferedJS,
 		fmt.Sprintf("%v", currentOptions.DownloadReferedJS),
-		"",
 		descStyle.Render(constants.DescriptionDownloadReferedJS)))
 
 	// Logging configuration
 	t.writeLineToOutput(formatLine(
 		constants.FlagLogBufferSize,
 		fmt.Sprintf("%d", currentOptions.LogBufferSize),
-		"",
 		descStyle.Render(constants.DescriptionLogBufferSize)))
 
 	t.writeLineToOutput(formatLine(
 		constants.FlagLogFileMaxSizeMB,
 		fmt.Sprintf("%d", currentOptions.LogFileMaxSizeMB),
-		"",
 		descStyle.Render(constants.DescriptionLogFileMaxSizeMB)))
 }
