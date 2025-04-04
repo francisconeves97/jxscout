@@ -12,6 +12,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	"github.com/francisconeves97/jxscout/internal/core/common"
 	"github.com/francisconeves97/jxscout/pkg/constants"
+	"github.com/muesli/reflow/wordwrap"
 )
 
 func (t *TUI) RegisterDefaultCommands() {
@@ -391,95 +392,124 @@ func (t *TUI) printCurrentConfig() {
 	// Create a style for descriptions
 	descStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("241"))
 
+	// Define the maximum width for wrapping
+	maxWidth := t.logsPanelViewport.Width
+
 	t.writeLineToOutput("Current configuration:")
 
+	// Helper function to format and wrap a line
+	formatLine := func(flag, value, path, desc string) string {
+		var line string
+		if path != "" {
+			line = fmt.Sprintf("  %s: %s | %s | %s", flag, value, path, desc)
+		} else {
+			line = fmt.Sprintf("  %s: %s | %s", flag, value, desc)
+		}
+		return wordwrap.String(line, maxWidth)
+	}
+
 	// Server configuration
-	t.writeLineToOutput(fmt.Sprintf("  %s: %d | %s",
+	t.writeLineToOutput(formatLine(
 		constants.FlagPort,
-		currentOptions.Port,
+		fmt.Sprintf("%d", currentOptions.Port),
+		"",
 		descStyle.Render(constants.DescriptionPort)))
 
 	// Jxscout configuration
-	t.writeLineToOutput(fmt.Sprintf("  %s: %s | %s | %s",
+	t.writeLineToOutput(formatLine(
 		constants.FlagProjectName,
 		currentOptions.ProjectName,
 		descStyle.Render(path.Join(common.GetWorkingDirectory(), currentOptions.ProjectName)),
 		descStyle.Render(constants.DescriptionProjectName)))
 
-	t.writeLineToOutput(fmt.Sprintf("  %s: %v | %s",
+	t.writeLineToOutput(formatLine(
 		constants.FlagScope,
 		strings.Join(currentOptions.ScopePatterns, ","),
+		"",
 		descStyle.Render(constants.DescriptionScope)))
 
-	t.writeLineToOutput(fmt.Sprintf("  %s: %v | %s",
+	t.writeLineToOutput(formatLine(
 		constants.FlagDebug,
-		currentOptions.Debug,
+		fmt.Sprintf("%v", currentOptions.Debug),
+		"",
 		descStyle.Render(constants.DescriptionDebug)))
 
 	// Concurrency configuration
-	t.writeLineToOutput(fmt.Sprintf("  %s: %d | %s",
+	t.writeLineToOutput(formatLine(
 		constants.FlagAssetFetchConcurrency,
-		currentOptions.AssetFetchConcurrency,
+		fmt.Sprintf("%d", currentOptions.AssetFetchConcurrency),
+		"",
 		descStyle.Render(constants.DescriptionAssetFetchConcurrency)))
 
-	t.writeLineToOutput(fmt.Sprintf("  %s: %d | %s",
+	t.writeLineToOutput(formatLine(
 		constants.FlagAssetSaveConcurrency,
-		currentOptions.AssetSaveConcurrency,
+		fmt.Sprintf("%d", currentOptions.AssetSaveConcurrency),
+		"",
 		descStyle.Render(constants.DescriptionAssetSaveConcurrency)))
 
-	t.writeLineToOutput(fmt.Sprintf("  %s: %d | %s",
+	t.writeLineToOutput(formatLine(
 		constants.FlagBeautifierConcurrency,
-		currentOptions.BeautifierConcurrency,
+		fmt.Sprintf("%d", currentOptions.BeautifierConcurrency),
+		"",
 		descStyle.Render(constants.DescriptionBeautifierConcurrency)))
 
-	t.writeLineToOutput(fmt.Sprintf("  %s: %d | %s",
+	t.writeLineToOutput(formatLine(
 		constants.FlagChunkDiscovererConcurrency,
-		currentOptions.ChunkDiscovererConcurrency,
+		fmt.Sprintf("%d", currentOptions.ChunkDiscovererConcurrency),
+		"",
 		descStyle.Render(constants.DescriptionChunkDiscovererConcurrency)))
 
 	// Chunk discovery configuration
-	t.writeLineToOutput(fmt.Sprintf("  %s: %d | %s",
+	t.writeLineToOutput(formatLine(
 		constants.FlagChunkDiscovererBruteForceLimit,
-		currentOptions.ChunkDiscovererBruteForceLimit,
+		fmt.Sprintf("%d", currentOptions.ChunkDiscovererBruteForceLimit),
+		"",
 		descStyle.Render(constants.DescriptionChunkDiscovererBruteForceLimit)))
 
 	// Cache configuration
-	t.writeLineToOutput(fmt.Sprintf("  %s: %v | %s",
+	t.writeLineToOutput(formatLine(
 		constants.FlagJavascriptRequestsCacheTTL,
-		currentOptions.JavascriptRequestsCacheTTL,
+		fmt.Sprintf("%v", currentOptions.JavascriptRequestsCacheTTL),
+		"",
 		descStyle.Render(constants.DescriptionJavascriptRequestsCacheTTL)))
 
-	t.writeLineToOutput(fmt.Sprintf("  %s: %v | %s",
+	t.writeLineToOutput(formatLine(
 		constants.FlagHTMLRequestsCacheTTL,
-		currentOptions.HTMLRequestsCacheTTL,
+		fmt.Sprintf("%v", currentOptions.HTMLRequestsCacheTTL),
+		"",
 		descStyle.Render(constants.DescriptionHTMLRequestsCacheTTL)))
 
 	// Git commiter configuration
-	t.writeLineToOutput(fmt.Sprintf("  %s: %v | %s",
+	t.writeLineToOutput(formatLine(
 		constants.FlagGitCommitInterval,
-		currentOptions.GitCommitInterval,
+		fmt.Sprintf("%v", currentOptions.GitCommitInterval),
+		"",
 		descStyle.Render(constants.DescriptionGitCommitInterval)))
 
 	// Rate limiting configuration
-	t.writeLineToOutput(fmt.Sprintf("  %s: %d | %s",
+	t.writeLineToOutput(formatLine(
 		constants.FlagRateLimitingMaxRequestsPerMinute,
-		currentOptions.RateLimitingMaxRequestsPerMinute,
+		fmt.Sprintf("%d", currentOptions.RateLimitingMaxRequestsPerMinute),
+		"",
 		descStyle.Render(constants.DescriptionRateLimitingMaxRequestsPerMinute)))
 
 	// JS ingestion configuration
-	t.writeLineToOutput(fmt.Sprintf("  %s: %v | %s",
+	t.writeLineToOutput(formatLine(
 		constants.FlagDownloadReferedJS,
-		currentOptions.DownloadReferedJS,
+		fmt.Sprintf("%v", currentOptions.DownloadReferedJS),
+		"",
 		descStyle.Render(constants.DescriptionDownloadReferedJS)))
 
 	// Logging configuration
-	t.writeLineToOutput(fmt.Sprintf("  %s: %d | %s",
+	t.writeLineToOutput(formatLine(
 		constants.FlagLogBufferSize,
-		currentOptions.LogBufferSize,
+		fmt.Sprintf("%d", currentOptions.LogBufferSize),
+		"",
 		descStyle.Render(constants.DescriptionLogBufferSize)))
 
-	t.writeLineToOutput(fmt.Sprintf("  %s: %d | %s",
+	t.writeLineToOutput(formatLine(
 		constants.FlagLogFileMaxSizeMB,
-		currentOptions.LogFileMaxSizeMB,
+		fmt.Sprintf("%d", currentOptions.LogFileMaxSizeMB),
+		"",
 		descStyle.Render(constants.DescriptionLogFileMaxSizeMB)))
 }
