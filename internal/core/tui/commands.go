@@ -76,24 +76,7 @@ func (t *TUI) RegisterDefaultCommands() {
 		Execute: func(args []string) (tea.Cmd, error) {
 			if len(args) == 0 {
 				// Show current configuration
-				currentOptions := t.jxscout.GetOptions()
-				t.writeLineToOutput("Current configuration:")
-				t.writeLineToOutput(fmt.Sprintf("  Port: %d", currentOptions.Port))
-				t.writeLineToOutput(fmt.Sprintf("  Project Name: %s", currentOptions.ProjectName))
-				t.writeLineToOutput(fmt.Sprintf("  Debug: %v", currentOptions.Debug))
-				t.writeLineToOutput(fmt.Sprintf("  Asset Fetch Concurrency: %d", currentOptions.AssetFetchConcurrency))
-				t.writeLineToOutput(fmt.Sprintf("  Asset Save Concurrency: %d", currentOptions.AssetSaveConcurrency))
-				t.writeLineToOutput(fmt.Sprintf("  Beautifier Concurrency: %d", currentOptions.BeautifierConcurrency))
-				t.writeLineToOutput(fmt.Sprintf("  Chunk Discoverer Concurrency: %d", currentOptions.ChunkDiscovererConcurrency))
-				t.writeLineToOutput(fmt.Sprintf("  Chunk Discoverer Brute Force Limit: %d", currentOptions.ChunkDiscovererBruteForceLimit))
-				t.writeLineToOutput(fmt.Sprintf("  JS Requests Cache TTL: %v", currentOptions.JavascriptRequestsCacheTTL))
-				t.writeLineToOutput(fmt.Sprintf("  HTML Requests Cache TTL: %v", currentOptions.HTMLRequestsCacheTTL))
-				t.writeLineToOutput(fmt.Sprintf("  Git Commit Interval: %v", currentOptions.GitCommitInterval))
-				t.writeLineToOutput(fmt.Sprintf("  Rate Limiting Max Requests Per Minute: %d", currentOptions.RateLimitingMaxRequestsPerMinute))
-				t.writeLineToOutput(fmt.Sprintf("  Download Refered JS: %v", currentOptions.DownloadReferedJS))
-				t.writeLineToOutput(fmt.Sprintf("  Log Buffer Size: %d", currentOptions.LogBufferSize))
-				t.writeLineToOutput(fmt.Sprintf("  Log File Max Size MB: %d", currentOptions.LogFileMaxSizeMB))
-
+				t.printCurrentConfig()
 				t.writeLineToOutput("\nTo update options, use: config option=value [option=value ...]")
 				t.writeLineToOutput("Example: config project-name=netflix debug=true")
 				return nil, nil
@@ -122,6 +105,8 @@ func (t *TUI) RegisterDefaultCommands() {
 					currentOptions.Port = port
 				case "project-name":
 					currentOptions.ProjectName = value
+				case "scope":
+					currentOptions.ScopePatterns = strings.Split(value, ",")
 				case "debug":
 					debug, err := strconv.ParseBool(value)
 					if err != nil {
@@ -214,6 +199,7 @@ func (t *TUI) RegisterDefaultCommands() {
 			t.jxscout = newjxscout
 
 			t.writeLineToOutput("jxscout has been restarted with the new configuration")
+			t.printCurrentConfig()
 			return nil, nil
 		},
 	})
@@ -309,4 +295,26 @@ func (t *TUI) GetCommandHelp(cmdName string) (string, error) {
 	var help strings.Builder
 	t.writeCommandHelp(&help, cmd)
 	return help.String(), nil
+}
+
+// printCurrentConfig prints the current configuration to the output
+func (t *TUI) printCurrentConfig() {
+	currentOptions := t.jxscout.GetOptions()
+	t.writeLineToOutput("Current configuration:")
+	t.writeLineToOutput(fmt.Sprintf("  Port: %d", currentOptions.Port))
+	t.writeLineToOutput(fmt.Sprintf("  Project Name: %s", currentOptions.ProjectName))
+	t.writeLineToOutput(fmt.Sprintf("  Scope Patterns: %v", strings.Join(currentOptions.ScopePatterns, ",")))
+	t.writeLineToOutput(fmt.Sprintf("  Debug: %v", currentOptions.Debug))
+	t.writeLineToOutput(fmt.Sprintf("  Asset Fetch Concurrency: %d", currentOptions.AssetFetchConcurrency))
+	t.writeLineToOutput(fmt.Sprintf("  Asset Save Concurrency: %d", currentOptions.AssetSaveConcurrency))
+	t.writeLineToOutput(fmt.Sprintf("  Beautifier Concurrency: %d", currentOptions.BeautifierConcurrency))
+	t.writeLineToOutput(fmt.Sprintf("  Chunk Discoverer Concurrency: %d", currentOptions.ChunkDiscovererConcurrency))
+	t.writeLineToOutput(fmt.Sprintf("  Chunk Discoverer Brute Force Limit: %d", currentOptions.ChunkDiscovererBruteForceLimit))
+	t.writeLineToOutput(fmt.Sprintf("  JS Requests Cache TTL: %v", currentOptions.JavascriptRequestsCacheTTL))
+	t.writeLineToOutput(fmt.Sprintf("  HTML Requests Cache TTL: %v", currentOptions.HTMLRequestsCacheTTL))
+	t.writeLineToOutput(fmt.Sprintf("  Git Commit Interval: %v", currentOptions.GitCommitInterval))
+	t.writeLineToOutput(fmt.Sprintf("  Rate Limiting Max Requests Per Minute: %d", currentOptions.RateLimitingMaxRequestsPerMinute))
+	t.writeLineToOutput(fmt.Sprintf("  Download Refered JS: %v", currentOptions.DownloadReferedJS))
+	t.writeLineToOutput(fmt.Sprintf("  Log Buffer Size: %d", currentOptions.LogBufferSize))
+	t.writeLineToOutput(fmt.Sprintf("  Log File Max Size MB: %d", currentOptions.LogFileMaxSizeMB))
 }
