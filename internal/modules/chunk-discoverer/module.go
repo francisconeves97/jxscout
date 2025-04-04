@@ -104,7 +104,7 @@ func (m *chunkDiscovererModule) subscribeAssetSavedEvent() error {
 			continue
 		}
 
-		m.queue.Produce(context.Background(), event.Asset)
+		m.queue.Produce(m.sdk.Ctx, event.Asset)
 	}
 
 	return nil
@@ -176,7 +176,7 @@ func (s *chunkDiscovererModule) discoverPossibleChunks(asset assetservice.Asset)
 		go func() {
 			defer wg.Done()
 
-			content, found, err := s.sdk.AssetFetcher.RateLimitedGet(context.Background(), chunk, asset.RequestHeaders)
+			content, found, err := s.sdk.AssetFetcher.RateLimitedGet(s.sdk.Ctx, chunk, asset.RequestHeaders)
 			if err != nil {
 				s.sdk.Logger.Error("failed to perform get request", "err", err)
 				return
@@ -198,7 +198,7 @@ func (s *chunkDiscovererModule) discoverPossibleChunks(asset assetservice.Asset)
 				}
 			}
 
-			s.sdk.AssetService.AsyncSaveAsset(context.Background(), asset)
+			s.sdk.AssetService.AsyncSaveAsset(s.sdk.Ctx, asset)
 		}()
 	}
 

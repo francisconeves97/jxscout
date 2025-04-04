@@ -46,7 +46,11 @@ func (t *TUI) RegisterDefaultCommands() {
 		Description: "Exits the application",
 		Usage:       "exit",
 		Execute: func(args []string) (tea.Cmd, error) {
-			t.writeLineToOutput("Goodbye! Hope you found some great bugs! 🐝")
+			err := t.jxscout.Stop()
+			if err != nil {
+				return nil, err
+			}
+
 			return tea.Quit, nil
 		},
 	})

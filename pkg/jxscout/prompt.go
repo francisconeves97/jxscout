@@ -5,7 +5,7 @@ import (
 )
 
 func (s *jxscout) runPrompt() {
-	t := tui.New(s.logBuffer)
+	t := tui.New(s.logBuffer, s)
 	t.RegisterDefaultCommands()
 	err := t.Run()
 	if err != nil {

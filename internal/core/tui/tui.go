@@ -32,7 +32,7 @@ type TUI struct {
 	logsPanelViewport      viewport.Model
 	logsPanelViewportReady bool
 	autoScroll             bool
-	restart                Restart
+	jxscout                JXScout
 }
 
 type LogBuffer interface {
@@ -40,9 +40,16 @@ type LogBuffer interface {
 	Clear()
 }
 
+type JXScout interface {
+	Restart(options jxscouttypes.Options) error
+	Stop() error
+}
+
+type Stop func() error
+
 type Restart func(options jxscouttypes.Options) error
 
-func New(logBuffer LogBuffer, restart Restart) *TUI {
+func New(logBuffer LogBuffer, jxscout JXScout) *TUI {
 	t := &TUI{
 		input:          textinput.New(),
 		commands:       map[string]Command{},
@@ -51,7 +58,7 @@ func New(logBuffer LogBuffer, restart Restart) *TUI {
 		logBuffer:      logBuffer,
 		logsPanelShown: false,
 		autoScroll:     true,
-		restart:        restart,
+		jxscout:        jxscout,
 	}
 	t.input.Prompt = "> "
 	t.input.Placeholder = "Enter command..."

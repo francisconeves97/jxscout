@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"path"
 	"sync"
-	"time"
 
 	assetfetcher "github.com/francisconeves97/jxscout/internal/core/asset-fetcher"
 	assetservice "github.com/francisconeves97/jxscout/internal/core/asset-service"
@@ -30,6 +29,8 @@ import (
 )
 
 type jxscout struct {
+	ctx          context.Context
+	cancel       context.CancelFunc
 	logBuffer    *logBuffer
 	log          *slog.Logger
 	eventBus     jxscouttypes.EventBus
@@ -98,6 +99,8 @@ func initJxscout(options jxscouttypes.Options) (*jxscout, error) {
 		RateLimitingMaxRequestsPerMinute: options.RateLimitingMaxRequestsPerMinute,
 	})
 
+	ctx, cancel := context.WithCancel(context.Background())
+
 	jxscout := &jxscout{
 		options:      options,
 		logBuffer:    logBuffer,
@@ -110,6 +113,8 @@ func initJxscout(options jxscouttypes.Options) (*jxscout, error) {
 		cache:        cache,
 		assetFetcher: assetFetcher,
 		fileService:  fileService,
+		ctx:          ctx,
+		cancel:       cancel,
 	}
 
 	return jxscout, nil
@@ -147,7 +152,19 @@ func (s *jxscout) RegisterModule(module jxscouttypes.Module) error {
 	return nil
 }
 
+// Starts the jxscout server with the prompt
 func (s *jxscout) Start() error {
+	err := s.start()
+	if err != nil {
+		return errutil.Wrap(err, "failed to start server")
+	}
+
+	s.runPrompt()
+
+	return nil
+}
+
+func (s *jxscout) start() error {
 	r := chi.NewRouter()
 
 	r.Use(middleware.RequestID)
@@ -173,8 +190,6 @@ func (s *jxscout) Start() error {
 		}
 	}()
 
-	s.runPrompt()
-
 	return nil
 }
 
@@ -195,6 +210,7 @@ func (s *jxscout) initializeModules(r jxscouttypes.Router) error {
 		Cache:        s.cache,
 		AssetFetcher: s.assetFetcher,
 		FileService:  s.fileService,
+		Ctx:          s.ctx,
 	}
 
 	for _, module := range s.modules {
@@ -209,21 +225,21 @@ func (s *jxscout) initializeModules(r jxscouttypes.Router) error {
 
 // Stop gracefully shuts down the JXScout server
 func (s *jxscout) Stop() error {
+	s.cancel()
+
 	if s.server == nil {
 		return nil
 	}
 
 	s.log.Info("shutting down server")
 
-	// Create a context with timeout for graceful shutdown
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
-
-	if err := s.server.Shutdown(ctx); err != nil {
+	if err := s.server.Shutdown(s.ctx); err != nil {
+		s.log.Error("failed to shutdown server gracefully", "error", err)
 		return errutil.Wrap(err, "failed to shutdown server gracefully")
 	}
 
 	s.log.Info("server stopped successfully")
+
 	return nil
 }
 
@@ -253,7 +269,8 @@ func (s *jxscout) Restart(options jxscouttypes.Options) error {
 	s.registerCoreModules()
 
 	go func() {
-		err := s.Start()
+		// use private method so we don't restart the prompt
+		err := s.start()
 		if err != nil {
 			s.log.Error("failed to restart server", "error", err)
 		}

@@ -1,6 +1,7 @@
 package jxscouttypes
 
 import (
+	"context"
 	"log/slog"
 	"net/http"
 	"time"
@@ -82,6 +83,7 @@ type FileService = assetservice.FileService
 
 // ModuleSDK are the exposed dependencies that modules can use
 type ModuleSDK struct {
+	Ctx          context.Context
 	EventBus     EventBus
 	Router       Router
 	AssetService AssetService
