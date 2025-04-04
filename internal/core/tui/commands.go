@@ -95,7 +95,7 @@ func (t *TUI) RegisterDefaultCommands() {
 				t.writeLineToOutput(fmt.Sprintf("  Log File Max Size MB: %d", currentOptions.LogFileMaxSizeMB))
 
 				t.writeLineToOutput("\nTo update options, use: config option=value [option=value ...]")
-				t.writeLineToOutput("Example: config port=8080 debug=true")
+				t.writeLineToOutput("Example: config project-name=netflix debug=true")
 				return nil, nil
 			}
 
