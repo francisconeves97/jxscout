@@ -387,21 +387,99 @@ func (t *TUI) GetCommandHelp(cmdName string) (string, error) {
 // printCurrentConfig prints the current configuration to the output
 func (t *TUI) printCurrentConfig() {
 	currentOptions := t.jxscout.GetOptions()
+
+	// Create a style for descriptions
+	descStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("241"))
+
 	t.writeLineToOutput("Current configuration:")
-	t.writeLineToOutput(fmt.Sprintf("  %s: %d", constants.FlagPort, currentOptions.Port))
-	t.writeLineToOutput(fmt.Sprintf("  %s: %s | %s", constants.FlagProjectName, currentOptions.ProjectName, lipgloss.NewStyle().Foreground(lipgloss.Color("241")).Render(path.Join(common.GetWorkingDirectory(), currentOptions.ProjectName))))
-	t.writeLineToOutput(fmt.Sprintf("  %s: %v", constants.FlagScope, strings.Join(currentOptions.ScopePatterns, ",")))
-	t.writeLineToOutput(fmt.Sprintf("  %s: %v", constants.FlagDebug, currentOptions.Debug))
-	t.writeLineToOutput(fmt.Sprintf("  %s: %d", constants.FlagAssetFetchConcurrency, currentOptions.AssetFetchConcurrency))
-	t.writeLineToOutput(fmt.Sprintf("  %s: %d", constants.FlagAssetSaveConcurrency, currentOptions.AssetSaveConcurrency))
-	t.writeLineToOutput(fmt.Sprintf("  %s: %d", constants.FlagBeautifierConcurrency, currentOptions.BeautifierConcurrency))
-	t.writeLineToOutput(fmt.Sprintf("  %s: %d", constants.FlagChunkDiscovererConcurrency, currentOptions.ChunkDiscovererConcurrency))
-	t.writeLineToOutput(fmt.Sprintf("  %s: %d", constants.FlagChunkDiscovererBruteForceLimit, currentOptions.ChunkDiscovererBruteForceLimit))
-	t.writeLineToOutput(fmt.Sprintf("  %s: %v", constants.FlagJavascriptRequestsCacheTTL, currentOptions.JavascriptRequestsCacheTTL))
-	t.writeLineToOutput(fmt.Sprintf("  %s: %v", constants.FlagHTMLRequestsCacheTTL, currentOptions.HTMLRequestsCacheTTL))
-	t.writeLineToOutput(fmt.Sprintf("  %s: %v", constants.FlagGitCommitInterval, currentOptions.GitCommitInterval))
-	t.writeLineToOutput(fmt.Sprintf("  %s: %d", constants.FlagRateLimitingMaxRequestsPerMinute, currentOptions.RateLimitingMaxRequestsPerMinute))
-	t.writeLineToOutput(fmt.Sprintf("  %s: %v", constants.FlagDownloadReferedJS, currentOptions.DownloadReferedJS))
-	t.writeLineToOutput(fmt.Sprintf("  %s: %d", constants.FlagLogBufferSize, currentOptions.LogBufferSize))
-	t.writeLineToOutput(fmt.Sprintf("  %s: %d", constants.FlagLogFileMaxSizeMB, currentOptions.LogFileMaxSizeMB))
+
+	// Server configuration
+	t.writeLineToOutput(fmt.Sprintf("  %s: %d | %s",
+		constants.FlagPort,
+		currentOptions.Port,
+		descStyle.Render(constants.DescriptionPort)))
+
+	// Jxscout configuration
+	t.writeLineToOutput(fmt.Sprintf("  %s: %s | %s | %s",
+		constants.FlagProjectName,
+		currentOptions.ProjectName,
+		descStyle.Render(path.Join(common.GetWorkingDirectory(), currentOptions.ProjectName)),
+		descStyle.Render(constants.DescriptionProjectName)))
+
+	t.writeLineToOutput(fmt.Sprintf("  %s: %v | %s",
+		constants.FlagScope,
+		strings.Join(currentOptions.ScopePatterns, ","),
+		descStyle.Render(constants.DescriptionScope)))
+
+	t.writeLineToOutput(fmt.Sprintf("  %s: %v | %s",
+		constants.FlagDebug,
+		currentOptions.Debug,
+		descStyle.Render(constants.DescriptionDebug)))
+
+	// Concurrency configuration
+	t.writeLineToOutput(fmt.Sprintf("  %s: %d | %s",
+		constants.FlagAssetFetchConcurrency,
+		currentOptions.AssetFetchConcurrency,
+		descStyle.Render(constants.DescriptionAssetFetchConcurrency)))
+
+	t.writeLineToOutput(fmt.Sprintf("  %s: %d | %s",
+		constants.FlagAssetSaveConcurrency,
+		currentOptions.AssetSaveConcurrency,
+		descStyle.Render(constants.DescriptionAssetSaveConcurrency)))
+
+	t.writeLineToOutput(fmt.Sprintf("  %s: %d | %s",
+		constants.FlagBeautifierConcurrency,
+		currentOptions.BeautifierConcurrency,
+		descStyle.Render(constants.DescriptionBeautifierConcurrency)))
+
+	t.writeLineToOutput(fmt.Sprintf("  %s: %d | %s",
+		constants.FlagChunkDiscovererConcurrency,
+		currentOptions.ChunkDiscovererConcurrency,
+		descStyle.Render(constants.DescriptionChunkDiscovererConcurrency)))
+
+	// Chunk discovery configuration
+	t.writeLineToOutput(fmt.Sprintf("  %s: %d | %s",
+		constants.FlagChunkDiscovererBruteForceLimit,
+		currentOptions.ChunkDiscovererBruteForceLimit,
+		descStyle.Render(constants.DescriptionChunkDiscovererBruteForceLimit)))
+
+	// Cache configuration
+	t.writeLineToOutput(fmt.Sprintf("  %s: %v | %s",
+		constants.FlagJavascriptRequestsCacheTTL,
+		currentOptions.JavascriptRequestsCacheTTL,
+		descStyle.Render(constants.DescriptionJavascriptRequestsCacheTTL)))
+
+	t.writeLineToOutput(fmt.Sprintf("  %s: %v | %s",
+		constants.FlagHTMLRequestsCacheTTL,
+		currentOptions.HTMLRequestsCacheTTL,
+		descStyle.Render(constants.DescriptionHTMLRequestsCacheTTL)))
+
+	// Git commiter configuration
+	t.writeLineToOutput(fmt.Sprintf("  %s: %v | %s",
+		constants.FlagGitCommitInterval,
+		currentOptions.GitCommitInterval,
+		descStyle.Render(constants.DescriptionGitCommitInterval)))
+
+	// Rate limiting configuration
+	t.writeLineToOutput(fmt.Sprintf("  %s: %d | %s",
+		constants.FlagRateLimitingMaxRequestsPerMinute,
+		currentOptions.RateLimitingMaxRequestsPerMinute,
+		descStyle.Render(constants.DescriptionRateLimitingMaxRequestsPerMinute)))
+
+	// JS ingestion configuration
+	t.writeLineToOutput(fmt.Sprintf("  %s: %v | %s",
+		constants.FlagDownloadReferedJS,
+		currentOptions.DownloadReferedJS,
+		descStyle.Render(constants.DescriptionDownloadReferedJS)))
+
+	// Logging configuration
+	t.writeLineToOutput(fmt.Sprintf("  %s: %d | %s",
+		constants.FlagLogBufferSize,
+		currentOptions.LogBufferSize,
+		descStyle.Render(constants.DescriptionLogBufferSize)))
+
+	t.writeLineToOutput(fmt.Sprintf("  %s: %d | %s",
+		constants.FlagLogFileMaxSizeMB,
+		currentOptions.LogFileMaxSizeMB,
+		descStyle.Render(constants.DescriptionLogFileMaxSizeMB)))
 }

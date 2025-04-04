@@ -74,3 +74,40 @@ const (
 	FlagLogBufferSize    = "log-buffer-size"
 	FlagLogFileMaxSizeMB = "log-file-max-size-mb"
 )
+
+// Option descriptions
+const (
+	// Server configuration
+	DescriptionPort = "port where jxscout will be listening for requests"
+
+	// Jxscout configuration
+	DescriptionProjectName = "name of the project, used to create the directory where assets will be saved"
+	DescriptionScope       = "comma separated list of wildcard patterns used for filtering requests"
+	DescriptionDebug       = "enable debug logs output"
+
+	// Concurrency configuration
+	DescriptionAssetFetchConcurrency      = "max number of simultaneous asset fetches (used for webpack chunk bruteforcing and sourcemap discovery)"
+	DescriptionAssetSaveConcurrency       = "max number of simultaneous saves to the file system"
+	DescriptionBeautifierConcurrency      = "max number of simultaneous prettier processes"
+	DescriptionChunkDiscovererConcurrency = "max number of simultaneous chunk discoverer processes"
+
+	// Chunk discovery configuration
+	DescriptionChunkDiscovererBruteForceLimit = "max limit for the chunk discoverer to try and bruteforce chunks when webpack loader function lacks information"
+
+	// Cache configuration
+	DescriptionJavascriptRequestsCacheTTL = "time to wait before a particular JS file is downloaded and processed again"
+	DescriptionHTMLRequestsCacheTTL       = "time to wait before a particular HTML page is downloaded and processed again"
+
+	// Git commiter configuration
+	DescriptionGitCommitInterval = "interval between jxscout automatically commits saved files"
+
+	// Rate limiting configuration
+	DescriptionRateLimitingMaxRequestsPerMinute = "max requests per minute jxscout will perform for source maps and chunk discovery"
+
+	// JS ingestion configuration
+	DescriptionDownloadReferedJS = "download out of scope JS files if they are referred by a domain in scope"
+
+	// Logging configuration
+	DescriptionLogBufferSize    = "size of the log buffer that is displayed in the UI"
+	DescriptionLogFileMaxSizeMB = "max size of the log file in MB"
+)
