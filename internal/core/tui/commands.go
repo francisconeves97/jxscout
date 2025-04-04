@@ -2,12 +2,15 @@ package tui
 
 import (
 	"fmt"
+	"path"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
+	"github.com/francisconeves97/jxscout/internal/core/common"
 	"github.com/francisconeves97/jxscout/pkg/constants"
 )
 
@@ -385,20 +388,20 @@ func (t *TUI) GetCommandHelp(cmdName string) (string, error) {
 func (t *TUI) printCurrentConfig() {
 	currentOptions := t.jxscout.GetOptions()
 	t.writeLineToOutput("Current configuration:")
-	t.writeLineToOutput(fmt.Sprintf("  Port: %d", currentOptions.Port))
-	t.writeLineToOutput(fmt.Sprintf("  Project Name: %s", currentOptions.ProjectName))
-	t.writeLineToOutput(fmt.Sprintf("  Scope Patterns: %v", strings.Join(currentOptions.ScopePatterns, ",")))
-	t.writeLineToOutput(fmt.Sprintf("  Debug: %v", currentOptions.Debug))
-	t.writeLineToOutput(fmt.Sprintf("  Asset Fetch Concurrency: %d", currentOptions.AssetFetchConcurrency))
-	t.writeLineToOutput(fmt.Sprintf("  Asset Save Concurrency: %d", currentOptions.AssetSaveConcurrency))
-	t.writeLineToOutput(fmt.Sprintf("  Beautifier Concurrency: %d", currentOptions.BeautifierConcurrency))
-	t.writeLineToOutput(fmt.Sprintf("  Chunk Discoverer Concurrency: %d", currentOptions.ChunkDiscovererConcurrency))
-	t.writeLineToOutput(fmt.Sprintf("  Chunk Discoverer Brute Force Limit: %d", currentOptions.ChunkDiscovererBruteForceLimit))
-	t.writeLineToOutput(fmt.Sprintf("  JS Requests Cache TTL: %v", currentOptions.JavascriptRequestsCacheTTL))
-	t.writeLineToOutput(fmt.Sprintf("  HTML Requests Cache TTL: %v", currentOptions.HTMLRequestsCacheTTL))
-	t.writeLineToOutput(fmt.Sprintf("  Git Commit Interval: %v", currentOptions.GitCommitInterval))
-	t.writeLineToOutput(fmt.Sprintf("  Rate Limiting Max Requests Per Minute: %d", currentOptions.RateLimitingMaxRequestsPerMinute))
-	t.writeLineToOutput(fmt.Sprintf("  Download Refered JS: %v", currentOptions.DownloadReferedJS))
-	t.writeLineToOutput(fmt.Sprintf("  Log Buffer Size: %d", currentOptions.LogBufferSize))
-	t.writeLineToOutput(fmt.Sprintf("  Log File Max Size MB: %d", currentOptions.LogFileMaxSizeMB))
+	t.writeLineToOutput(fmt.Sprintf("  %s: %d", constants.FlagPort, currentOptions.Port))
+	t.writeLineToOutput(fmt.Sprintf("  %s: %s | %s", constants.FlagProjectName, currentOptions.ProjectName, lipgloss.NewStyle().Foreground(lipgloss.Color("241")).Render(path.Join(common.GetWorkingDirectory(), currentOptions.ProjectName))))
+	t.writeLineToOutput(fmt.Sprintf("  %s: %v", constants.FlagScope, strings.Join(currentOptions.ScopePatterns, ",")))
+	t.writeLineToOutput(fmt.Sprintf("  %s: %v", constants.FlagDebug, currentOptions.Debug))
+	t.writeLineToOutput(fmt.Sprintf("  %s: %d", constants.FlagAssetFetchConcurrency, currentOptions.AssetFetchConcurrency))
+	t.writeLineToOutput(fmt.Sprintf("  %s: %d", constants.FlagAssetSaveConcurrency, currentOptions.AssetSaveConcurrency))
+	t.writeLineToOutput(fmt.Sprintf("  %s: %d", constants.FlagBeautifierConcurrency, currentOptions.BeautifierConcurrency))
+	t.writeLineToOutput(fmt.Sprintf("  %s: %d", constants.FlagChunkDiscovererConcurrency, currentOptions.ChunkDiscovererConcurrency))
+	t.writeLineToOutput(fmt.Sprintf("  %s: %d", constants.FlagChunkDiscovererBruteForceLimit, currentOptions.ChunkDiscovererBruteForceLimit))
+	t.writeLineToOutput(fmt.Sprintf("  %s: %v", constants.FlagJavascriptRequestsCacheTTL, currentOptions.JavascriptRequestsCacheTTL))
+	t.writeLineToOutput(fmt.Sprintf("  %s: %v", constants.FlagHTMLRequestsCacheTTL, currentOptions.HTMLRequestsCacheTTL))
+	t.writeLineToOutput(fmt.Sprintf("  %s: %v", constants.FlagGitCommitInterval, currentOptions.GitCommitInterval))
+	t.writeLineToOutput(fmt.Sprintf("  %s: %d", constants.FlagRateLimitingMaxRequestsPerMinute, currentOptions.RateLimitingMaxRequestsPerMinute))
+	t.writeLineToOutput(fmt.Sprintf("  %s: %v", constants.FlagDownloadReferedJS, currentOptions.DownloadReferedJS))
+	t.writeLineToOutput(fmt.Sprintf("  %s: %d", constants.FlagLogBufferSize, currentOptions.LogBufferSize))
+	t.writeLineToOutput(fmt.Sprintf("  %s: %d", constants.FlagLogFileMaxSizeMB, currentOptions.LogFileMaxSizeMB))
 }
