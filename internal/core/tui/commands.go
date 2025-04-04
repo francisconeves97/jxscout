@@ -8,6 +8,7 @@ import (
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/francisconeves97/jxscout/pkg/constants"
 )
 
 func (t *TUI) RegisterDefaultCommands() {
@@ -100,38 +101,38 @@ func (t *TUI) RegisterDefaultCommands() {
 				// Check if we're resetting to default
 				if value == "default" {
 					switch option {
-					case "port":
-						currentOptions.Port = 3333
-					case "project-name":
-						currentOptions.ProjectName = "default"
-					case "scope":
+					case constants.FlagPort:
+						currentOptions.Port = constants.DefaultPort
+					case constants.FlagProjectName:
+						currentOptions.ProjectName = constants.DefaultProjectName
+					case constants.FlagScope:
 						currentOptions.ScopePatterns = nil
-					case "debug":
-						currentOptions.Debug = false
-					case "fetch-concurrency":
-						currentOptions.AssetFetchConcurrency = 5
-					case "save-concurrency":
-						currentOptions.AssetSaveConcurrency = 5
-					case "beautifier-concurrency":
-						currentOptions.BeautifierConcurrency = 5
-					case "chunk-discoverer-concurrency":
-						currentOptions.ChunkDiscovererConcurrency = 5
-					case "chunk-discoverer-bruteforce-limit":
-						currentOptions.ChunkDiscovererBruteForceLimit = 3000
-					case "js-requests-cache-ttl":
-						currentOptions.JavascriptRequestsCacheTTL = time.Hour
-					case "html-requests-cache-ttl":
-						currentOptions.HTMLRequestsCacheTTL = time.Hour
-					case "git-commit-interval":
-						currentOptions.GitCommitInterval = time.Minute * 5
-					case "rate-limiter-max-requests-per-minute":
-						currentOptions.RateLimitingMaxRequestsPerMinute = 1200
-					case "download-refered-js":
-						currentOptions.DownloadReferedJS = false
-					case "log-buffer-size":
-						currentOptions.LogBufferSize = 1000
-					case "log-file-max-size-mb":
-						currentOptions.LogFileMaxSizeMB = 10
+					case constants.FlagDebug:
+						currentOptions.Debug = constants.DefaultDebug
+					case constants.FlagAssetFetchConcurrency:
+						currentOptions.AssetFetchConcurrency = constants.DefaultAssetFetchConcurrency
+					case constants.FlagAssetSaveConcurrency:
+						currentOptions.AssetSaveConcurrency = constants.DefaultAssetSaveConcurrency
+					case constants.FlagBeautifierConcurrency:
+						currentOptions.BeautifierConcurrency = constants.DefaultBeautifierConcurrency
+					case constants.FlagChunkDiscovererConcurrency:
+						currentOptions.ChunkDiscovererConcurrency = constants.DefaultChunkDiscovererConcurrency
+					case constants.FlagChunkDiscovererBruteForceLimit:
+						currentOptions.ChunkDiscovererBruteForceLimit = constants.DefaultChunkDiscovererBruteForceLimit
+					case constants.FlagJavascriptRequestsCacheTTL:
+						currentOptions.JavascriptRequestsCacheTTL = constants.DefaultJavascriptRequestsCacheTTL
+					case constants.FlagHTMLRequestsCacheTTL:
+						currentOptions.HTMLRequestsCacheTTL = constants.DefaultHTMLRequestsCacheTTL
+					case constants.FlagGitCommitInterval:
+						currentOptions.GitCommitInterval = constants.DefaultGitCommitInterval
+					case constants.FlagRateLimitingMaxRequestsPerMinute:
+						currentOptions.RateLimitingMaxRequestsPerMinute = constants.DefaultRateLimitingMaxRequestsPerMinute
+					case constants.FlagDownloadReferedJS:
+						currentOptions.DownloadReferedJS = constants.DefaultDownloadReferedJS
+					case constants.FlagLogBufferSize:
+						currentOptions.LogBufferSize = constants.DefaultLogBufferSize
+					case constants.FlagLogFileMaxSizeMB:
+						currentOptions.LogFileMaxSizeMB = constants.DefaultLogFileMaxSizeMB
 					default:
 						return nil, fmt.Errorf("unknown option: %s", option)
 					}
@@ -139,7 +140,7 @@ func (t *TUI) RegisterDefaultCommands() {
 				}
 
 				// Special handling for scope patterns
-				if option == "scope" {
+				if option == constants.FlagScope {
 					if strings.HasPrefix(value, "add:") {
 						// Add a new pattern
 						pattern := strings.TrimPrefix(value, "add:")
@@ -182,87 +183,87 @@ func (t *TUI) RegisterDefaultCommands() {
 
 				// Update the appropriate option
 				switch option {
-				case "port":
+				case constants.FlagPort:
 					port, err := strconv.Atoi(value)
 					if err != nil {
 						return nil, fmt.Errorf("invalid port value: %s", value)
 					}
 					currentOptions.Port = port
-				case "project-name":
+				case constants.FlagProjectName:
 					currentOptions.ProjectName = value
-				case "debug":
+				case constants.FlagDebug:
 					debug, err := strconv.ParseBool(value)
 					if err != nil {
 						return nil, fmt.Errorf("invalid debug value: %s", value)
 					}
 					currentOptions.Debug = debug
-				case "fetch-concurrency":
+				case constants.FlagAssetFetchConcurrency:
 					concurrency, err := strconv.Atoi(value)
 					if err != nil {
 						return nil, fmt.Errorf("invalid fetch-concurrency value: %s", value)
 					}
 					currentOptions.AssetFetchConcurrency = concurrency
-				case "save-concurrency":
+				case constants.FlagAssetSaveConcurrency:
 					concurrency, err := strconv.Atoi(value)
 					if err != nil {
 						return nil, fmt.Errorf("invalid save-concurrency value: %s", value)
 					}
 					currentOptions.AssetSaveConcurrency = concurrency
-				case "beautifier-concurrency":
+				case constants.FlagBeautifierConcurrency:
 					concurrency, err := strconv.Atoi(value)
 					if err != nil {
 						return nil, fmt.Errorf("invalid beautifier-concurrency value: %s", value)
 					}
 					currentOptions.BeautifierConcurrency = concurrency
-				case "chunk-discoverer-concurrency":
+				case constants.FlagChunkDiscovererConcurrency:
 					concurrency, err := strconv.Atoi(value)
 					if err != nil {
 						return nil, fmt.Errorf("invalid chunk-discoverer-concurrency value: %s", value)
 					}
 					currentOptions.ChunkDiscovererConcurrency = concurrency
-				case "chunk-discoverer-bruteforce-limit":
+				case constants.FlagChunkDiscovererBruteForceLimit:
 					limit, err := strconv.Atoi(value)
 					if err != nil {
 						return nil, fmt.Errorf("invalid chunk-discoverer-bruteforce-limit value: %s", value)
 					}
 					currentOptions.ChunkDiscovererBruteForceLimit = limit
-				case "js-requests-cache-ttl":
+				case constants.FlagJavascriptRequestsCacheTTL:
 					duration, err := time.ParseDuration(value)
 					if err != nil {
 						return nil, fmt.Errorf("invalid js-requests-cache-ttl value: %s", value)
 					}
 					currentOptions.JavascriptRequestsCacheTTL = duration
-				case "html-requests-cache-ttl":
+				case constants.FlagHTMLRequestsCacheTTL:
 					duration, err := time.ParseDuration(value)
 					if err != nil {
 						return nil, fmt.Errorf("invalid html-requests-cache-ttl value: %s", value)
 					}
 					currentOptions.HTMLRequestsCacheTTL = duration
-				case "git-commit-interval":
+				case constants.FlagGitCommitInterval:
 					duration, err := time.ParseDuration(value)
 					if err != nil {
 						return nil, fmt.Errorf("invalid git-commit-interval value: %s", value)
 					}
 					currentOptions.GitCommitInterval = duration
-				case "rate-limiter-max-requests-per-minute":
+				case constants.FlagRateLimitingMaxRequestsPerMinute:
 					rate, err := strconv.Atoi(value)
 					if err != nil {
 						return nil, fmt.Errorf("invalid rate-limiter-max-requests-per-minute value: %s", value)
 					}
 					currentOptions.RateLimitingMaxRequestsPerMinute = rate
-				case "download-refered-js":
+				case constants.FlagDownloadReferedJS:
 					download, err := strconv.ParseBool(value)
 					if err != nil {
 						return nil, fmt.Errorf("invalid download-refered-js value: %s", value)
 					}
 					currentOptions.DownloadReferedJS = download
-				case "log-buffer-size":
+				case constants.FlagLogBufferSize:
 					size, err := strconv.Atoi(value)
 					if err != nil {
 						return nil, fmt.Errorf("invalid log-buffer-size value: %s", value)
 					}
 					currentOptions.LogBufferSize = size
-				case "log-file-max-size-mb":
+				case constants.FlagLogFileMaxSizeMB:
 					size, err := strconv.Atoi(value)
 					if err != nil {
 						return nil, fmt.Errorf("invalid log-file-max-size-mb value: %s", value)
@@ -281,7 +282,7 @@ func (t *TUI) RegisterDefaultCommands() {
 
 			t.jxscout = newjxscout
 
-			t.writeLineToOutput("jxscout has been restarted with the new configuration")
+			t.writeLineToOutput("jxscout has been restarted with the new configuration! 🎉\n")
 			t.printCurrentConfig()
 			return nil, nil
 		},
