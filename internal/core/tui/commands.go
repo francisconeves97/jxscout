@@ -3,7 +3,9 @@ package tui
 import (
 	"fmt"
 	"sort"
+	"strconv"
 	"strings"
+	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -62,6 +64,156 @@ func (t *TUI) RegisterDefaultCommands() {
 		Usage:       "logs",
 		Execute: func(args []string) (tea.Cmd, error) {
 			t.logsPanelShown = !t.logsPanelShown
+			return nil, nil
+		},
+	})
+
+	t.RegisterCommand(Command{
+		Name:        "config",
+		ShortName:   "cfg",
+		Description: "Update jxscout configuration options",
+		Usage:       "config [options]",
+		Execute: func(args []string) (tea.Cmd, error) {
+			if len(args) == 0 {
+				// Show current configuration
+				currentOptions := t.jxscout.GetOptions()
+				t.writeLineToOutput("Current configuration:")
+				t.writeLineToOutput(fmt.Sprintf("  Port: %d", currentOptions.Port))
+				t.writeLineToOutput(fmt.Sprintf("  Project Name: %s", currentOptions.ProjectName))
+				t.writeLineToOutput(fmt.Sprintf("  Debug: %v", currentOptions.Debug))
+				t.writeLineToOutput(fmt.Sprintf("  Asset Fetch Concurrency: %d", currentOptions.AssetFetchConcurrency))
+				t.writeLineToOutput(fmt.Sprintf("  Asset Save Concurrency: %d", currentOptions.AssetSaveConcurrency))
+				t.writeLineToOutput(fmt.Sprintf("  Beautifier Concurrency: %d", currentOptions.BeautifierConcurrency))
+				t.writeLineToOutput(fmt.Sprintf("  Chunk Discoverer Concurrency: %d", currentOptions.ChunkDiscovererConcurrency))
+				t.writeLineToOutput(fmt.Sprintf("  Chunk Discoverer Brute Force Limit: %d", currentOptions.ChunkDiscovererBruteForceLimit))
+				t.writeLineToOutput(fmt.Sprintf("  JS Requests Cache TTL: %v", currentOptions.JavascriptRequestsCacheTTL))
+				t.writeLineToOutput(fmt.Sprintf("  HTML Requests Cache TTL: %v", currentOptions.HTMLRequestsCacheTTL))
+				t.writeLineToOutput(fmt.Sprintf("  Git Commit Interval: %v", currentOptions.GitCommitInterval))
+				t.writeLineToOutput(fmt.Sprintf("  Rate Limiting Max Requests Per Minute: %d", currentOptions.RateLimitingMaxRequestsPerMinute))
+				t.writeLineToOutput(fmt.Sprintf("  Download Refered JS: %v", currentOptions.DownloadReferedJS))
+				t.writeLineToOutput(fmt.Sprintf("  Log Buffer Size: %d", currentOptions.LogBufferSize))
+				t.writeLineToOutput(fmt.Sprintf("  Log File Max Size MB: %d", currentOptions.LogFileMaxSizeMB))
+
+				t.writeLineToOutput("\nTo update options, use: config option=value [option=value ...]")
+				t.writeLineToOutput("Example: config port=8080 debug=true")
+				return nil, nil
+			}
+
+			// Get current options
+			currentOptions := t.jxscout.GetOptions()
+
+			// Parse arguments
+			for _, arg := range args {
+				parts := strings.SplitN(arg, "=", 2)
+				if len(parts) != 2 {
+					return nil, fmt.Errorf("invalid option format: %s. Expected format: option=value", arg)
+				}
+
+				option := parts[0]
+				value := parts[1]
+
+				// Update the appropriate option
+				switch option {
+				case "port":
+					port, err := strconv.Atoi(value)
+					if err != nil {
+						return nil, fmt.Errorf("invalid port value: %s", value)
+					}
+					currentOptions.Port = port
+				case "project-name":
+					currentOptions.ProjectName = value
+				case "debug":
+					debug, err := strconv.ParseBool(value)
+					if err != nil {
+						return nil, fmt.Errorf("invalid debug value: %s", value)
+					}
+					currentOptions.Debug = debug
+				case "fetch-concurrency":
+					concurrency, err := strconv.Atoi(value)
+					if err != nil {
+						return nil, fmt.Errorf("invalid fetch-concurrency value: %s", value)
+					}
+					currentOptions.AssetFetchConcurrency = concurrency
+				case "save-concurrency":
+					concurrency, err := strconv.Atoi(value)
+					if err != nil {
+						return nil, fmt.Errorf("invalid save-concurrency value: %s", value)
+					}
+					currentOptions.AssetSaveConcurrency = concurrency
+				case "beautifier-concurrency":
+					concurrency, err := strconv.Atoi(value)
+					if err != nil {
+						return nil, fmt.Errorf("invalid beautifier-concurrency value: %s", value)
+					}
+					currentOptions.BeautifierConcurrency = concurrency
+				case "chunk-discoverer-concurrency":
+					concurrency, err := strconv.Atoi(value)
+					if err != nil {
+						return nil, fmt.Errorf("invalid chunk-discoverer-concurrency value: %s", value)
+					}
+					currentOptions.ChunkDiscovererConcurrency = concurrency
+				case "chunk-discoverer-bruteforce-limit":
+					limit, err := strconv.Atoi(value)
+					if err != nil {
+						return nil, fmt.Errorf("invalid chunk-discoverer-bruteforce-limit value: %s", value)
+					}
+					currentOptions.ChunkDiscovererBruteForceLimit = limit
+				case "js-requests-cache-ttl":
+					duration, err := time.ParseDuration(value)
+					if err != nil {
+						return nil, fmt.Errorf("invalid js-requests-cache-ttl value: %s", value)
+					}
+					currentOptions.JavascriptRequestsCacheTTL = duration
+				case "html-requests-cache-ttl":
+					duration, err := time.ParseDuration(value)
+					if err != nil {
+						return nil, fmt.Errorf("invalid html-requests-cache-ttl value: %s", value)
+					}
+					currentOptions.HTMLRequestsCacheTTL = duration
+				case "git-commit-interval":
+					duration, err := time.ParseDuration(value)
+					if err != nil {
+						return nil, fmt.Errorf("invalid git-commit-interval value: %s", value)
+					}
+					currentOptions.GitCommitInterval = duration
+				case "rate-limiter-max-requests-per-minute":
+					rate, err := strconv.Atoi(value)
+					if err != nil {
+						return nil, fmt.Errorf("invalid rate-limiter-max-requests-per-minute value: %s", value)
+					}
+					currentOptions.RateLimitingMaxRequestsPerMinute = rate
+				case "download-refered-js":
+					download, err := strconv.ParseBool(value)
+					if err != nil {
+						return nil, fmt.Errorf("invalid download-refered-js value: %s", value)
+					}
+					currentOptions.DownloadReferedJS = download
+				case "log-buffer-size":
+					size, err := strconv.Atoi(value)
+					if err != nil {
+						return nil, fmt.Errorf("invalid log-buffer-size value: %s", value)
+					}
+					currentOptions.LogBufferSize = size
+				case "log-file-max-size-mb":
+					size, err := strconv.Atoi(value)
+					if err != nil {
+						return nil, fmt.Errorf("invalid log-file-max-size-mb value: %s", value)
+					}
+					currentOptions.LogFileMaxSizeMB = size
+				default:
+					return nil, fmt.Errorf("unknown option: %s", option)
+				}
+			}
+
+			// Restart jxscout with new options
+			newjxscout, err := t.jxscout.Restart(currentOptions)
+			if err != nil {
+				return nil, fmt.Errorf("failed to restart jxscout: %w", err)
+			}
+
+			t.jxscout = newjxscout
+
+			t.writeLineToOutput("jxscout has been restarted with the new configuration")
 			return nil, nil
 		},
 	})

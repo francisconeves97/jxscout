@@ -27,7 +27,6 @@ type TUI struct {
 	commands               map[string]Command
 	history                []string
 	historyIndex           int
-	logBuffer              LogBuffer
 	logsPanelShown         bool
 	logsPanelViewport      viewport.Model
 	logsPanelViewportReady bool
@@ -41,22 +40,18 @@ type LogBuffer interface {
 }
 
 type JXScout interface {
-	Restart(options jxscouttypes.Options) error
 	Stop() error
 	GetOptions() jxscouttypes.Options
+	GetLogBuffer() LogBuffer
+	Restart(options jxscouttypes.Options) (JXScout, error)
 }
 
-type Stop func() error
-
-type Restart func(options jxscouttypes.Options) error
-
-func New(logBuffer LogBuffer, jxscout JXScout) *TUI {
+func New(jxscout JXScout) *TUI {
 	t := &TUI{
 		input:          textinput.New(),
 		commands:       map[string]Command{},
 		history:        []string{},
 		historyIndex:   -1,
-		logBuffer:      logBuffer,
 		logsPanelShown: false,
 		autoScroll:     true,
 		jxscout:        jxscout,
@@ -165,12 +160,12 @@ func (t *TUI) handleLogsViewUpdate(msg tea.Msg) tea.Cmd {
 			case "s":
 				t.autoScroll = !t.autoScroll
 			case "c":
-				t.logBuffer.Clear()
-				t.logsPanelViewport.SetContent(wordwrap.String(t.logBuffer.String(), t.logsPanelViewport.Width))
+				t.jxscout.GetLogBuffer().Clear()
+				t.logsPanelViewport.SetContent(wordwrap.String(t.jxscout.GetLogBuffer().String(), t.logsPanelViewport.Width))
 			}
 		}
 	case LogsTickMsg:
-		t.logsPanelViewport.SetContent(wordwrap.String(t.logBuffer.String(), t.logsPanelViewport.Width))
+		t.logsPanelViewport.SetContent(wordwrap.String(t.jxscout.GetLogBuffer().String(), t.logsPanelViewport.Width))
 		if t.autoScroll {
 			t.logsPanelViewport.GotoBottom()
 		}
@@ -198,7 +193,7 @@ func (t *TUI) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		if !t.logsPanelViewportReady {
 			t.logsPanelViewport = viewport.New(msg.Width, msg.Height-verticalMarginHeight)
-			t.logsPanelViewport.SetContent(wordwrap.String(t.logBuffer.String(), t.logsPanelViewport.Width))
+			t.logsPanelViewport.SetContent(wordwrap.String(t.jxscout.GetLogBuffer().String(), t.logsPanelViewport.Width))
 			t.logsPanelViewport.YPosition = headerHeight
 			t.logsPanelViewport.Style = lipgloss.NewStyle().
 				Border(lipgloss.NormalBorder()).

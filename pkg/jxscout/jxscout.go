@@ -243,13 +243,13 @@ func (s *jxscout) Stop() error {
 	return nil
 }
 
-func (s *jxscout) Restart(options jxscouttypes.Options) error {
+func (s *jxscout) Restart(options jxscouttypes.Options) (*jxscout, error) {
 	s.log.Info("restarting server")
 
 	err := s.Stop()
 	if err != nil {
 		s.log.Error("failed to stop server", "error", err)
-		return errutil.Wrap(err, "failed to stop server")
+		return nil, errutil.Wrap(err, "failed to stop server")
 	}
 
 	s.log.Info("server stopped successfully")
@@ -261,7 +261,7 @@ func (s *jxscout) Restart(options jxscouttypes.Options) error {
 	s, err = initJxscout(options)
 	if err != nil {
 		s.log.Error("failed to restart jxscout", "error", err)
-		return errutil.Wrap(err, "failed to restart jxscout")
+		return nil, errutil.Wrap(err, "failed to restart jxscout")
 	}
 
 	s.cache = cache // keep previous cache
@@ -276,7 +276,7 @@ func (s *jxscout) Restart(options jxscouttypes.Options) error {
 		}
 	}()
 
-	return nil
+	return s, nil
 }
 
 func (s *jxscout) GetOptions() jxscouttypes.Options {
