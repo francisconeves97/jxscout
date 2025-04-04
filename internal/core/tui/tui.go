@@ -151,6 +151,9 @@ func (t *TUI) handleLogsViewUpdate(msg tea.Msg) tea.Cmd {
 				t.logsPanelShown = false
 			case "s":
 				t.autoScroll = !t.autoScroll
+			case "c":
+				t.logBuffer.Clear()
+				t.logsPanelViewport.SetContent(wordwrap.String(t.logBuffer.String(), t.logsPanelViewport.Width))
 			}
 		}
 	case LogsTickMsg:
@@ -226,7 +229,7 @@ func (t *TUI) logsFooter() string {
 		Padding(0, 1).
 		Width(t.logsPanelViewport.Width / 2).
 		Align(lipgloss.Left).
-		Render("q: quit logs | s: toggle auto-scroll")
+		Render("q: quit logs | s: toggle auto-scroll | c: clear logs")
 
 	info := lipgloss.NewStyle().
 		Foreground(lipgloss.Color("241")).
