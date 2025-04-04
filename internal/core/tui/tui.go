@@ -43,6 +43,7 @@ type LogBuffer interface {
 type JXScout interface {
 	Restart(options jxscouttypes.Options) error
 	Stop() error
+	GetOptions() jxscouttypes.Options
 }
 
 type Stop func() error
@@ -159,7 +160,7 @@ func (t *TUI) handleLogsViewUpdate(msg tea.Msg) tea.Cmd {
 			t.logsPanelShown = false
 		case tea.KeyRunes:
 			switch string(msg.Runes) {
-			case "q", "l":
+			case "q":
 				t.logsPanelShown = false
 			case "s":
 				t.autoScroll = !t.autoScroll

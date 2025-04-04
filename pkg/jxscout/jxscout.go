@@ -278,3 +278,7 @@ func (s *jxscout) Restart(options jxscouttypes.Options) error {
 
 	return nil
 }
+
+func (s *jxscout) GetOptions() jxscouttypes.Options {
+	return s.options
+}
