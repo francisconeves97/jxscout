@@ -82,9 +82,9 @@ func (t *TUI) RegisterDefaultCommands() {
 			if len(args) == 0 {
 				// Show current configuration
 				t.printCurrentConfig()
-				t.writeLineToOutput("\nTo update options, use: config option=value [option=value ...]")
+				t.writeLineToOutput("\n\nTo update options, use: config option=value [option=value ...]")
 				t.writeLineToOutput("To reset an option to default, use: config option=default")
-				t.writeLineToOutput("To manage scope patterns, use: config scope=add:pattern or config scope=remove:pattern")
+				t.writeLineToOutput("To manage scope patterns, use: config scope=add:pattern or config scope=remove:pattern\n")
 				t.writeLineToOutput("Example: config project-name=netflix debug=true scope=add:*google.com*")
 				return nil, nil
 			}
@@ -395,7 +395,7 @@ func (t *TUI) printCurrentConfig() {
 	// Define the maximum width for wrapping
 	maxWidth := t.logsPanelViewport.Width
 
-	t.writeLineToOutput("Current configuration:")
+	t.writeLineToOutput("Current configuration:\n")
 
 	// Helper function to format and wrap a line
 	formatLine := func(flag, value, desc string) string {
