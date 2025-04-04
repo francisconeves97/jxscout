@@ -2,13 +2,10 @@ package tui
 
 import (
 	"fmt"
-	"os"
-	"path"
 	"sort"
 	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/francisconeves97/jxscout/internal/core/common"
 )
 
 func (t *TUI) RegisterDefaultCommands() {
@@ -24,23 +21,8 @@ func (t *TUI) RegisterDefaultCommands() {
 	})
 
 	t.RegisterCommand(Command{
-		Name:        "hello",
-		ShortName:   "h",
-		Description: "Prints a hello world message",
-		Usage:       "hello [name]",
-		Execute: func(args []string) (tea.Cmd, error) {
-			name := "World"
-			if len(args) > 0 {
-				name = args[0]
-			}
-			t.writeLineToOutput(fmt.Sprintf("Hello, %s!", name))
-			return nil, nil
-		},
-	})
-
-	t.RegisterCommand(Command{
 		Name:        "help",
-		ShortName:   "?",
+		ShortName:   "h",
 		Description: "Shows help information for commands",
 		Usage:       "help [command]",
 		Execute: func(args []string) (tea.Cmd, error) {
@@ -76,60 +58,6 @@ func (t *TUI) RegisterDefaultCommands() {
 		Usage:       "logs",
 		Execute: func(args []string) (tea.Cmd, error) {
 			t.logsPanelShown = !t.logsPanelShown
-			return nil, nil
-		},
-	})
-
-	t.RegisterCommand(Command{
-		Name:        "logs-file-path",
-		ShortName:   "lfp",
-		Description: "Shows the path to the log file",
-		Usage:       "logs-file-path",
-		Execute: func(args []string) (tea.Cmd, error) {
-			logPath := path.Join(common.GetPrivateDirectory(), "jxscout.log")
-			t.writeLineToOutput(fmt.Sprintf("Log file location: %s", logPath))
-			return nil, nil
-		},
-	})
-
-	t.RegisterCommand(Command{
-		Name:        "clear-log-file",
-		ShortName:   "clf",
-		Description: "Clears the log file",
-		Usage:       "clear-log-file",
-		Execute: func(args []string) (tea.Cmd, error) {
-			logPath := path.Join(common.GetPrivateDirectory(), "jxscout.log")
-			err := os.Remove(logPath)
-			if err != nil {
-				if os.IsNotExist(err) {
-					t.writeLineToOutput("Log file does not exist")
-					return nil, nil
-				}
-				return nil, fmt.Errorf("failed to delete log file: %w", err)
-			}
-			t.writeLineToOutput("Log file deleted successfully")
-			return nil, nil
-		},
-	})
-
-	t.RegisterCommand(Command{
-		Name:        "clear-logs",
-		ShortName:   "cl",
-		Description: "Clears the log buffer",
-		Usage:       "clear-logs",
-		Execute: func(args []string) (tea.Cmd, error) {
-			t.logBuffer.Clear()
-			return nil, nil
-		},
-	})
-
-	t.RegisterCommand(Command{
-		Name:        "toggle-logs-autoscroll",
-		ShortName:   "tla",
-		Description: "Toggles auto scroll for logs",
-		Usage:       "toggle-logs-autoscroll",
-		Execute: func(args []string) (tea.Cmd, error) {
-			t.autoScroll = !t.autoScroll
 			return nil, nil
 		},
 	})

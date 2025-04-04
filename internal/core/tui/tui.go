@@ -9,6 +9,7 @@ import (
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	jxscouttypes "github.com/francisconeves97/jxscout/pkg/types"
 	"github.com/muesli/reflow/wordwrap"
 )
 
@@ -31,6 +32,7 @@ type TUI struct {
 	logsPanelViewport      viewport.Model
 	logsPanelViewportReady bool
 	autoScroll             bool
+	restart                Restart
 }
 
 type LogBuffer interface {
@@ -38,7 +40,9 @@ type LogBuffer interface {
 	Clear()
 }
 
-func New(logBuffer LogBuffer) *TUI {
+type Restart func(options jxscouttypes.Options) error
+
+func New(logBuffer LogBuffer, restart Restart) *TUI {
 	t := &TUI{
 		input:          textinput.New(),
 		commands:       map[string]Command{},
@@ -47,6 +51,7 @@ func New(logBuffer LogBuffer) *TUI {
 		logBuffer:      logBuffer,
 		logsPanelShown: false,
 		autoScroll:     true,
+		restart:        restart,
 	}
 	t.input.Prompt = "> "
 	t.input.Placeholder = "Enter command..."

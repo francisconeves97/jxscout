@@ -1,12 +1,14 @@
 package jxscout
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
 	"path"
 	"sync"
+	"time"
 
 	assetfetcher "github.com/francisconeves97/jxscout/internal/core/asset-fetcher"
 	assetservice "github.com/francisconeves97/jxscout/internal/core/asset-service"
@@ -44,9 +46,21 @@ type jxscout struct {
 	modulesSDK   *jxscouttypes.ModuleSDK
 
 	started bool
+	server  *http.Server
 }
 
 func NewJXScout(options jxscouttypes.Options) (jxscouttypes.JXScout, error) {
+	jxscout, err := initJxscout(options)
+	if err != nil {
+		return nil, errutil.Wrap(err, "failed to initialize jxscout")
+	}
+
+	jxscout.registerCoreModules()
+
+	return jxscout, nil
+}
+
+func initJxscout(options jxscouttypes.Options) (*jxscout, error) {
 	err := validateOptions(options)
 	if err != nil {
 		return nil, errutil.Wrap(err, "provided options are not valid")
@@ -98,8 +112,6 @@ func NewJXScout(options jxscouttypes.Options) (jxscouttypes.JXScout, error) {
 		fileService:  fileService,
 	}
 
-	jxscout.registerCoreModules()
-
 	return jxscout, nil
 }
 
@@ -148,9 +160,14 @@ func (s *jxscout) Start() error {
 
 	s.log.Info("starting server", "port", s.options.Port)
 
+	s.server = &http.Server{
+		Addr:    fmt.Sprintf(":%d", s.options.Port),
+		Handler: r,
+	}
+
 	go func() {
-		err := http.ListenAndServe(fmt.Sprintf(":%d", s.options.Port), r)
-		if err != nil {
+		err := s.server.ListenAndServe()
+		if err != nil && err != http.ErrServerClosed {
 			s.log.Error("failed to start server", "port", s.options.Port, "error", err)
 			return
 		}
@@ -186,6 +203,61 @@ func (s *jxscout) initializeModules(r jxscouttypes.Router) error {
 			return errutil.Wrap(err, "failed to initialize module")
 		}
 	}
+
+	return nil
+}
+
+// Stop gracefully shuts down the JXScout server
+func (s *jxscout) Stop() error {
+	if s.server == nil {
+		return nil
+	}
+
+	s.log.Info("shutting down server")
+
+	// Create a context with timeout for graceful shutdown
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	if err := s.server.Shutdown(ctx); err != nil {
+		return errutil.Wrap(err, "failed to shutdown server gracefully")
+	}
+
+	s.log.Info("server stopped successfully")
+	return nil
+}
+
+func (s *jxscout) Restart(options jxscouttypes.Options) error {
+	s.log.Info("restarting server")
+
+	err := s.Stop()
+	if err != nil {
+		s.log.Error("failed to stop server", "error", err)
+		return errutil.Wrap(err, "failed to stop server")
+	}
+
+	s.log.Info("server stopped successfully")
+
+	s.log.Info("starting new server")
+
+	cache := s.cache // keep previous cache
+
+	s, err = initJxscout(options)
+	if err != nil {
+		s.log.Error("failed to restart jxscout", "error", err)
+		return errutil.Wrap(err, "failed to restart jxscout")
+	}
+
+	s.cache = cache // keep previous cache
+
+	s.registerCoreModules()
+
+	go func() {
+		err := s.Start()
+		if err != nil {
+			s.log.Error("failed to restart server", "error", err)
+		}
+	}()
 
 	return nil
 }
