@@ -13,6 +13,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	"github.com/francisconeves97/jxscout/internal/core/common"
 	"github.com/francisconeves97/jxscout/pkg/constants"
+	jxscouttypes "github.com/francisconeves97/jxscout/pkg/types"
 	"github.com/muesli/reflow/wordwrap"
 	"gopkg.in/yaml.v3"
 )
@@ -77,7 +78,7 @@ func (t *TUI) RegisterDefaultCommands() {
 
 	t.RegisterCommand(Command{
 		Name:        "config",
-		ShortName:   "cfg",
+		ShortName:   "cf",
 		Description: "Update jxscout configuration options",
 		Usage:       "config [options]",
 		Execute: func(args []string) (tea.Cmd, error) {
@@ -305,6 +306,62 @@ func (t *TUI) RegisterDefaultCommands() {
 			t.jxscout = newjxscout
 
 			t.writeLineToOutput("jxscout has been restarted with the new configuration! 🎉\n")
+			t.printCurrentConfig()
+			return nil, nil
+		},
+	})
+
+	t.RegisterCommand(Command{
+		Name:        "config-reset",
+		ShortName:   "cfr",
+		Description: "Reset all configuration options to default values",
+		Usage:       "config-reset",
+		Execute: func(args []string) (tea.Cmd, error) {
+			// Create a new options struct with default values
+			defaultOptions := jxscouttypes.Options{
+				Port:                             constants.DefaultPort,
+				ProjectName:                      constants.DefaultProjectName,
+				ScopePatterns:                    nil,
+				Debug:                            constants.DefaultDebug,
+				AssetSaveConcurrency:             constants.DefaultAssetSaveConcurrency,
+				AssetFetchConcurrency:            constants.DefaultAssetFetchConcurrency,
+				BeautifierConcurrency:            constants.DefaultBeautifierConcurrency,
+				ChunkDiscovererConcurrency:       constants.DefaultChunkDiscovererConcurrency,
+				ChunkDiscovererBruteForceLimit:   constants.DefaultChunkDiscovererBruteForceLimit,
+				JavascriptRequestsCacheTTL:       constants.DefaultJavascriptRequestsCacheTTL,
+				HTMLRequestsCacheTTL:             constants.DefaultHTMLRequestsCacheTTL,
+				GitCommitInterval:                constants.DefaultGitCommitInterval,
+				RateLimitingMaxRequestsPerMinute: constants.DefaultRateLimitingMaxRequestsPerMinute,
+				DownloadReferedJS:                constants.DefaultDownloadReferedJS,
+				LogBufferSize:                    constants.DefaultLogBufferSize,
+				LogFileMaxSizeMB:                 constants.DefaultLogFileMaxSizeMB,
+			}
+
+			// Restart jxscout with default options
+			newjxscout, err := t.jxscout.Restart(defaultOptions)
+			if err != nil {
+				return nil, fmt.Errorf("failed to restart jxscout: %w", err)
+			}
+
+			// Persist the default options to a YAML file
+			configFileLocation := path.Join(common.GetPrivateDirectory(), constants.ConfigFileName)
+			file, err := os.Create(configFileLocation)
+			if err != nil {
+				return nil, fmt.Errorf("failed to create configuration file: %w", err)
+			}
+			defer file.Close()
+
+			encoder := yaml.NewEncoder(file)
+			defer encoder.Close()
+
+			err = encoder.Encode(defaultOptions)
+			if err != nil {
+				return nil, fmt.Errorf("failed to encode configuration to YAML: %w", err)
+			}
+
+			t.jxscout = newjxscout
+
+			t.writeLineToOutput("All configuration options have been reset to default values! 🔄\n")
 			t.printCurrentConfig()
 			return nil, nil
 		},
