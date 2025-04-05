@@ -29,9 +29,11 @@ const GuideContent = `
    Type 'install' in the prompt to get all the tools you need (npm, bun, prettier, reverse-sourcemap)
 
 2. Configure jxscout:
-   Type 'config' to check out and tweak your settings.
-   The defaults should work fine, but it's a good idea to set a project name
-   that matches your target so your JS files are organized nicely.
+   Type 'config' to view and adjust your settings.
+   The defaults work fine, but setting a project name that matches your target
+   helps keep your JS files organized.
+   You can also set scope patterns to focus on specific parts of your target,
+   though your proxy plugin will filter requests in scope by default.
 
 3. Install the jxscout plugin for your proxy:
    - Burp: https://github.com/francisconeves97/jxscout-burp
