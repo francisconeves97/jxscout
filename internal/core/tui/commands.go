@@ -19,6 +19,28 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// GuideContent contains the user guide for jxscout
+const GuideContent = `
+# jxscout guide
+
+## Getting Started
+
+1. Install dependencies:
+   Type 'install' in the prompt to get all the tools you need (npm, bun, prettier, reverse-sourcemap)
+
+2. Configure jxscout:
+   Type 'config' to check out and tweak your settings.
+   The defaults should work fine, but it's a good idea to set a project name
+   that matches your target so your JS files are organized nicely.
+
+3. Install the jxscout plugin for your proxy:
+   - Burp: https://github.com/francisconeves97/jxscout-burp
+   - Caido: https://github.com/francisconeves97/jxscout-caido
+
+4. That's it! Visit your target website and watch as HTML and JS files
+   magically appear in your target's folder.
+`
+
 func (t *TUI) RegisterDefaultCommands() {
 	t.RegisterCommand(Command{
 		Name:        "clear",
@@ -411,6 +433,17 @@ func (t *TUI) RegisterDefaultCommands() {
 			}()
 
 			// Return immediately to avoid blocking the UI
+			return nil, nil
+		},
+	})
+
+	t.RegisterCommand(Command{
+		Name:        "guide",
+		ShortName:   "g",
+		Description: "Show a guide on how to use jxscout",
+		Usage:       "guide",
+		Execute: func(args []string) (tea.Cmd, error) {
+			t.writeLineToOutput(GuideContent)
 			return nil, nil
 		},
 	})
