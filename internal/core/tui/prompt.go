@@ -15,6 +15,7 @@ const staticBanner = `
   _/ |                             
  |__/   
  
+Type 'guide' to see a guide on how to use jxscout
 Type 'help' to see available commands
 Type 'exit' to quit
 

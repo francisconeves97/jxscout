@@ -3,6 +3,7 @@ package tui
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"path"
 	"sort"
 	"strconv"
@@ -363,6 +364,53 @@ func (t *TUI) RegisterDefaultCommands() {
 
 			t.writeLineToOutput("All configuration options have been reset to default values! 🔄\n")
 			t.printCurrentConfig()
+			return nil, nil
+		},
+	})
+
+	t.RegisterCommand(Command{
+		Name:        "install",
+		ShortName:   "i",
+		Description: "Install jxscout dependencies (npm, bun, prettier, reverse-sourcemap)",
+		Usage:       "install",
+		Execute: func(args []string) (tea.Cmd, error) {
+			// Start the installation process in a goroutine
+			go func() {
+				// Check if npm is installed
+				t.writeLineToOutput("Checking if npm is installed...")
+				cmd := exec.Command("npm", "--version")
+				output, err := cmd.CombinedOutput()
+				if err != nil {
+					t.writeLineToOutput(fmt.Sprintf("❌ npm is not installed. Please install Node.js and npm first: %v", err))
+					return
+				}
+				npmVersion := strings.TrimSpace(string(output))
+				t.writeLineToOutput(fmt.Sprintf("✅ npm is installed (version %s)", npmVersion))
+
+				// Install bun using npm
+				t.writeLineToOutput("\nInstalling bun...")
+				cmd = exec.Command("npm", "install", "-g", "bun")
+				output, err = cmd.CombinedOutput()
+				if err != nil {
+					t.writeLineToOutput(fmt.Sprintf("❌ Failed to install bun: %v\nOutput: %s", err, string(output)))
+					return
+				}
+				t.writeLineToOutput("✅ bun installed successfully")
+
+				// Install prettier and reverse-sourcemap using bun
+				t.writeLineToOutput("\nInstalling prettier and reverse-sourcemap...")
+				cmd = exec.Command("bun", "install", "-g", "prettier", "reverse-sourcemap")
+				output, err = cmd.CombinedOutput()
+				if err != nil {
+					t.writeLineToOutput(fmt.Sprintf("❌ Failed to install prettier and reverse-sourcemap: %v\nOutput: %s", err, string(output)))
+					return
+				}
+				t.writeLineToOutput("✅ prettier and reverse-sourcemap installed successfully")
+
+				t.writeLineToOutput("\n🎉 All jxscout dependencies have been installed successfully!")
+			}()
+
+			// Return immediately to avoid blocking the UI
 			return nil, nil
 		},
 	})
