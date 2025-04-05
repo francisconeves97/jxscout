@@ -481,7 +481,7 @@ func (t *TUI) GetHelp() string {
 	help.WriteString("Available commands:\n")
 
 	// Define the order for special commands
-	specialCommands := []string{"help", "clear", "exit"}
+	specialCommands := []string{}
 
 	// First, display the special commands in the specified order
 	for _, name := range specialCommands {
