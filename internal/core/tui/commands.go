@@ -79,8 +79,8 @@ func (t *TUI) RegisterDefaultCommands() {
 	t.RegisterCommand(Command{
 		Name:        "config",
 		ShortName:   "cf",
-		Description: "Update jxscout configuration options",
-		Usage:       "config [options]",
+		Description: "View or update jxscout configuration options",
+		Usage:       "config [options] | Use 'config' without arguments to view current configuration",
 		Execute: func(args []string) (tea.Cmd, error) {
 			if len(args) == 0 {
 				// Show current configuration
