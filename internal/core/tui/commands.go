@@ -41,6 +41,10 @@ const GuideContent = `
 
 4. That's it! Visit your target website and watch as HTML and JS files
    magically appear in your target's folder.
+
+   ⚠️ Note: jxscout doesn't automatically parse HTML to find JS files.
+   Make sure to disable your browser's cache when visiting your target,
+   so JS files pass through your proxy and get captured by jxscout.
 `
 
 func (t *TUI) RegisterDefaultCommands() {
