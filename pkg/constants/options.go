@@ -32,7 +32,7 @@ const (
 	DefaultGitCommitInterval = time.Minute * 5
 
 	// Rate limiting configuration
-	DefaultRateLimitingMaxRequestsPerMinute = 1200
+	DefaultRateLimitingMaxRequestsPerMinute = 120
 
 	// JS ingestion configuration
 	DefaultDownloadReferedJS = false
