@@ -2,6 +2,10 @@ package constants
 
 import "time"
 
+const (
+	ConfigFileName = "config.yaml"
+)
+
 // Default values for jxscout options
 const (
 	// Server configuration

@@ -38,38 +38,22 @@ type Cache = cache.Cache
 
 // JXScout Options
 type Options struct {
-	// Port is the port where jxscout will be listening for requests
-	Port int
-	// ProjectName is the name of the project. This name will be used to create the directory where jxscout will save the assets
-	ProjectName string
-	// ScopePatterns is a comma separated list of wildcard patterns used for filtering requests (e.g. {"*google.com*", "*facebook.com*"})
-	ScopePatterns goflags.StringSlice
-	// Debug defines if the server should output debug logs
-	Debug bool
-	// AssetSaveConcurrency defines the max concurrency for the service that saves files to the file system
-	AssetSaveConcurrency int
-	// AssetFetchConcurrency defines the max concurrency for simultaneous asset fetches (this is used for webpack chunk bruteforcing and sourcemap discovery for example)
-	AssetFetchConcurrency int
-	// BeautifierConcurrency defines the max concurrency for prettier processes
-	BeautifierConcurrency int
-	// ChunkDiscovererConcurrency defines the max concurrency for the chunk discoverer process
-	ChunkDiscovererConcurrency int
-	// ChunkDiscovererBruteForceLimit defines the max limit for the chunk discoverer to try and bruteforce chunks. Sometimes, the webpack loader function doesn't have all the information needed to discover chunks, so in that case we will bruteforce with chunk numbers.
-	ChunkDiscovererBruteForceLimit int
-	// JavascriptRequestsCacheTTL defines the time to wait before a particular JS file is downloaded and processed again
-	JavascriptRequestsCacheTTL time.Duration
-	// HTMLRequestsCacheTTL defines the time to wait before a particular html page is downloaded and processed again
-	HTMLRequestsCacheTTL time.Duration
-	// GitCommitInterval defines the interval between commits on the working directory
-	GitCommitInterval time.Duration
-	// RateLimitingMaxRequestsPerMinute defines the max requests per minute jxscout will perform. jxscout performs requests to get source maps and discover chunks.
-	RateLimitingMaxRequestsPerMinute int
-	// DownloadReferedJS defines if out of scope JS files should be downloaded as long as they are refered by a domain in scope
-	DownloadReferedJS bool
-	// LogBufferSize defines the size of the log buffer that is displayed in the UI
-	LogBufferSize int
-	// LogFileMaxSizeMB defines the max size of the log file in MB
-	LogFileMaxSizeMB int
+	Port                             int                 `yaml:"port"`
+	ProjectName                      string              `yaml:"project-name"`
+	ScopePatterns                    goflags.StringSlice `yaml:"scope-patterns"`
+	Debug                            bool                `yaml:"debug"`
+	AssetSaveConcurrency             int                 `yaml:"asset-save-concurrency"`
+	AssetFetchConcurrency            int                 `yaml:"asset-fetch-concurrency"`
+	BeautifierConcurrency            int                 `yaml:"beautifier-concurrency"`
+	ChunkDiscovererConcurrency       int                 `yaml:"chunk-discoverer-concurrency"`
+	ChunkDiscovererBruteForceLimit   int                 `yaml:"chunk-discoverer-brute-force-limit"`
+	JavascriptRequestsCacheTTL       time.Duration       `yaml:"javascript-requests-cache-ttl"`
+	HTMLRequestsCacheTTL             time.Duration       `yaml:"html-requests-cache-ttl"`
+	GitCommitInterval                time.Duration       `yaml:"git-commit-interval"`
+	RateLimitingMaxRequestsPerMinute int                 `yaml:"rate-limiting-max-requests-per-minute"`
+	DownloadReferedJS                bool                `yaml:"download-refered-js"`
+	LogBufferSize                    int                 `yaml:"log-buffer-size"`
+	LogFileMaxSizeMB                 int                 `yaml:"log-file-max-size-mb"`
 }
 
 // AssetService interface

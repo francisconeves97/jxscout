@@ -1,8 +1,12 @@
 package main
 
 import (
+	"errors"
+	"io"
 	"log"
+	"path"
 
+	"github.com/francisconeves97/jxscout/internal/core/common"
 	"github.com/francisconeves97/jxscout/pkg/constants"
 	"github.com/francisconeves97/jxscout/pkg/jxscout"
 	jxscouttypes "github.com/francisconeves97/jxscout/pkg/types"
@@ -64,6 +68,17 @@ func main() {
 
 	if err := flagSet.Parse(); err != nil {
 		log.Fatalf("could not parse flags: %s", err.Error())
+	}
+
+	configFileLocation := path.Join(common.GetPrivateDirectory(), constants.ConfigFileName)
+	exists, err := common.FileExists(configFileLocation)
+	if err != nil {
+		log.Fatalf("could not check if config file exists: %s", err.Error())
+	}
+	if exists {
+		if err := flagSet.MergeConfigFile(configFileLocation); err != nil && !errors.Is(err, io.EOF) {
+			log.Fatalf("could not read config: %s\n", err)
+		}
 	}
 
 	jxscout, err := jxscout.NewJXScout(options)

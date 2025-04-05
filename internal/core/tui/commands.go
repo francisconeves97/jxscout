@@ -2,6 +2,7 @@ package tui
 
 import (
 	"fmt"
+	"os"
 	"path"
 	"sort"
 	"strconv"
@@ -13,6 +14,7 @@ import (
 	"github.com/francisconeves97/jxscout/internal/core/common"
 	"github.com/francisconeves97/jxscout/pkg/constants"
 	"github.com/muesli/reflow/wordwrap"
+	"gopkg.in/yaml.v3"
 )
 
 func (t *TUI) RegisterDefaultCommands() {
@@ -282,6 +284,22 @@ func (t *TUI) RegisterDefaultCommands() {
 			newjxscout, err := t.jxscout.Restart(currentOptions)
 			if err != nil {
 				return nil, fmt.Errorf("failed to restart jxscout: %w", err)
+			}
+
+			// Persist the current options to a YAML file
+			configFileLocation := path.Join(common.GetPrivateDirectory(), constants.ConfigFileName)
+			file, err := os.Create(configFileLocation)
+			if err != nil {
+				return nil, fmt.Errorf("failed to create configuration file: %w", err)
+			}
+			defer file.Close()
+
+			encoder := yaml.NewEncoder(file)
+			defer encoder.Close()
+
+			err = encoder.Encode(currentOptions)
+			if err != nil {
+				return nil, fmt.Errorf("failed to encode configuration to YAML: %w", err)
 			}
 
 			t.jxscout = newjxscout
