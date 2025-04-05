@@ -38,7 +38,7 @@ const (
 	DefaultDownloadReferedJS = false
 
 	// Logging configuration
-	DefaultLogBufferSize    = 1000
+	DefaultLogBufferSize    = 10000
 	DefaultLogFileMaxSizeMB = 10
 )
 
