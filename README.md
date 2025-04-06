@@ -41,6 +41,12 @@ Once jxscout is installed, you can:
 - Run the `guide` command for a quick walkthrough
 - Watch the video tutorial for a visual guide on configuring and using jxscout
 
+### Demo
+
+Watch the demo movie to see jxscout in action:
+
+https://github.com/user-attachments/assets/64f161c3-46b0-41a9-8b34-706cc795a034
+
 ## Building locally
 
 1. Clone the repository
