@@ -1,6 +1,7 @@
 package jxscout
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -28,6 +29,9 @@ import (
 )
 
 type jxscout struct {
+	ctx          context.Context
+	cancel       context.CancelFunc
+	logBuffer    *logBuffer
 	log          *slog.Logger
 	eventBus     jxscouttypes.EventBus
 	options      jxscouttypes.Options
@@ -43,15 +47,30 @@ type jxscout struct {
 	modulesSDK   *jxscouttypes.ModuleSDK
 
 	started bool
+	server  *http.Server
 }
 
 func NewJXScout(options jxscouttypes.Options) (jxscouttypes.JXScout, error) {
+	jxscout, err := initJxscout(options)
+	if err != nil {
+		return nil, errutil.Wrap(err, "failed to initialize jxscout")
+	}
+
+	jxscout.registerCoreModules()
+
+	return jxscout, nil
+}
+
+func initJxscout(options jxscouttypes.Options) (*jxscout, error) {
 	err := validateOptions(options)
 	if err != nil {
 		return nil, errutil.Wrap(err, "provided options are not valid")
 	}
 
-	logger := initializeLogger(options)
+	// buffer that stores logs to show in the UI
+	logBuffer := newLogBuffer(options.LogBufferSize)
+
+	logger := initializeLogger(logBuffer, options)
 
 	scopeRegex := initializeScope(options.ScopePatterns)
 
@@ -77,12 +96,15 @@ func NewJXScout(options jxscouttypes.Options) (jxscouttypes.JXScout, error) {
 	cache := cache.NewInMemoryCache()
 
 	assetFetcher := assetfetcher.NewAssetFetcher(assetfetcher.AssetFetcherOptions{
-		RateLimitingMaxRequestsPerSecond: options.RateLimiterMaxRequestsPerSecond,
+		RateLimitingMaxRequestsPerMinute: options.RateLimitingMaxRequestsPerMinute,
 	})
+
+	ctx, cancel := context.WithCancel(context.Background())
 
 	jxscout := &jxscout{
 		options:      options,
-		log:          initializeLogger(options),
+		logBuffer:    logBuffer,
+		log:          logger,
 		eventBus:     eventBus,
 		assetService: assetService,
 		modules:      []jxscouttypes.Module{},
@@ -91,9 +113,9 @@ func NewJXScout(options jxscouttypes.Options) (jxscouttypes.JXScout, error) {
 		cache:        cache,
 		assetFetcher: assetFetcher,
 		fileService:  fileService,
+		ctx:          ctx,
+		cancel:       cancel,
 	}
-
-	jxscout.registerCoreModules()
 
 	return jxscout, nil
 }
@@ -130,7 +152,19 @@ func (s *jxscout) RegisterModule(module jxscouttypes.Module) error {
 	return nil
 }
 
+// Starts the jxscout server with the prompt
 func (s *jxscout) Start() error {
+	err := s.start()
+	if err != nil {
+		return errutil.Wrap(err, "failed to start server")
+	}
+
+	s.runPrompt()
+
+	return nil
+}
+
+func (s *jxscout) start() error {
 	r := chi.NewRouter()
 
 	r.Use(middleware.RequestID)
@@ -141,11 +175,20 @@ func (s *jxscout) Start() error {
 		return errutil.Wrap(err, "failed to initialize modules")
 	}
 
-	s.log.Info("server listening", "port", s.options.Port)
+	s.log.Info("starting server", "port", s.options.Port)
 
-	go http.ListenAndServe(fmt.Sprintf(":%d", s.options.Port), r)
+	s.server = &http.Server{
+		Addr:    fmt.Sprintf("%s:%d", s.options.Hostname, s.options.Port),
+		Handler: r,
+	}
 
-	s.runPrompt()
+	go func() {
+		err := s.server.ListenAndServe()
+		if err != nil && err != http.ErrServerClosed {
+			s.log.Error("failed to start server", "port", s.options.Port, "error", err)
+			return
+		}
+	}()
 
 	return nil
 }
@@ -167,6 +210,7 @@ func (s *jxscout) initializeModules(r jxscouttypes.Router) error {
 		Cache:        s.cache,
 		AssetFetcher: s.assetFetcher,
 		FileService:  s.fileService,
+		Ctx:          s.ctx,
 	}
 
 	for _, module := range s.modules {
@@ -177,4 +221,64 @@ func (s *jxscout) initializeModules(r jxscouttypes.Router) error {
 	}
 
 	return nil
+}
+
+// Stop gracefully shuts down the JXScout server
+func (s *jxscout) Stop() error {
+	s.cancel()
+
+	if s.server == nil {
+		return nil
+	}
+
+	s.log.Info("shutting down server")
+
+	if err := s.server.Shutdown(s.ctx); err != nil {
+		s.log.Error("failed to shutdown server gracefully", "error", err)
+		return errutil.Wrap(err, "failed to shutdown server gracefully")
+	}
+
+	s.log.Info("server stopped successfully")
+
+	return nil
+}
+
+func (s *jxscout) Restart(options jxscouttypes.Options) (*jxscout, error) {
+	s.log.Info("restarting server")
+
+	err := s.Stop()
+	if err != nil {
+		s.log.Error("failed to stop server", "error", err)
+		return nil, errutil.Wrap(err, "failed to stop server")
+	}
+
+	s.log.Info("server stopped successfully")
+
+	s.log.Info("starting new server")
+
+	cache := s.cache // keep previous cache
+
+	s, err = initJxscout(options)
+	if err != nil {
+		s.log.Error("failed to restart jxscout", "error", err)
+		return nil, errutil.Wrap(err, "failed to restart jxscout")
+	}
+
+	s.cache = cache // keep previous cache
+
+	s.registerCoreModules()
+
+	go func() {
+		// use private method so we don't restart the prompt
+		err := s.start()
+		if err != nil {
+			s.log.Error("failed to restart server", "error", err)
+		}
+	}()
+
+	return s, nil
+}
+
+func (s *jxscout) GetOptions() jxscouttypes.Options {
+	return s.options
 }

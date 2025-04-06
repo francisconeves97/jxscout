@@ -1,65 +1,85 @@
 package main
 
 import (
+	"errors"
+	"io"
 	"log"
-	"time"
+	"path"
 
+	"github.com/francisconeves97/jxscout/internal/core/common"
+	"github.com/francisconeves97/jxscout/pkg/constants"
 	"github.com/francisconeves97/jxscout/pkg/jxscout"
 	jxscouttypes "github.com/francisconeves97/jxscout/pkg/types"
 
 	"github.com/projectdiscovery/goflags"
 )
 
-const Version = "0.2.0"
+const Version = "0.3.0"
 
 func main() {
 	options := jxscouttypes.Options{}
 
 	flagSet := goflags.NewFlagSet()
 
-	flagSet.SetDescription("jxscout | static files downloader for vuln analysis")
+	flagSet.SetDescription("jxscout | static files downloader for vulnerability analysis")
 
 	flagSet.CreateGroup("server", "server configuration",
-		flagSet.IntVar(&options.Port, "port", 3333, "port where the server will run"),
+		flagSet.StringVar(&options.Hostname, constants.FlagHostname, constants.DefaultHostname, constants.DescriptionHostname),
+		flagSet.IntVar(&options.Port, constants.FlagPort, constants.DefaultPort, constants.DescriptionPort),
 	)
 
 	flagSet.CreateGroup("jxscout", "jxscout configuration",
-		flagSet.StringVar(&options.ProjectName, "project-name", "default", "directory where static files will be downloaded to"),
-		flagSet.StringSliceVar(&options.ScopePatterns, "scope", nil, `comma separated list of domains to consider for saving and analyzing html (e.g. "*google.com*,*facebook.com*")`, goflags.FileCommaSeparatedStringSliceOptions),
-		flagSet.BoolVar(&options.Verbose, "verbose", true, "set to true to output logs"),
-		flagSet.BoolVar(&options.Debug, "debug", false, "set to true to output debug logs"),
+		flagSet.StringVar(&options.ProjectName, constants.FlagProjectName, constants.DefaultProjectName, constants.DescriptionProjectName),
+		flagSet.StringSliceVar(&options.ScopePatterns, constants.FlagScope, nil, constants.DescriptionScope, goflags.FileCommaSeparatedStringSliceOptions),
+		flagSet.BoolVar(&options.Debug, constants.FlagDebug, constants.DefaultDebug, constants.DescriptionDebug),
 	)
 
 	flagSet.CreateGroup("concurrency", "concurrency configuration",
-		flagSet.IntVar(&options.AssetFetchConcurrency, "fetch-concurrency", 5, "max number of simultaneous http requests"),
-		flagSet.IntVar(&options.AssetSaveConcurrency, "save-concurrency", 5, "max number of simultaneous saves to file system"),
-		flagSet.IntVar(&options.BeautifierConcurrency, "beautifier-concurrency", 5, "max number of simultaneous beautifier processes"),
-		flagSet.IntVar(&options.ChunkDiscovererConcurrency, "chunk-discoverer-concurrency", 5, "max number of simultaneous beautifier processes"),
+		flagSet.IntVar(&options.AssetFetchConcurrency, constants.FlagAssetFetchConcurrency, constants.DefaultAssetFetchConcurrency, constants.DescriptionAssetFetchConcurrency),
+		flagSet.IntVar(&options.AssetSaveConcurrency, constants.FlagAssetSaveConcurrency, constants.DefaultAssetSaveConcurrency, constants.DescriptionAssetSaveConcurrency),
+		flagSet.IntVar(&options.BeautifierConcurrency, constants.FlagBeautifierConcurrency, constants.DefaultBeautifierConcurrency, constants.DescriptionBeautifierConcurrency),
+		flagSet.IntVar(&options.ChunkDiscovererConcurrency, constants.FlagChunkDiscovererConcurrency, constants.DefaultChunkDiscovererConcurrency, constants.DescriptionChunkDiscovererConcurrency),
 	)
 
 	flagSet.CreateGroup("chunk discovery", "chunk discovery configuration",
-		flagSet.IntVar(&options.ChunkDiscovererBruteForceLimit, "chunk-discoverer-bruteforce-limit", 3000, "max limit for the chunk discoverer to try and bruteforce chunks"),
+		flagSet.IntVar(&options.ChunkDiscovererBruteForceLimit, constants.FlagChunkDiscovererBruteForceLimit, constants.DefaultChunkDiscovererBruteForceLimit, constants.DescriptionChunkDiscovererBruteForceLimit),
 	)
 
 	flagSet.CreateGroup("cache", "cache configuration",
-		flagSet.DurationVar(&options.JavascriptRequestsCacheTTL, "js-requests-cache-ttl", time.Hour, "defines the time to wait until a js file is downloaded and processed again"),
-		flagSet.DurationVar(&options.HTMLRequestsCacheTTL, "html-requests-cache-ttl", time.Hour, "defines the time to wait until a html file is downloaded and processed again"),
+		flagSet.DurationVar(&options.JavascriptRequestsCacheTTL, constants.FlagJavascriptRequestsCacheTTL, constants.DefaultJavascriptRequestsCacheTTL, constants.DescriptionJavascriptRequestsCacheTTL),
+		flagSet.DurationVar(&options.HTMLRequestsCacheTTL, constants.FlagHTMLRequestsCacheTTL, constants.DefaultHTMLRequestsCacheTTL, constants.DescriptionHTMLRequestsCacheTTL),
 	)
 
 	flagSet.CreateGroup("git commiter", "git commiter configuration",
-		flagSet.DurationVar(&options.GitCommitInterval, "git-commit-interval", time.Minute*5, "defines the interval between jxscout automatically commits saved files"),
+		flagSet.DurationVar(&options.GitCommitInterval, constants.FlagGitCommitInterval, constants.DefaultGitCommitInterval, constants.DescriptionGitCommitInterval),
 	)
 
 	flagSet.CreateGroup("rate limiting", "rate limiting configuration",
-		flagSet.IntVar(&options.RateLimiterMaxRequestsPerSecond, "rate-limiter-max-requests-per-second", 20, "defines the max requests per second for rate limited requests"),
+		flagSet.IntVar(&options.RateLimitingMaxRequestsPerMinute, constants.FlagRateLimitingMaxRequestsPerMinute, constants.DefaultRateLimitingMaxRequestsPerMinute, constants.DescriptionRateLimitingMaxRequestsPerMinute),
 	)
 
 	flagSet.CreateGroup("js ingestion", "js ingestion configuration",
-		flagSet.BoolVar(&options.DownloadReferedJS, "download-refered-js", false, "defines if all refered JS should be downloaded, even if it's out of scope"),
+		flagSet.BoolVar(&options.DownloadReferedJS, constants.FlagDownloadReferedJS, constants.DefaultDownloadReferedJS, constants.DescriptionDownloadReferedJS),
+	)
+
+	flagSet.CreateGroup("logging", "logging configuration",
+		flagSet.IntVar(&options.LogBufferSize, constants.FlagLogBufferSize, constants.DefaultLogBufferSize, constants.DescriptionLogBufferSize),
+		flagSet.IntVar(&options.LogFileMaxSizeMB, constants.FlagLogFileMaxSizeMB, constants.DefaultLogFileMaxSizeMB, constants.DescriptionLogFileMaxSizeMB),
 	)
 
 	if err := flagSet.Parse(); err != nil {
 		log.Fatalf("could not parse flags: %s", err.Error())
+	}
+
+	configFileLocation := path.Join(common.GetPrivateDirectory(), constants.ConfigFileName)
+	exists, err := common.FileExists(configFileLocation)
+	if err != nil {
+		log.Fatalf("could not check if config file exists: %s", err.Error())
+	}
+	if exists {
+		if err := flagSet.MergeConfigFile(configFileLocation); err != nil && !errors.Is(err, io.EOF) {
+			log.Fatalf("could not read config: %s\n", err)
+		}
 	}
 
 	jxscout, err := jxscout.NewJXScout(options)

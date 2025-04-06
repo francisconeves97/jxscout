@@ -120,3 +120,14 @@ func GetPrivateDirectory() string {
 
 	return path.Join(home, ".jxscout")
 }
+
+func FileExists(filePath string) (bool, error) {
+	info, err := os.Stat(filePath)
+	if os.IsNotExist(err) {
+		return false, nil
+	}
+	if err != nil {
+		return false, errutil.Wrap(err, "failed to check if file exists")
+	}
+	return !info.IsDir(), nil
+}

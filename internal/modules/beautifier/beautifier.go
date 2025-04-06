@@ -70,7 +70,7 @@ func (m *beautifierModule) subscribeAssetSavedEvent() error {
 			continue
 		}
 
-		m.queue.Produce(context.Background(), event.Asset)
+		m.queue.Produce(m.sdk.Ctx, event.Asset)
 	}
 
 	return nil

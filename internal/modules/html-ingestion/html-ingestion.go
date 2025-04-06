@@ -1,7 +1,6 @@
 package htmlingestion
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -85,8 +84,7 @@ func (m *htmlIngestionModule) handleIngestionRequest(req ingestion.IngestionRequ
 		return errutil.Wrap(err, "failed to join html path with (index).html")
 	}
 
-	// TODO: better structure contexts
-	m.sdk.AssetService.AsyncSaveAsset(context.Background(), assetservice.Asset{
+	m.sdk.AssetService.AsyncSaveAsset(m.sdk.Ctx, assetservice.Asset{
 		URL:            htmlPath,
 		Content:        req.Response.Body,
 		ContentType:    common.ContentTypeHTML,
@@ -105,12 +103,13 @@ func (m *htmlIngestionModule) handleIngestionRequest(req ingestion.IngestionRequ
 			return errutil.Wrap(err, "failed to join inline js path")
 		}
 
-		m.sdk.AssetService.AsyncSaveAsset(context.Background(), assetservice.Asset{
+		m.sdk.AssetService.AsyncSaveAsset(m.sdk.Ctx, assetservice.Asset{
 			URL:            inlinePath,
 			Content:        content,
 			ContentType:    common.ContentTypeJS,
 			Project:        m.sdk.Options.ProjectName,
 			RequestHeaders: req.Request.Headers,
+			IsInlineJS:     true,
 			Parent: &assetservice.Asset{
 				URL: htmlPath,
 			},

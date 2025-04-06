@@ -1,16 +1,15 @@
 # jxscout
 
-**jxscout** is a tool designed to assist security researchers in analyzing and identifying vulnerabilities in JavaScript code. It integrates with your preferred proxy, capturing requests and storing optimized versions locally for in-depth analysis using your favorite code editor.
+**jxscout** is a tool designed to help security researchers analyze and find vulnerabilities in JavaScript code. It works with your favorite proxy (Burp or Caido), capturing requests and saving optimized versions locally for easy analysis in your preferred code editor.
 
 > Work in Progress 🏗️ jxscout is currently under active development. As it continues to be improved and features expanded there may be breaking changes in future updates.
 
 ## Key Features
 
 - **Asset Organization**: Automatically saves and organizes relevant static assets (HTML, JavaScript) into an intuitive folder structure.
-- **Webpack Chunks Pre-Fetching**: Detects and pre-fetches Webpack chunks for comprehensive analysis.
-- **Code Beautification**: Automatically beautifies JavaScript files, enhancing readability and facilitating easier vulnerability detection.
+- **Chunks Pre-Fetching**: Detects and pre-fetches Webpack and Vite chunks for comprehensive analysis.
+- **Code Beautification**: Automatically beautifies JavaScript files, making them easier to read and analyze.
 - **Source Map Discovery**: Automatically reverses application source code if .map files are available.
-- **Future Enhancements (TODO)** 🛠️: code optimization, data extraction, and more.
 
 ## Requirements
 
@@ -23,14 +22,26 @@ To install, just run the below command or download pre-compiled binary from [rel
 
 ```
 go install github.com/francisconeves97/jxscout/cmd/jxscout@latest
-bun install -g prettier reverse-sourcemap
 ```
 
-### Caido Setup
+You can then run the `install` command to get all the necessary dependencies (bun, prettier and reverse-sourcemap)
 
-In order to make jxscout work you first need to proxy requests to it. That's what the jxscout-caido plugin does. Head over to https://github.com/francisconeves97/jxscout-caido to get more details on how to install the jxscout-caido plugin.
+![jxscout](docs/jxscout.png)
 
-### Building locally
+### Proxy Setup
+
+To get started with jxscout, you'll need to set up a proxy to forward requests to it. Here's how:
+
+- For Caido users: Check out https://github.com/francisconeves97/jxscout-caido for installation instructions
+- For Burp users: Head over to https://github.com/francisconeves97/jxscout-burp for setup details
+
+## Usage
+
+Once jxscout is installed, you can:
+- Run the `guide` command for a quick walkthrough
+- Watch the video tutorial for a visual guide on configuring and using jxscout
+
+## Building locally
 
 1. Clone the repository
 
@@ -64,7 +75,7 @@ go run cmd/jxscout/main.go -working-directory /path/to/save/assets
 
 ## Usage
 
-**jxscout** receives requests from Caido. To avoid doing duplicated work, jxscout doesn't try to parse HTML and find JS there. So to make sure all JS files are analyzed, you should disable your browser's cache when using jxscout.
+**jxscout** receives requests from your proxy. To avoid duplicate work, jxscout doesn't parse HTML to find JS files. Make sure to disable your browser's cache when using jxscout to ensure all JS files are captured.
 
 Basic usage with scope filtering:
 
@@ -75,38 +86,51 @@ jxscout -working-directory /path/to/save/assets -scope "*example.com*"
 All options
 
 ```bash
-jxscout | static files downloader for vuln analysis
+jxscout | static files downloader for vulnerability analysis
 
 Usage:
   jxscout [flags]
 
 Flags:
 SERVER CONFIGURATION:
-   -port int  port where the server will run (default 3333)
+   -hostname string  the hostname where jxscout will listen for requests (default "localhost")
+   -port int         the port where jxscout will listen for requests (default 3333)
 
 JXSCOUT CONFIGURATION:
-   -working-directory string  directory where static files will be downloaded to
-   -scope string[]            comma separated list of domains to consider for saving and analyzing html (e.g. "*google.com*,*facebook.com*")
-   -verbose                   set to true to output logs (default true)
-   -debug                     set to true to output debug logs
+   -project-name string  name of your project folder where downloaded files will be stored (default "default")
+   -scope string[]       comma-separated list of patterns to filter requests (e.g. *google*,*youtube*)
+   -debug                turn on detailed logs for troubleshooting
 
 CONCURRENCY CONFIGURATION:
-   -fetch-concurrency int             max number of simultaneous http requests (default 5)
-   -save-concurrency int              max number of simultaneous saves to file system (default 5)
-   -beautifier-concurrency int        max number of simultaneous beautifier processes (default 5)
-   -chunk-discoverer-concurrency int  max number of simultaneous beautifier processes (default 5)
+   -fetch-concurrency int             how many files to download at once (for chunks and source maps) (default 5)
+   -save-concurrency int              how many files to save to disk at once (default 5)
+   -beautifier-concurrency int        how many files to beautify at once (default 5)
+   -chunk-discoverer-concurrency int  how many chunk discovery processes to run at once (default 5)
 
 CHUNK DISCOVERY CONFIGURATION:
-   -chunk-discoverer-bruteforce-limit int  max limit for the chunk discoverer to try and bruteforce chunks (default 3000)
+   -chunk-discoverer-bruteforce-limit int  how many potential chunks to bruteforce when automatic discovery fails (default 3000)
 
 CACHE CONFIGURATION:
-   -js-requests-cache-ttl value    defines the time to wait until a js file is downloaded and processed again (default 1h0m0s)
-   -html-requests-cache-ttl value  defines the time to wait until a html file is downloaded and processed again (default 1h0m0s)
+   -js-requests-cache-ttl value    how long to wait before re-downloading the same JS file (default 1h0m0s)
+   -html-requests-cache-ttl value  how long to wait before re-downloading the same HTML page (default 1h0m0s)
+
+GIT COMMITER CONFIGURATION:
+   -git-commit-interval value  how often commits are made to the working directory (default 5m0s)
+
+RATE LIMITING CONFIGURATION:
+   -rate-limiter-max-requests-per-minute int  max requests per minute for source maps and chunk discovery (default 120)
+
+JS INGESTION CONFIGURATION:
+   -download-refered-js  download JS files from out-of-scope domains if they're linked from in-scope pages
+
+LOGGING CONFIGURATION:
+   -log-buffer-size int       how many log lines to show in the logs panel (default 10000)
+   -log-file-max-size-mb int  max size of the log file in MB (default 10)
 ```
 
-### Webpack Chunk Discovery Script
+### Chunk Discovery Script
 
-The chunk discovery script is written in Typescript, and can be used as a standalone script outside of jxscout. You can use your favourite JS runtime to run it. jxscout uses bun.
+The chunk discovery script is written in TypeScript and can be used standalone outside of jxscout. You can use any JS runtime to run it (jxscout uses bun).
 
 You can check the script here: https://github.com/francisconeves97/jxscout/blob/main/pkg/chunk-discoverer/index.ts
 

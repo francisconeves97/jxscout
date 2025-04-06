@@ -1,7 +1,6 @@
 package jsingestion
 
 import (
-	"context"
 	"errors"
 	"net/http"
 	"strings"
@@ -93,7 +92,7 @@ func (m *jsIngestionModule) handleIngestionRequest(req ingestion.IngestionReques
 		parentURL = common.NormalizeURL(m.getReferer(req))
 	}
 
-	m.sdk.AssetService.AsyncSaveAsset(context.Background(), assetservice.Asset{
+	m.sdk.AssetService.AsyncSaveAsset(m.sdk.Ctx, assetservice.Asset{
 		URL:            req.Request.URL,
 		Content:        req.Response.Body,
 		ContentType:    common.ContentTypeJS,
