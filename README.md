@@ -68,13 +68,13 @@ make build
 - Using the binary
 
 ```bash
-./dist/jxscout -working-directory /path/to/save/assets
+./dist/jxscout
 ```
 
 - Or directly with Go
 
 ```bash
-go run cmd/jxscout/main.go -working-directory /path/to/save/assets
+go run cmd/jxscout/main.go
 ```
 
 4. Setup your proxy to ingest requests into jxscout
