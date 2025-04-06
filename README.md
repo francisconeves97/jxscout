@@ -37,7 +37,11 @@ To get started with jxscout, you'll need to set up a proxy to forward requests t
 
 ## Usage
 
-Once jxscout is installed, you can:
+```bash
+jxscout
+```
+
+Once jxscout is running, you can:
 - Run the `guide` command for a quick walkthrough
 - Watch the video tutorial for a visual guide on configuring and using jxscout
 
@@ -47,49 +51,7 @@ Watch the demo movie to see jxscout in action:
 
 https://github.com/user-attachments/assets/64f161c3-46b0-41a9-8b34-706cc795a034
 
-## Building locally
-
-1. Clone the repository
-
-```bash
-git clone https://github.com/francisconeves97/jxscout.git
-cd jxscout
-```
-
-2. Install dependencies and build the project
-
-```bash
-make install
-make build
-```
-
-3. Run the server
-
-- Using the binary
-
-```bash
-./dist/jxscout
-```
-
-- Or directly with Go
-
-```bash
-go run cmd/jxscout/main.go
-```
-
-4. Setup your proxy to ingest requests into jxscout
-
-## Usage
-
-**jxscout** receives requests from your proxy. To avoid duplicate work, jxscout doesn't parse HTML to find JS files. Make sure to disable your browser's cache when using jxscout to ensure all JS files are captured.
-
-Basic usage with scope filtering:
-
-```bash
-jxscout -working-directory /path/to/save/assets -scope "*example.com*"
-```
-
-All options
+### CLI Options
 
 ```bash
 jxscout | static files downloader for vulnerability analysis
@@ -133,6 +95,40 @@ LOGGING CONFIGURATION:
    -log-buffer-size int       how many log lines to show in the logs panel (default 10000)
    -log-file-max-size-mb int  max size of the log file in MB (default 10)
 ```
+
+## Building locally
+
+1. Clone the repository
+
+```bash
+git clone https://github.com/francisconeves97/jxscout.git
+cd jxscout
+```
+
+2. Install dependencies and build the project
+
+```bash
+make install
+make build
+```
+
+3. Run the server
+
+- Using the binary
+
+```bash
+./dist/jxscout
+```
+
+- Or directly with Go
+
+```bash
+go run cmd/jxscout/main.go
+```
+
+4. Setup your proxy to ingest requests into jxscout
+
+
 
 ### Chunk Discovery Script
 
