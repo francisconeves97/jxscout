@@ -2,3 +2,4 @@ node_modules/
 github_results*
 dist
 extracted
+.DS_Store
