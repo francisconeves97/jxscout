@@ -1,6 +1,7 @@
 package jxscouttypes
 
 import (
+	"context"
 	"log/slog"
 	"net/http"
 	"time"
@@ -37,38 +38,23 @@ type Cache = cache.Cache
 
 // JXScout Options
 type Options struct {
-	// Port is the port where jxscout will be running
-	Port int
-	// ProjectName directory where static files will be downloaded to
-	ProjectName string
-	// ScopePatterns is a list of wildcard patterns used for filtering requests (e.g. {"*google.com*", "*facebook.com*"})
-	ScopePatterns goflags.StringSlice
-	// Verbose defines if the server should output logs
-	Verbose bool
-	// Debug defines if the server should output debug logs
-	Debug bool
-	// CacheTTL defines the ttl for cache entries. caching is used internally to drop requests if they were already processed. Should be in a format compatible with https://pkg.go.dev/time#ParseDuration"
-	CacheTTL string
-	// AssetSaveConcurrency defines the max concurrency for asset service (handles saves to the file system and to the DB)
-	AssetSaveConcurrency int
-	// AssetServiceConcurrency defines the max concurrency for the asset fetch service (handles fetching asset URLs)
-	AssetFetchConcurrency int
-	// BeautifierConcurrency defines the max concurrency for beautifier processes
-	BeautifierConcurrency int
-	// ChunkDiscovererConcurrency defines the max concurrency for the chunk discoverer process
-	ChunkDiscovererConcurrency int
-	// ChunkDiscovererBruteForceLimit defines the max limit for the chunk discoverer to try and bruteforce chunks
-	ChunkDiscovererBruteForceLimit int
-	// JavascriptRequestsCacheTTL defines the time to wait until a js file is downloaded and processed again
-	JavascriptRequestsCacheTTL time.Duration
-	// HTMLRequestsCacheTTL defines the time to wait until a html file is downloaded and processed again
-	HTMLRequestsCacheTTL time.Duration
-	// GitCommitInterval defines the interval between commits on the working directory
-	GitCommitInterval time.Duration
-	// RateLimiterMaxRequestsPerSecond defines the max requests per second for rate limited requests
-	RateLimiterMaxRequestsPerSecond int
-	// DownloadReferedJS defines if all JS, including out of scope JS, should be downloaded as long as it is refered by a domain in scope
-	DownloadReferedJS bool
+	Port                             int                 `yaml:"port"`
+	Hostname                         string              `yaml:"hostname"`
+	ProjectName                      string              `yaml:"project-name"`
+	ScopePatterns                    goflags.StringSlice `yaml:"scope-patterns"`
+	Debug                            bool                `yaml:"debug"`
+	AssetSaveConcurrency             int                 `yaml:"asset-save-concurrency"`
+	AssetFetchConcurrency            int                 `yaml:"asset-fetch-concurrency"`
+	BeautifierConcurrency            int                 `yaml:"beautifier-concurrency"`
+	ChunkDiscovererConcurrency       int                 `yaml:"chunk-discoverer-concurrency"`
+	ChunkDiscovererBruteForceLimit   int                 `yaml:"chunk-discoverer-brute-force-limit"`
+	JavascriptRequestsCacheTTL       time.Duration       `yaml:"javascript-requests-cache-ttl"`
+	HTMLRequestsCacheTTL             time.Duration       `yaml:"html-requests-cache-ttl"`
+	GitCommitInterval                time.Duration       `yaml:"git-commit-interval"`
+	RateLimitingMaxRequestsPerMinute int                 `yaml:"rate-limiting-max-requests-per-minute"`
+	DownloadReferedJS                bool                `yaml:"download-refered-js"`
+	LogBufferSize                    int                 `yaml:"log-buffer-size"`
+	LogFileMaxSizeMB                 int                 `yaml:"log-file-max-size-mb"`
 }
 
 // AssetService interface
@@ -82,6 +68,7 @@ type FileService = assetservice.FileService
 
 // ModuleSDK are the exposed dependencies that modules can use
 type ModuleSDK struct {
+	Ctx          context.Context
 	EventBus     EventBus
 	Router       Router
 	AssetService AssetService

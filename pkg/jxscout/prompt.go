@@ -1,60 +1,42 @@
 package jxscout
 
 import (
-	"fmt"
-	"os"
-	"path"
-	"strings"
-
-	"github.com/c-bata/go-prompt"
-	"github.com/francisconeves97/jxscout/internal/core/common"
+	"github.com/francisconeves97/jxscout/internal/core/tui"
+	jxscouttypes "github.com/francisconeves97/jxscout/pkg/types"
 )
 
-const (
-	CommandExit       = "exit"
-	CommandSetScope   = "set-scope"
-	CommandSetProject = "set-project"
-)
-
-func (s *jxscout) promptCompleter(d prompt.Document) []prompt.Suggest {
-	suggest := []prompt.Suggest{
-		{Text: CommandExit},
-		{Text: CommandSetScope},
-		{Text: CommandSetProject},
-	}
-
-	return prompt.FilterHasPrefix(suggest, d.GetWordBeforeCursor(), true)
+type tuiJXScoutWrapper struct {
+	jxscout *jxscout
 }
 
-func (s *jxscout) promptExecutor(input string) {
-	input = strings.TrimSpace(input)
+func (t *tuiJXScoutWrapper) GetLogBuffer() tui.LogBuffer {
+	return t.jxscout.logBuffer
+}
 
-	blocks := strings.Split(input, " ")
+func (t *tuiJXScoutWrapper) Stop() error {
+	return t.jxscout.Stop()
+}
 
-	switch blocks[0] {
-	case CommandExit:
-		os.Exit(0)
-	case CommandSetScope:
-		scopeRegex := initializeScope(strings.Split(blocks[1], ","))
-		s.modulesSDK.Scope = newScopeChecker(scopeRegex)
-	case CommandSetProject:
-		newProjectName := blocks[1]
-		s.modulesSDK.Options.ProjectName = newProjectName
-		newProjectPath := path.Join(common.GetWorkingDirectory(), newProjectName)
-		s.assetService.UpdateWorkingDirectory(newProjectPath)
-	default:
-		s.log.Warn(fmt.Sprintf("command %s not found", input))
+func (t *tuiJXScoutWrapper) GetOptions() jxscouttypes.Options {
+	return t.jxscout.options
+}
+
+func (t *tuiJXScoutWrapper) Restart(options jxscouttypes.Options) (tui.JXScout, error) {
+	jxscout, err := t.jxscout.Restart(options)
+	if err != nil {
+		return nil, err
 	}
+
+	t.jxscout = jxscout
+
+	return &tuiJXScoutWrapper{jxscout: jxscout}, nil
 }
 
 func (s *jxscout) runPrompt() {
-	p := prompt.New(
-		s.promptExecutor,
-		s.promptCompleter,
-		prompt.OptionPrefix(">>> "),
-		prompt.OptionSuggestionTextColor(prompt.DefaultColor),
-		prompt.OptionSuggestionBGColor(prompt.DefaultColor),
-		prompt.OptionScrollbarBGColor(prompt.DefaultColor),
-	)
-	p.Run()
+	t := tui.New(&tuiJXScoutWrapper{jxscout: s})
+	t.RegisterDefaultCommands()
+	err := t.Run()
+	if err != nil {
+		s.log.Error("failed to run prompt", "error", err)
+	}
 }

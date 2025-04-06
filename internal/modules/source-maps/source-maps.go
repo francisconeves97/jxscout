@@ -77,13 +77,17 @@ func (m *sourceMapsModule) subscribeAssetSavedEvent() error {
 			continue
 		}
 
-		m.queue.Produce(context.Background(), event.Asset)
+		m.queue.Produce(m.sdk.Ctx, event.Asset)
 	}
 
 	return nil
 }
 
 func (s *sourceMapsModule) sourceMapDiscover(ctx context.Context, asset assetservice.Asset) error {
+	if asset.IsInlineJS {
+		return nil
+	}
+
 	sourceMapPath := fmt.Sprintf("%s.map", asset.URL)
 
 	res, ok, err := s.sdk.AssetFetcher.RateLimitedGet(ctx, sourceMapPath, nil)
@@ -101,6 +105,8 @@ func (s *sourceMapsModule) sourceMapDiscover(ctx context.Context, asset assetser
 	if err != nil {
 		return errors.Wrapf(err, "failed to save source map for asset %s", asset.URL)
 	}
+
+	s.sdk.Logger.Info("discovered source map 💼", "path", filePath, "asset_url", sourceMapPath)
 
 	cmd := exec.Command("reverse-sourcemap", filePath, "--output-dir", path.Join(common.GetWorkingDirectory(), s.sdk.Options.ProjectName, sourceMapsFolder, sourceMapsReversed), "--recursive")
 	if err := cmd.Start(); err != nil {
