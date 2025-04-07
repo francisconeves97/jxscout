@@ -66,10 +66,10 @@ func (e *enrichedError) Wrap(err ...error) Error {
 			continue
 		}
 		if ee, ok := v.(*enrichedError); ok {
-			_ = e.Msgf(ee.errString).WithLevel(ee.Level).WithTag(ee.Tags...)
+			_ = e.Msgf("%s", ee.errString).WithLevel(ee.Level).WithTag(ee.Tags...)
 			e.StackTrace += ee.StackTrace
 		} else {
-			_ = e.Msgf(v.Error())
+			_ = e.Msgf("%s", v.Error())
 		}
 	}
 	return e
@@ -131,10 +131,10 @@ func NewWithErr(err error) Error {
 		return nil
 	}
 	if ee, ok := err.(*enrichedError); ok {
-		x := New(ee.errString).WithTag(ee.Tags...).WithLevel(ee.Level)
+		x := New("%s", ee.errString).WithTag(ee.Tags...).WithLevel(ee.Level)
 		x.(*enrichedError).StackTrace = ee.StackTrace
 	}
-	return New(err.Error())
+	return New("%s", err.Error())
 }
 
 // NewWithTag creates an error with tag

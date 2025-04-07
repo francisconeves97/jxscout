@@ -41,17 +41,18 @@ type Options struct {
 	Port                             int                 `yaml:"port"`
 	Hostname                         string              `yaml:"hostname"`
 	ProjectName                      string              `yaml:"project-name"`
-	ScopePatterns                    goflags.StringSlice `yaml:"scope-patterns"`
+	ScopePatterns                    goflags.StringSlice `yaml:"scope"`
 	Debug                            bool                `yaml:"debug"`
-	AssetSaveConcurrency             int                 `yaml:"asset-save-concurrency"`
-	AssetFetchConcurrency            int                 `yaml:"asset-fetch-concurrency"`
+	AssetSaveConcurrency             int                 `yaml:"save-concurrency"`
+	AssetFetchConcurrency            int                 `yaml:"fetch-concurrency"`
 	BeautifierConcurrency            int                 `yaml:"beautifier-concurrency"`
 	ChunkDiscovererConcurrency       int                 `yaml:"chunk-discoverer-concurrency"`
-	ChunkDiscovererBruteForceLimit   int                 `yaml:"chunk-discoverer-brute-force-limit"`
-	JavascriptRequestsCacheTTL       time.Duration       `yaml:"javascript-requests-cache-ttl"`
+	ChunkDiscovererBruteForceLimit   int                 `yaml:"chunk-discoverer-bruteforce-limit"`
+	JavascriptRequestsCacheTTL       time.Duration       `yaml:"js-requests-cache-ttl"`
 	HTMLRequestsCacheTTL             time.Duration       `yaml:"html-requests-cache-ttl"`
 	GitCommitInterval                time.Duration       `yaml:"git-commit-interval"`
-	RateLimitingMaxRequestsPerMinute int                 `yaml:"rate-limiting-max-requests-per-minute"`
+	RateLimitingMaxRequestsPerSecond int                 `yaml:"rate-limiter-max-requests-per-second"`
+	RateLimitingMaxRequestsPerMinute int                 `yaml:"rate-limiter-max-requests-per-minute"`
 	DownloadReferedJS                bool                `yaml:"download-refered-js"`
 	LogBufferSize                    int                 `yaml:"log-buffer-size"`
 	LogFileMaxSizeMB                 int                 `yaml:"log-file-max-size-mb"`

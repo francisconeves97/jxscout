@@ -97,6 +97,7 @@ func initJxscout(options jxscouttypes.Options) (*jxscout, error) {
 
 	assetFetcher := assetfetcher.NewAssetFetcher(assetfetcher.AssetFetcherOptions{
 		RateLimitingMaxRequestsPerMinute: options.RateLimitingMaxRequestsPerMinute,
+		RateLimitingMaxRequestsPerSecond: options.RateLimitingMaxRequestsPerSecond,
 	})
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -244,9 +245,17 @@ func (s *jxscout) Stop() error {
 }
 
 func (s *jxscout) Restart(options jxscouttypes.Options) (*jxscout, error) {
+	cache := s.cache // keep previous cache
+
+	jxscout, err := initJxscout(options)
+	if err != nil {
+		s.log.Error("failed to restart jxscout", "error", err)
+		return nil, errutil.Wrap(err, "failed to restart jxscout")
+	}
+
 	s.log.Info("restarting server")
 
-	err := s.Stop()
+	err = s.Stop()
 	if err != nil {
 		s.log.Error("failed to stop server", "error", err)
 		return nil, errutil.Wrap(err, "failed to stop server")
@@ -256,14 +265,7 @@ func (s *jxscout) Restart(options jxscouttypes.Options) (*jxscout, error) {
 
 	s.log.Info("starting new server")
 
-	cache := s.cache // keep previous cache
-
-	s, err = initJxscout(options)
-	if err != nil {
-		s.log.Error("failed to restart jxscout", "error", err)
-		return nil, errutil.Wrap(err, "failed to restart jxscout")
-	}
-
+	s = jxscout
 	s.cache = cache // keep previous cache
 
 	s.registerCoreModules()

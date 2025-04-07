@@ -66,8 +66,8 @@ github.com/google/go-querystring/query
 # github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 ## explicit; go 1.13
 github.com/google/shlex
-# github.com/gorilla/css v1.0.0
-## explicit
+# github.com/gorilla/css v1.0.1
+## explicit; go 1.20
 github.com/gorilla/css/scanner
 # github.com/jmoiron/sqlx v1.4.0
 ## explicit; go 1.10
@@ -88,7 +88,7 @@ github.com/mattn/go-runewidth
 # github.com/mattn/go-sqlite3 v1.14.24
 ## explicit; go 1.19
 github.com/mattn/go-sqlite3
-# github.com/microcosm-cc/bluemonday v1.0.25
+# github.com/microcosm-cc/bluemonday v1.0.27
 ## explicit; go 1.19
 github.com/microcosm-cc/bluemonday
 github.com/microcosm-cc/bluemonday/css
@@ -118,10 +118,10 @@ github.com/pkg/errors
 # github.com/projectdiscovery/blackrock v0.0.1
 ## explicit; go 1.18
 github.com/projectdiscovery/blackrock
-# github.com/projectdiscovery/goflags v0.1.64
+# github.com/projectdiscovery/goflags v0.1.74
 ## explicit; go 1.21
 github.com/projectdiscovery/goflags
-# github.com/projectdiscovery/utils v0.2.5
+# github.com/projectdiscovery/utils v0.4.12
 ## explicit; go 1.21
 github.com/projectdiscovery/utils/conversion
 github.com/projectdiscovery/utils/errors
@@ -164,7 +164,7 @@ github.com/xo/terminfo
 # go.uber.org/ratelimit v0.3.1
 ## explicit; go 1.20
 go.uber.org/ratelimit
-# golang.org/x/crypto v0.27.0
+# golang.org/x/crypto v0.31.0
 ## explicit; go 1.20
 golang.org/x/crypto/cast5
 golang.org/x/crypto/openpgp
@@ -180,7 +180,7 @@ golang.org/x/exp/maps
 # golang.org/x/mod v0.21.0
 ## explicit; go 1.22.0
 golang.org/x/mod/semver
-# golang.org/x/net v0.29.0
+# golang.org/x/net v0.33.0
 ## explicit; go 1.18
 golang.org/x/net/bpf
 golang.org/x/net/html
