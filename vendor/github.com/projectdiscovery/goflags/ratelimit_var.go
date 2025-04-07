@@ -77,7 +77,7 @@ func (rateLimitMap *RateLimitMap) Del(key string) error {
 
 // IsEmpty specifies if the underlying map is empty
 func (rateLimitMap *RateLimitMap) IsEmpty() bool {
-	return rateLimitMap.kv == nil || len(rateLimitMap.kv) == 0
+	return len(rateLimitMap.kv) == 0
 }
 
 // AsMap returns the internal map as reference - changes are allowed

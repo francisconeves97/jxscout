@@ -41,6 +41,16 @@
       "args": ["--extensionDevelopmentPath=${workspaceFolder}"],
       "outFiles": ["${workspaceFolder}/dist/**/*.js"],
       "preLaunchTask": "${defaultBuildTask}"
+    },
+    {
+      "name": "Debug jxscout",
+      "type": "go",
+      "request": "launch",
+      "program": "${workspaceFolder}/cmd/jxscout/main.go",
+      "cwd": "${workspaceFolder}",
+      "env": {},
+      "args": [],
+      "mode": "debug"
     }
   ]
 }

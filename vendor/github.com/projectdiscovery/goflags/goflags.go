@@ -1,6 +1,7 @@
 package goflags
 
 import (
+	"bufio"
 	"bytes"
 	"flag"
 	"fmt"
@@ -222,6 +223,14 @@ func (flagSet *FlagSet) CreateGroup(groupName, description string, flags ...*Fla
 //
 // Command line flags however always take precedence over config file ones.
 func (flagSet *FlagSet) readConfigFile(filePath string) error {
+	if empty, err := fileutil.IsEmpty(filePath); err == nil && empty {
+		return nil
+	}
+
+	if isCommentOnly(filePath) {
+		return nil
+	}
+
 	file, err := os.Open(filePath)
 	if err != nil {
 		return err
@@ -285,6 +294,24 @@ func (flagSet *FlagSet) readConfigFile(filePath string) error {
 		}
 	})
 	return nil
+}
+
+// TODO: move to fileutil
+func isCommentOnly(filePath string) bool {
+	file, err := os.Open(filePath)
+	if err != nil {
+		return false
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := scanner.Text()
+		if line != "" && !strings.HasPrefix(line, "#") {
+			return false
+		}
+	}
+	return true
 }
 
 // VarP adds a Var flag with a shortname and longname
@@ -697,7 +724,7 @@ func (flagSet *FlagSet) displayGroupUsageFunc(uniqueDeduper *uniqueDeduper, grou
 }
 
 // displaySingleFlagUsageFunc displays usage for a single flag
-func (flagSet *FlagSet) displaySingleFlagUsageFunc(name string, data *FlagData, cliOutput io.Writer, writer *tabwriter.Writer) {
+func (flagSet *FlagSet) displaySingleFlagUsageFunc(name string, data *FlagData, _ io.Writer, writer *tabwriter.Writer) {
 	if currentFlag := flagSet.CommandLine.Lookup(name); currentFlag != nil {
 		result := createUsageString(data, currentFlag)
 		fmt.Fprint(writer, result, "\n")

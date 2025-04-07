@@ -33,7 +33,8 @@ const (
 	DefaultGitCommitInterval = time.Minute * 5
 
 	// Rate limiting configuration
-	DefaultRateLimitingMaxRequestsPerMinute = 120
+	DefaultRateLimitingMaxRequestsPerSecond = 2
+	DefaultRateLimitingMaxRequestsPerMinute = 0
 
 	// JS ingestion configuration
 	DefaultDownloadReferedJS = false
@@ -71,6 +72,7 @@ const (
 	FlagGitCommitInterval = "git-commit-interval"
 
 	// Rate limiting configuration
+	FlagRateLimitingMaxRequestsPerSecond = "rate-limiter-max-requests-per-second"
 	FlagRateLimitingMaxRequestsPerMinute = "rate-limiter-max-requests-per-minute"
 
 	// JS ingestion configuration
@@ -109,7 +111,8 @@ const (
 	DescriptionGitCommitInterval = "how often commits are made to the working directory"
 
 	// Rate limiting configuration
-	DescriptionRateLimitingMaxRequestsPerMinute = "max requests per minute for source maps and chunk discovery"
+	DescriptionRateLimitingMaxRequestsPerMinute = "max requests per minute for source maps and chunk discovery (0 = unlimited)"
+	DescriptionRateLimitingMaxRequestsPerSecond = "max requests per second for source maps and chunk discovery (0 = unlimited)"
 
 	// JS ingestion configuration
 	DescriptionDownloadReferedJS = "download JS files from out-of-scope domains if they're linked from in-scope pages"

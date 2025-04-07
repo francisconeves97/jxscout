@@ -1,8 +1,6 @@
 package main
 
 import (
-	"errors"
-	"io"
 	"log"
 	"path"
 
@@ -55,6 +53,7 @@ func main() {
 	)
 
 	flagSet.CreateGroup("rate limiting", "rate limiting configuration",
+		flagSet.IntVar(&options.RateLimitingMaxRequestsPerSecond, constants.FlagRateLimitingMaxRequestsPerSecond, constants.DefaultRateLimitingMaxRequestsPerSecond, constants.DescriptionRateLimitingMaxRequestsPerSecond),
 		flagSet.IntVar(&options.RateLimitingMaxRequestsPerMinute, constants.FlagRateLimitingMaxRequestsPerMinute, constants.DefaultRateLimitingMaxRequestsPerMinute, constants.DescriptionRateLimitingMaxRequestsPerMinute),
 	)
 
@@ -67,19 +66,11 @@ func main() {
 		flagSet.IntVar(&options.LogFileMaxSizeMB, constants.FlagLogFileMaxSizeMB, constants.DefaultLogFileMaxSizeMB, constants.DescriptionLogFileMaxSizeMB),
 	)
 
+	configFileLocation := path.Join(common.GetPrivateDirectory(), constants.ConfigFileName)
+	flagSet.SetConfigFilePath(configFileLocation)
+
 	if err := flagSet.Parse(); err != nil {
 		log.Fatalf("could not parse flags: %s", err.Error())
-	}
-
-	configFileLocation := path.Join(common.GetPrivateDirectory(), constants.ConfigFileName)
-	exists, err := common.FileExists(configFileLocation)
-	if err != nil {
-		log.Fatalf("could not check if config file exists: %s", err.Error())
-	}
-	if exists {
-		if err := flagSet.MergeConfigFile(configFileLocation); err != nil && !errors.Is(err, io.EOF) {
-			log.Fatalf("could not read config: %s\n", err)
-		}
 	}
 
 	jxscout, err := jxscout.NewJXScout(options)

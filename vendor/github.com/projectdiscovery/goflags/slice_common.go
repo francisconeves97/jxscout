@@ -5,6 +5,7 @@ import (
 
 	"github.com/pkg/errors"
 	fileutil "github.com/projectdiscovery/utils/file"
+	stringsutil "github.com/projectdiscovery/utils/strings"
 )
 
 var quotes = []rune{'"', '\'', '`'}
@@ -64,10 +65,10 @@ func ToStringSlice(value string, options Options) ([]string, error) {
 	}
 
 	addPartToResult := func(part string) {
+		if options.Normalize != nil {
+			part = options.Normalize(part)
+		}
 		if !options.IsEmpty(part) {
-			if options.Normalize != nil {
-				part = options.Normalize(part)
-			}
 			result = append(result, part)
 		}
 	}
@@ -120,13 +121,31 @@ func isFromFile(_ string) bool {
 }
 
 func normalizeTrailingParts(s string) string {
-	return strings.TrimSpace(s)
+	return stringsutil.NormalizeWithOptions(s,
+		stringsutil.NormalizeOptions{
+			StripComments: true,
+			TrimSpaces:    true,
+		},
+	)
 }
 
 func normalize(s string) string {
-	return strings.TrimSpace(strings.Trim(strings.TrimSpace(s), string(quotes)))
+	return stringsutil.NormalizeWithOptions(s,
+		stringsutil.NormalizeOptions{
+			StripComments: true,
+			TrimCutset:    string(quotes),
+			TrimSpaces:    true,
+		},
+	)
 }
 
 func normalizeLowercase(s string) string {
-	return strings.TrimSpace(strings.Trim(strings.TrimSpace(strings.ToLower(s)), string(quotes)))
+	return stringsutil.NormalizeWithOptions(s,
+		stringsutil.NormalizeOptions{
+			StripComments: true,
+			TrimCutset:    string(quotes),
+			TrimSpaces:    true,
+			Lowercase:     true,
+		},
+	)
 }

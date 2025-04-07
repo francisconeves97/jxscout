@@ -11,5 +11,9 @@ func validateOptions(options jxscouttypes.Options) error {
 		return errors.New("port option is required")
 	}
 
+	if options.RateLimitingMaxRequestsPerMinute != 0 && options.RateLimitingMaxRequestsPerSecond != 0 {
+		return errors.New("only one of RateLimitingMaxRequestsPerMinute or RateLimitingMaxRequestsPerSecond can be set")
+	}
+
 	return nil
 }

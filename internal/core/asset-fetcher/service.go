@@ -28,6 +28,7 @@ type assetFetcherImpl struct {
 
 type AssetFetcherOptions struct {
 	RateLimitingMaxRequestsPerMinute int
+	RateLimitingMaxRequestsPerSecond int
 }
 
 func NewAssetFetcher(options AssetFetcherOptions) *assetFetcherImpl {
@@ -56,11 +57,19 @@ func NewAssetFetcher(options AssetFetcherOptions) *assetFetcherImpl {
 		},
 	}
 
-	requestsPerSecond := options.RateLimitingMaxRequestsPerMinute / 60
+	var rateLimiter ratelimit.Limiter
+
+	if options.RateLimitingMaxRequestsPerMinute != 0 {
+		rateLimiter = ratelimit.New(options.RateLimitingMaxRequestsPerMinute, ratelimit.Per(time.Minute))
+	} else if options.RateLimitingMaxRequestsPerSecond != 0 {
+		rateLimiter = ratelimit.New(options.RateLimitingMaxRequestsPerSecond, ratelimit.Per(time.Second))
+	} else {
+		rateLimiter = ratelimit.NewUnlimited()
+	}
 
 	return &assetFetcherImpl{
 		client:      c,
-		rateLimiter: ratelimit.New(requestsPerSecond),
+		rateLimiter: rateLimiter,
 	}
 }
 

@@ -165,6 +165,8 @@ func (t *TUI) RegisterDefaultCommands() {
 						currentOptions.GitCommitInterval = constants.DefaultGitCommitInterval
 					case constants.FlagRateLimitingMaxRequestsPerMinute:
 						currentOptions.RateLimitingMaxRequestsPerMinute = constants.DefaultRateLimitingMaxRequestsPerMinute
+					case constants.FlagRateLimitingMaxRequestsPerSecond:
+						currentOptions.RateLimitingMaxRequestsPerSecond = constants.DefaultRateLimitingMaxRequestsPerSecond
 					case constants.FlagDownloadReferedJS:
 						currentOptions.DownloadReferedJS = constants.DefaultDownloadReferedJS
 					case constants.FlagLogBufferSize:
@@ -291,6 +293,12 @@ func (t *TUI) RegisterDefaultCommands() {
 						return nil, fmt.Errorf("invalid rate-limiter-max-requests-per-minute value: %s", value)
 					}
 					currentOptions.RateLimitingMaxRequestsPerMinute = rate
+				case constants.FlagRateLimitingMaxRequestsPerSecond:
+					rate, err := strconv.Atoi(value)
+					if err != nil {
+						return nil, fmt.Errorf("invalid rate-limiter-max-requests-per-second value: %s", value)
+					}
+					currentOptions.RateLimitingMaxRequestsPerSecond = rate
 				case constants.FlagDownloadReferedJS:
 					download, err := strconv.ParseBool(value)
 					if err != nil {
@@ -366,6 +374,7 @@ func (t *TUI) RegisterDefaultCommands() {
 				HTMLRequestsCacheTTL:             constants.DefaultHTMLRequestsCacheTTL,
 				GitCommitInterval:                constants.DefaultGitCommitInterval,
 				RateLimitingMaxRequestsPerMinute: constants.DefaultRateLimitingMaxRequestsPerMinute,
+				RateLimitingMaxRequestsPerSecond: constants.DefaultRateLimitingMaxRequestsPerSecond,
 				DownloadReferedJS:                constants.DefaultDownloadReferedJS,
 				LogBufferSize:                    constants.DefaultLogBufferSize,
 				LogFileMaxSizeMB:                 constants.DefaultLogFileMaxSizeMB,
@@ -653,6 +662,10 @@ func (t *TUI) printCurrentConfig() {
 		constants.FlagRateLimitingMaxRequestsPerMinute,
 		fmt.Sprintf("%d", currentOptions.RateLimitingMaxRequestsPerMinute),
 		descStyle.Render(constants.DescriptionRateLimitingMaxRequestsPerMinute)))
+	t.writeLineToOutput(formatLine(
+		constants.FlagRateLimitingMaxRequestsPerSecond,
+		fmt.Sprintf("%d", currentOptions.RateLimitingMaxRequestsPerSecond),
+		descStyle.Render(constants.DescriptionRateLimitingMaxRequestsPerSecond)))
 
 	// JS ingestion configuration
 	t.writeLineToOutput(formatLine(

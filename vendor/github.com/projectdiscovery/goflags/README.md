@@ -1,7 +1,7 @@
 # goflags
 
 [![License](https://img.shields.io/github/license/projectdiscovery/goflags)](LICENSE.md)
-![Go version](https://img.shields.io/github/go-mod/go-version/projectdiscovery/nuclei?filename=v2%2Fgo.mod)
+![Go version](https://img.shields.io/github/go-mod/go-version/projectdiscovery/goflags?filename=go.mod)
 [![Release](https://img.shields.io/github/release/projectdiscovery/goflags)](https://github.com/projectdiscovery/goflags/releases/)
 [![Checks](https://github.com/projectdiscovery/goflags/actions/workflows/build-test.yml/badge.svg)](https://github.com/projectdiscovery/goflags/actions/workflows/build-test.yml)
 
