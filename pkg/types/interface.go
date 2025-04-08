@@ -12,6 +12,7 @@ import (
 	"github.com/francisconeves97/jxscout/internal/core/eventbus"
 
 	"github.com/go-chi/chi"
+	"github.com/jmoiron/sqlx"
 	"github.com/projectdiscovery/goflags"
 )
 
@@ -80,6 +81,7 @@ type ModuleSDK struct {
 	Logger       *slog.Logger
 	Scope        Scope
 	FileService  FileService
+	Database     *sqlx.DB
 }
 
 type Module interface {

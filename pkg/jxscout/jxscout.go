@@ -13,6 +13,7 @@ import (
 	assetservice "github.com/francisconeves97/jxscout/internal/core/asset-service"
 	"github.com/francisconeves97/jxscout/internal/core/cache"
 	"github.com/francisconeves97/jxscout/internal/core/common"
+	"github.com/francisconeves97/jxscout/internal/core/database"
 	"github.com/francisconeves97/jxscout/internal/core/errutil"
 	"github.com/francisconeves97/jxscout/internal/core/eventbus"
 	"github.com/francisconeves97/jxscout/internal/modules/beautifier"
@@ -23,6 +24,7 @@ import (
 	jsingestion "github.com/francisconeves97/jxscout/internal/modules/js-ingestion"
 	sourcemaps "github.com/francisconeves97/jxscout/internal/modules/source-maps"
 	jxscouttypes "github.com/francisconeves97/jxscout/pkg/types"
+	"github.com/jmoiron/sqlx"
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
@@ -41,6 +43,7 @@ type jxscout struct {
 	scopeChecker jxscouttypes.Scope
 	cache        jxscouttypes.Cache
 	fileService  jxscouttypes.FileService
+	db           *sqlx.DB
 
 	modules      []jxscouttypes.Module
 	modulesMutex sync.Mutex
@@ -80,12 +83,18 @@ func initJxscout(options jxscouttypes.Options) (*jxscout, error) {
 
 	eventBus := eventbus.NewInMemoryEventBus()
 
+	db, err := database.GetDatabase()
+	if err != nil {
+		return nil, errutil.Wrap(err, "failed to initialize database")
+	}
+
 	assetService, err := assetservice.NewAssetService(assetservice.AssetServiceConfig{
 		EventBus:         eventBus,
 		SaveConcurrency:  options.AssetSaveConcurrency,
 		FetchConcurrency: options.AssetFetchConcurrency,
 		Logger:           logger,
 		FileService:      fileService,
+		Database:         db,
 	})
 	if err != nil {
 		return nil, errutil.Wrap(err, "failed to initialize asset service")
@@ -114,6 +123,7 @@ func initJxscout(options jxscouttypes.Options) (*jxscout, error) {
 		cache:        cache,
 		assetFetcher: assetFetcher,
 		fileService:  fileService,
+		db:           db,
 		ctx:          ctx,
 		cancel:       cancel,
 	}

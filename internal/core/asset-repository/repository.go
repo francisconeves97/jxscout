@@ -4,11 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"os"
-	"path"
 	"strings"
 
-	"github.com/francisconeves97/jxscout/internal/core/common"
 	"github.com/francisconeves97/jxscout/internal/core/errutil"
 
 	"github.com/jmoiron/sqlx"
@@ -18,14 +15,15 @@ import (
 type Repository interface {
 	SaveAsset(ctx context.Context, asset Asset) (int64, error)
 	GetAssetsByProjectName(projectName string) ([]Asset, error)
+	GetAssetByURL(ctx context.Context, url string) (Asset, bool, error)
 }
 
 type assetRepository struct {
 	db *sqlx.DB
 }
 
-func NewAssetRepository() (Repository, error) {
-	db, err := initialize()
+func NewAssetRepository(db *sqlx.DB) (Repository, error) {
+	db, err := initialize(db)
 	if err != nil {
 		return nil, errutil.Wrap(err, "failed to initialize db")
 	}
@@ -35,20 +33,8 @@ func NewAssetRepository() (Repository, error) {
 	}, nil
 }
 
-func initialize() (*sqlx.DB, error) {
-	saveDir := path.Join(common.GetPrivateDirectory(), "db")
-	dbPath := path.Join(saveDir, "db.sql")
-
-	err := os.MkdirAll(saveDir, 0755)
-	if err != nil {
-		return nil, errutil.Wrap(err, "failed to create database save dir")
-	}
-
-	db, err := sqlx.Open("sqlite3", dbPath)
-	if err != nil {
-		return nil, errutil.Wrap(err, "failed to open sqlite db")
-	}
-	_, err = db.Exec(
+func initialize(db *sqlx.DB) (*sqlx.DB, error) {
+	_, err := db.Exec(
 		`
 		CREATE TABLE IF NOT EXISTS assets (
 			id INTEGER PRIMARY KEY AUTOINCREMENT, 
@@ -210,4 +196,23 @@ func (r *assetRepository) GetAssetsByProjectName(projectName string) ([]Asset, e
 	}
 
 	return assetsReturn, nil
+}
+
+func (r *assetRepository) GetAssetByURL(ctx context.Context, url string) (Asset, bool, error) {
+	query := `
+		SELECT *
+		FROM assets
+		WHERE url = ?
+		`
+
+	var asset Asset
+	err := r.db.GetContext(ctx, &asset, query, url)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return Asset{}, false, nil
+		}
+		return Asset{}, false, errutil.Wrap(err, "failed to query asset by URL")
+	}
+
+	return asset, true, nil
 }

@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"log/slog"
 
+	"github.com/jmoiron/sqlx"
+
 	assetrepository "github.com/francisconeves97/jxscout/internal/core/asset-repository"
 	"github.com/francisconeves97/jxscout/internal/core/common"
 	"github.com/francisconeves97/jxscout/internal/core/errutil"
@@ -16,6 +18,7 @@ type AssetService interface {
 	AsyncSaveAsset(ctx context.Context, asset Asset)
 	UpdateWorkingDirectory(path string)
 	GetProjectAssets(projectName string) ([]Asset, error)
+	GetAssetByURL(ctx context.Context, url string) (Asset, bool, error)
 }
 
 type Asset struct {
@@ -65,10 +68,11 @@ type AssetServiceConfig struct {
 	FetchConcurrency int
 	Logger           *slog.Logger
 	FileService      FileService
+	Database         *sqlx.DB
 }
 
 func NewAssetService(cfg AssetServiceConfig) (AssetService, error) {
-	repository, err := assetrepository.NewAssetRepository()
+	repository, err := assetrepository.NewAssetRepository(cfg.Database)
 	if err != nil {
 		return nil, errutil.Wrap(err, "failed to initialize asset repository")
 	}
@@ -197,4 +201,19 @@ func (s *assetService) GetProjectAssets(projectName string) ([]Asset, error) {
 	}
 
 	return assets, nil
+}
+
+func (s *assetService) GetAssetByURL(ctx context.Context, url string) (Asset, bool, error) {
+	cleanURL := common.NormalizeURL(url)
+
+	repoAsset, exists, err := s.repository.GetAssetByURL(ctx, cleanURL)
+	if err != nil {
+		return Asset{}, false, errutil.Wrap(err, "failed to get asset from repo")
+	}
+
+	if !exists {
+		return Asset{}, false, nil
+	}
+
+	return s.mapRepoAssetToAsset(repoAsset), true, nil
 }
