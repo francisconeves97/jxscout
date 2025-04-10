@@ -24,6 +24,8 @@ type AssetService interface {
 }
 
 type Asset struct {
+	// ID is the id of the asset on the database
+	ID int64
 	// URL is the url where this asset was found
 	URL string
 	// Content is the text content of the asset
@@ -174,6 +176,7 @@ func (s *assetService) UpdateWorkingDirectory(path string) {
 
 func (s *assetService) mapRepoAssetToAsset(repoAsset assetrepository.Asset) Asset {
 	asset := Asset{
+		ID:          repoAsset.ID,
 		URL:         repoAsset.URL,
 		ContentType: repoAsset.ContentType,
 		Project:     repoAsset.Project,

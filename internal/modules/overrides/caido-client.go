@@ -202,3 +202,33 @@ func (c *CaidoClient) GetTamperRuleCollections(ctx context.Context) ([]TamperRul
 
 	return query.TamperRuleCollections, nil
 }
+
+// CreateTamperRuleCollectionInput represents the input for creating a tamper rule collection
+type CreateTamperRuleCollectionInput struct {
+	Name string `json:"name"`
+}
+
+// CreateTamperRuleCollectionResponse represents the response from creating a tamper rule collection
+type CreateTamperRuleCollectionResponse struct {
+	Collection TamperRuleCollection `graphql:"collection"`
+}
+
+// CreateTamperRuleCollection creates a new tamper rule collection
+func (c *CaidoClient) CreateTamperRuleCollection(ctx context.Context, name string) (TamperRuleCollection, error) {
+	var mutation struct {
+		CreateTamperRuleCollection struct {
+			Collection TamperRuleCollection `graphql:"collection"`
+		} `graphql:"createTamperRuleCollection(input: { name: $name })"`
+	}
+
+	variables := map[string]interface{}{
+		"name": name,
+	}
+
+	err := c.client.Mutate(ctx, &mutation, variables)
+	if err != nil {
+		return TamperRuleCollection{}, errutil.Wrap(err, "failed to create tamper rule collection")
+	}
+
+	return mutation.CreateTamperRuleCollection.Collection, nil
+}

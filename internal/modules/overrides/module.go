@@ -3,9 +3,14 @@ package overrides
 import (
 	"context"
 	"errors"
+	"os"
 
 	"github.com/francisconeves97/jxscout/internal/core/errutil"
 	jxscouttypes "github.com/francisconeves97/jxscout/pkg/types"
+)
+
+const (
+	JXScoutTamperRuleCollectionName = "jxscout-overrides"
 )
 
 type OverridesModule interface {
@@ -19,6 +24,7 @@ type overridesModule struct {
 	caidoClient   *CaidoClient
 	caidoHostname string
 	caidoPort     int
+	repo          *overridesRepository
 }
 
 func NewOverridesModule(caidoHostname string, caidoPort int) *overridesModule {
@@ -37,24 +43,11 @@ func (m *overridesModule) Initialize(sdk *jxscouttypes.ModuleSDK) error {
 	}
 	m.caidoClient = caidoClient
 
-	db := m.sdk.Database
-
-	_, err = db.Exec(
-		`
-		CREATE TABLE IF NOT EXISTS overrides (
-			id INTEGER PRIMARY KEY,
-			asset_id INTEGER REFERENCES assets(id),
-			caido_collection_id TEXT,
-			caido_tamper_rule_id TEXT,
-			content_hash TEXT,
-			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-			deleted_at TIMESTAMP
-		)
-		`,
-	)
+	repo, err := newOverridesRepository(m.sdk.Database)
 	if err != nil {
-		return errutil.Wrap(err, "failed to create overrides table schema")
+		return errutil.Wrap(err, "failed to create overrides repository")
 	}
+	m.repo = repo
 
 	return nil
 }
@@ -86,7 +79,17 @@ func (m *overridesModule) ToggleOverride(ctx context.Context, request ToggleOver
 		return false, ErrAssetNotFound
 	}
 
-	if !exists {
+	// Check if the file still exists
+	if _, err := os.Stat(asset.Path); os.IsNotExist(err) {
+		return false, errutil.Wrap(err, "asset file no longer exists")
+	}
+
+	existingOverride, err := m.repo.getOverrideByAssetID(ctx, asset.ID)
+	if err != nil {
+		return false, errutil.Wrap(err, "failed to check for existing override")
+	}
+
+	if existingOverride == nil {
 		err := m.createOverride(ctx, asset)
 		if err != nil {
 			return false, errutil.Wrap(err, "failed to create override")
@@ -104,16 +107,47 @@ func (m *overridesModule) ToggleOverride(ctx context.Context, request ToggleOver
 }
 
 func (m *overridesModule) createOverride(ctx context.Context, asset jxscouttypes.Asset) error {
-	tamperRuleCollections, err := m.caidoClient.GetTamperRuleCollections(ctx)
+	_, err := m.getOrCreateTamperRuleCollection(ctx)
 	if err != nil {
-		return errutil.Wrap(err, "failed to get tamper rule collections")
+		return errutil.Wrap(err, "failed to get or create tamper rule collection")
 	}
 
-	m.sdk.Logger.Info("tamper rule collections", "collections", tamperRuleCollections)
+	// Create a new override record
+	// o := &override{
+	// 	AssetID: asset.ID,
+	// 	// Set other fields as needed based on tamperRuleCollections
+	// }
+
+	// if err := m.repo.createOverride(ctx, o); err != nil {
+	// 	return errutil.Wrap(err, "failed to save override to database")
+	// }
 
 	return nil
 }
 
 func (m *overridesModule) deleteOverride(ctx context.Context, asset jxscouttypes.Asset) error {
+	// return m.repo.deleteOverride(ctx, asset.ID)
 	return nil
+}
+
+func (m *overridesModule) getOrCreateTamperRuleCollection(ctx context.Context) (TamperRuleCollection, error) {
+	collections, err := m.caidoClient.GetTamperRuleCollections(ctx)
+	if err != nil {
+		return TamperRuleCollection{}, errutil.Wrap(err, "failed to get tamper rule collections")
+	}
+
+	// Check if our collection already exists
+	for _, collection := range collections {
+		if collection.Name == JXScoutTamperRuleCollectionName {
+			return collection, nil
+		}
+	}
+
+	// Create a new collection if it doesn't exist
+	collection, err := m.caidoClient.CreateTamperRuleCollection(ctx, JXScoutTamperRuleCollectionName)
+	if err != nil {
+		return TamperRuleCollection{}, errutil.Wrap(err, "failed to create tamper rule collection")
+	}
+
+	return collection, nil
 }
