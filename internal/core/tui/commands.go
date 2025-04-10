@@ -619,6 +619,50 @@ func (t *TUI) RegisterDefaultCommands() {
 			return nil, nil
 		},
 	})
+
+	t.RegisterCommand(Command{
+		Name:        "deps",
+		ShortName:   "d",
+		Description: "Show assets that load a specific JavaScript asset",
+		Usage:       "deps <asset_url>",
+		Execute: func(args []string) (tea.Cmd, error) {
+			if len(args) == 0 {
+				return nil, fmt.Errorf("asset url is required")
+			}
+
+			url := args[0]
+
+			// First check if the asset exists and is a JavaScript asset
+			asset, exists, err := t.jxscout.GetAssetService().GetAssetByURL(t.jxscout.Ctx(), url)
+			if err != nil {
+				return nil, fmt.Errorf("failed to get asset: %w", err)
+			}
+			if !exists {
+				return nil, fmt.Errorf("asset not found: %s", url)
+			}
+			if !strings.Contains(asset.ContentType, common.ContentTypeJS) {
+				return nil, fmt.Errorf("asset must be a JS file")
+			}
+
+			// Get assets that load this asset
+			assets, err := t.jxscout.GetAssetService().GetAssetsThatLoad(t.jxscout.Ctx(), url)
+			if err != nil {
+				return nil, fmt.Errorf("failed to get assets that load: %w", err)
+			}
+
+			// Print results
+			t.writeLineToOutput(fmt.Sprintf("\nAssets that load '%s':\n", url))
+			if len(assets) == 0 {
+				t.writeLineToOutput("No assets found that load this JavaScript file.")
+			} else {
+				for i, asset := range assets {
+					t.writeLineToOutput(fmt.Sprintf("%d. %s", i+1, asset.URL))
+				}
+			}
+
+			return nil, nil
+		},
+	})
 }
 
 // RegisterCommand registers a new command with the TUI

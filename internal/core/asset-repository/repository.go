@@ -18,6 +18,7 @@ type Repository interface {
 	GetAssetsByProjectName(projectName string) ([]Asset, error)
 	GetAssetByURL(ctx context.Context, url string) (Asset, bool, error)
 	GetAssets(ctx context.Context, params GetAssetsParams) ([]Asset, int, error)
+	GetAssetsThatLoad(ctx context.Context, url string) ([]Asset, error)
 }
 
 type GetAssetsParams struct {
@@ -268,4 +269,28 @@ func (r *assetRepository) GetAssets(ctx context.Context, params GetAssetsParams)
 	}
 
 	return assets, total, nil
+}
+
+func (r *assetRepository) GetAssetsThatLoad(ctx context.Context, url string) ([]Asset, error) {
+	// First get the target asset
+	targetAsset, exists, err := r.GetAssetByURL(ctx, url)
+	if err != nil {
+		return nil, errutil.Wrap(err, "failed to get target asset")
+	}
+	if !exists {
+		return nil, errutil.Wrap(errors.New("asset not found"), "failed to get target asset")
+	}
+
+	// Get all assets that have this asset as a child
+	var assets []Asset
+	err = r.db.SelectContext(ctx, &assets, `
+		SELECT a.* FROM assets a
+		JOIN asset_relationships ar ON a.id = ar.parent_id
+		WHERE ar.child_id = ?
+	`, targetAsset.ID)
+	if err != nil {
+		return nil, errutil.Wrap(err, "failed to get assets that load target")
+	}
+
+	return assets, nil
 }

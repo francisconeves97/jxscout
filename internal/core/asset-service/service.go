@@ -20,6 +20,7 @@ type AssetService interface {
 	GetProjectAssets(projectName string) ([]Asset, error)
 	GetAssetByURL(ctx context.Context, url string) (Asset, bool, error)
 	GetAssets(ctx context.Context, params assetrepository.GetAssetsParams) ([]Asset, int, error)
+	GetAssetsThatLoad(ctx context.Context, url string) ([]Asset, error)
 }
 
 type Asset struct {
@@ -231,4 +232,20 @@ func (s *assetService) GetAssets(ctx context.Context, params assetrepository.Get
 	}
 
 	return assets, total, nil
+}
+
+func (s *assetService) GetAssetsThatLoad(ctx context.Context, url string) ([]Asset, error) {
+	cleanURL := common.NormalizeURL(url)
+
+	repoAssets, err := s.repository.GetAssetsThatLoad(ctx, cleanURL)
+	if err != nil {
+		return nil, errutil.Wrap(err, "failed to get assets that load from repo")
+	}
+
+	assets := []Asset{}
+	for _, repoAsset := range repoAssets {
+		assets = append(assets, s.mapRepoAssetToAsset(repoAsset))
+	}
+
+	return assets, nil
 }
