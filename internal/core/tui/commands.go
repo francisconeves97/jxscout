@@ -544,7 +544,7 @@ func (t *TUI) RegisterDefaultCommands() {
 
 	t.RegisterCommand(Command{
 		Name:        "assets",
-		ShortName:   "a",
+		ShortName:   "la",
 		Description: "List assets with pagination and search",
 		Usage:       "assets [page=<page_number>] [page-size=<page_size>] [search=<search_term>]",
 		Execute: func(args []string) (tea.Cmd, error) {
@@ -603,13 +603,14 @@ func (t *TUI) RegisterDefaultCommands() {
 
 			// Print assets
 			for i, asset := range assets {
-				t.writeLineToOutput(fmt.Sprintf("%d. %s (%s)", i+1, asset.URL, asset.ContentType))
+				t.writeLineToOutput(fmt.Sprintf("%d. %s", (i+1)+((params.Page-1)*params.PageSize), asset.URL))
 			}
 
 			// Print pagination info
 			t.writeLineToOutput(fmt.Sprintf("\nTotal assets: %d", total))
 			if totalPages > 1 {
 				t.writeLineToOutput("Use 'assets page=<number>' to view other pages")
+				t.writeLineToOutput("Use 'assets page-size=<page-size>' to change the page size")
 			}
 			if params.SearchTerm == "" {
 				t.writeLineToOutput("Use 'assets search=<term>' to search assets")

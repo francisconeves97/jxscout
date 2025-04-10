@@ -57,6 +57,8 @@ func initialize(db *sqlx.DB) (*sqlx.DB, error) {
     	updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 		);
 
+		CREATE INDEX IF NOT EXISTS idx_assets_project ON assets(project);
+
 		CREATE TABLE IF NOT EXISTS asset_relationships (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
 			parent_id INTEGER NOT NULL,
