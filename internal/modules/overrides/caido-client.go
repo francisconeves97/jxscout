@@ -232,3 +232,113 @@ func (c *CaidoClient) CreateTamperRuleCollection(ctx context.Context, name strin
 
 	return mutation.CreateTamperRuleCollection.Collection, nil
 }
+
+// TamperRule represents a tamper rule in Caido
+type TamperRule struct {
+	ID   string `graphql:"id"`
+	Name string `graphql:"name"`
+}
+
+// CreateTamperRuleInput represents the input for creating a tamper rule
+type CreateTamperRuleInput struct {
+	CollectionID string            `json:"collectionId"`
+	Name         string            `json:"name"`
+	Section      TamperRuleSection `json:"section"`
+}
+
+// TamperRuleSection represents the section of a tamper rule
+type TamperRuleSection struct {
+	ResponseBody TamperRuleResponseBody `json:"responseBody"`
+}
+
+// TamperRuleResponseBody represents the response body section of a tamper rule
+type TamperRuleResponseBody struct {
+	Operation TamperRuleOperation `json:"operation"`
+}
+
+// TamperRuleOperation represents the operation of a tamper rule
+type TamperRuleOperation struct {
+	Raw TamperRuleRaw `json:"raw"`
+}
+
+// TamperRuleRaw represents the raw operation of a tamper rule
+type TamperRuleRaw struct {
+	Matcher  TamperRuleMatcher  `json:"matcher"`
+	Replacer TamperRuleReplacer `json:"replacer"`
+}
+
+// TamperRuleMatcher represents the matcher of a tamper rule
+type TamperRuleMatcher struct {
+	Full TamperRuleFull `json:"full"`
+}
+
+// TamperRuleFull represents the full matcher of a tamper rule
+type TamperRuleFull struct {
+	Full bool `json:"full"`
+}
+
+// TamperRuleReplacer represents the replacer of a tamper rule
+type TamperRuleReplacer struct {
+	Term TamperRuleTerm `json:"term"`
+}
+
+// TamperRuleTerm represents the term replacer of a tamper rule
+type TamperRuleTerm struct {
+	Term string `json:"term"`
+}
+
+// CreateTamperRule creates a new tamper rule
+func (c *CaidoClient) CreateTamperRule(ctx context.Context, collectionID string, name string, content string, host string, path string) (TamperRule, error) {
+	var mutation struct {
+		CreateTamperRule struct {
+			Rule struct {
+				ID   string `graphql:"id"`
+				Name string `graphql:"name"`
+			} `graphql:"rule"`
+		} `graphql:"createTamperRule(input: { collectionId: $collectionId, name: $name, condition: $condition, section: { responseBody: { operation: { raw: { matcher: { full: { full: true } }, replacer: { term: { term: $content } } } } } } })"`
+	}
+
+	condition := fmt.Sprintf(`req.host.cont:"%s" and req.path.cont:"%s"`, host, path)
+
+	variables := map[string]interface{}{
+		"collectionId": collectionID,
+		"name":         name,
+		"content":      content,
+		"condition":    condition,
+	}
+
+	err := c.client.Mutate(ctx, &mutation, variables)
+	if err != nil {
+		return TamperRule{}, errutil.Wrap(err, "failed to create tamper rule")
+	}
+
+	return TamperRule{
+		ID:   mutation.CreateTamperRule.Rule.ID,
+		Name: mutation.CreateTamperRule.Rule.Name,
+	}, nil
+}
+
+// ToggleTamperRule enables or disables a tamper rule
+func (c *CaidoClient) ToggleTamperRule(ctx context.Context, ruleID string, enabled bool) (TamperRule, error) {
+	var mutation struct {
+		ToggleTamperRule struct {
+			Rule struct {
+				ID string `graphql:"id"`
+			} `graphql:"rule"`
+		} `graphql:"toggleTamperRule(id: $id, enabled: $enabled)"`
+	}
+
+	variables := map[string]interface{}{
+		"id":      ruleID,
+		"enabled": enabled,
+	}
+
+	err := c.client.Mutate(ctx, &mutation, variables)
+	if err != nil {
+		return TamperRule{}, errutil.Wrap(err, "failed to toggle tamper rule")
+	}
+
+	return TamperRule{
+		ID: mutation.ToggleTamperRule.Rule.ID,
+	}, nil
+}

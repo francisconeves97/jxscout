@@ -3,14 +3,19 @@ package overrides
 import (
 	"context"
 	"errors"
+	"net/url"
 	"os"
+	"strings"
 
+	"github.com/francisconeves97/jxscout/internal/core/common"
 	"github.com/francisconeves97/jxscout/internal/core/errutil"
 	jxscouttypes "github.com/francisconeves97/jxscout/pkg/types"
+	"github.com/google/uuid"
 )
 
 const (
 	JXScoutTamperRuleCollectionName = "jxscout-overrides"
+	JXScoutTamperRuleNamePrefix     = "jxscout-"
 )
 
 type OverridesModule interface {
@@ -107,20 +112,51 @@ func (m *overridesModule) ToggleOverride(ctx context.Context, request ToggleOver
 }
 
 func (m *overridesModule) createOverride(ctx context.Context, asset jxscouttypes.Asset) error {
-	_, err := m.getOrCreateTamperRuleCollection(ctx)
+	collection, err := m.getOrCreateTamperRuleCollection(ctx)
 	if err != nil {
 		return errutil.Wrap(err, "failed to get or create tamper rule collection")
 	}
 
-	// Create a new override record
-	// o := &override{
-	// 	AssetID: asset.ID,
-	// 	// Set other fields as needed based on tamperRuleCollections
-	// }
+	// Read the asset's content
+	content, err := os.ReadFile(asset.Path)
+	if err != nil {
+		return errutil.Wrap(err, "failed to read asset file")
+	}
 
-	// if err := m.repo.createOverride(ctx, o); err != nil {
-	// 	return errutil.Wrap(err, "failed to save override to database")
-	// }
+	// Parse the URL to get host and path
+	parsedURL, err := url.Parse(asset.URL)
+	if err != nil {
+		return errutil.Wrap(err, "failed to parse asset URL")
+	}
+
+	// Generate a unique name for the rule
+	ruleName := JXScoutTamperRuleNamePrefix + uuid.New().String()
+
+	// Create the tamper rule
+	rule, err := m.caidoClient.CreateTamperRule(ctx, collection.ID, ruleName, string(content), parsedURL.Host, strings.TrimSuffix(parsedURL.Path, "/"))
+	if err != nil {
+		return errutil.Wrap(err, "failed to create tamper rule")
+	}
+
+	_, err = m.caidoClient.ToggleTamperRule(ctx, rule.ID, true)
+	if err != nil {
+		return errutil.Wrap(err, "failed to toggle tamper rule")
+	}
+
+	// Calculate content hash
+	hash := common.Hash(string(content))
+
+	// Create a new override record
+	o := &override{
+		AssetID:           asset.ID,
+		CaidoCollectionID: collection.ID,
+		CaidoTamperRuleID: rule.ID,
+		ContentHash:       hash,
+	}
+
+	if err := m.repo.createOverride(ctx, o); err != nil {
+		return errutil.Wrap(err, "failed to save override to database")
+	}
 
 	return nil
 }

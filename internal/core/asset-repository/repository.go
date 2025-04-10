@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/francisconeves97/jxscout/internal/core/errutil"
+	"github.com/francisconeves97/jxscout/pkg/constants"
 
 	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3"
@@ -233,8 +234,16 @@ func (r *assetRepository) GetAssetByURL(ctx context.Context, url string) (Asset,
 
 func (r *assetRepository) GetAssets(ctx context.Context, params GetAssetsParams) ([]Asset, int, error) {
 	// Build the base query
-	baseQuery := "FROM assets WHERE project = ? AND url NOT LIKE '%inline.js'"
+	baseQuery := "FROM assets WHERE (project = ?"
 	args := []interface{}{params.ProjectName}
+
+	if params.ProjectName == constants.DefaultProjectName {
+		baseQuery += " OR project = '')"
+	} else {
+		baseQuery += ")"
+	}
+
+	baseQuery += " AND url NOT LIKE '%inline.js'"
 
 	// Add search condition if search term is provided
 	if params.SearchTerm != "" {
