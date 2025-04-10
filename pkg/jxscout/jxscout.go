@@ -22,6 +22,7 @@ import (
 	htmlingestion "github.com/francisconeves97/jxscout/internal/modules/html-ingestion"
 	"github.com/francisconeves97/jxscout/internal/modules/ingestion"
 	jsingestion "github.com/francisconeves97/jxscout/internal/modules/js-ingestion"
+	"github.com/francisconeves97/jxscout/internal/modules/overrides"
 	sourcemaps "github.com/francisconeves97/jxscout/internal/modules/source-maps"
 	jxscouttypes "github.com/francisconeves97/jxscout/pkg/types"
 	"github.com/jmoiron/sqlx"
@@ -31,19 +32,20 @@ import (
 )
 
 type jxscout struct {
-	ctx          context.Context
-	cancel       context.CancelFunc
-	logBuffer    *logBuffer
-	log          *slog.Logger
-	eventBus     jxscouttypes.EventBus
-	options      jxscouttypes.Options
-	assetService jxscouttypes.AssetService
-	assetFetcher jxscouttypes.AssetFetcher
-	httpServer   jxscouttypes.HTTPServer
-	scopeChecker jxscouttypes.Scope
-	cache        jxscouttypes.Cache
-	fileService  jxscouttypes.FileService
-	db           *sqlx.DB
+	ctx             context.Context
+	cancel          context.CancelFunc
+	logBuffer       *logBuffer
+	log             *slog.Logger
+	eventBus        jxscouttypes.EventBus
+	options         jxscouttypes.Options
+	assetService    jxscouttypes.AssetService
+	assetFetcher    jxscouttypes.AssetFetcher
+	httpServer      jxscouttypes.HTTPServer
+	scopeChecker    jxscouttypes.Scope
+	cache           jxscouttypes.Cache
+	fileService     jxscouttypes.FileService
+	db              *sqlx.DB
+	overridesModule overrides.OverridesModule
 
 	modules      []jxscouttypes.Module
 	modulesMutex sync.Mutex
@@ -132,6 +134,13 @@ func initJxscout(options jxscouttypes.Options) (*jxscout, error) {
 }
 
 func (s *jxscout) registerCoreModules() {
+	overridesModule, err := overrides.NewOverridesModule(s.options.CaidoHostname, s.options.CaidoPort)
+	if err != nil {
+		s.log.Error("failed to register overrides module", "error", err)
+	}
+
+	s.overridesModule = overridesModule
+
 	coreModules := []jxscouttypes.Module{
 		ingestion.NewIngestionModule(),
 		htmlingestion.NewHTMLIngestionModule(s.options.HTMLRequestsCacheTTL),
@@ -143,6 +152,10 @@ func (s *jxscout) registerCoreModules() {
 		),
 		gitcommiter.NewGitCommiter(s.options.GitCommitInterval),
 		sourcemaps.NewSourceMaps(s.options.AssetSaveConcurrency),
+	}
+
+	if overridesModule != nil {
+		coreModules = append(coreModules, overridesModule)
 	}
 
 	for _, module := range coreModules {
@@ -221,6 +234,7 @@ func (s *jxscout) initializeModules(r jxscouttypes.Router) error {
 		Cache:        s.cache,
 		AssetFetcher: s.assetFetcher,
 		FileService:  s.fileService,
+		Database:     s.db,
 		Ctx:          s.ctx,
 	}
 
@@ -293,4 +307,12 @@ func (s *jxscout) Restart(options jxscouttypes.Options) (*jxscout, error) {
 
 func (s *jxscout) GetOptions() jxscouttypes.Options {
 	return s.options
+}
+
+func (s *jxscout) GetOverridesModule() overrides.OverridesModule {
+	return s.overridesModule
+}
+
+func (s *jxscout) Ctx() context.Context {
+	return s.ctx
 }

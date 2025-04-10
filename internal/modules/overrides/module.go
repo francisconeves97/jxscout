@@ -7,12 +7,26 @@ import (
 	jxscouttypes "github.com/francisconeves97/jxscout/pkg/types"
 )
 
-type overridesModule struct {
-	sdk *jxscouttypes.ModuleSDK
+type OverridesModule interface {
+	IsCaidoAuthenticated(ctx context.Context) bool
+	AuthenticateCaido(ctx context.Context) (string, error)
+	ToggleOverride(ctx context.Context, request ToggleOverrideRequest) error
 }
 
-func NewOverridesModule() *overridesModule {
-	return &overridesModule{}
+type overridesModule struct {
+	sdk         *jxscouttypes.ModuleSDK
+	caidoClient *CaidoClient
+}
+
+func NewOverridesModule(caidoHostname string, caidoPort int) (*overridesModule, error) {
+	caidoClient, err := NewCaidoClient(caidoHostname, caidoPort)
+	if err != nil {
+		return nil, errutil.Wrap(err, "failed to create Caido client")
+	}
+
+	return &overridesModule{
+		caidoClient: caidoClient,
+	}, nil
 }
 
 func (m *overridesModule) Initialize(sdk *jxscouttypes.ModuleSDK) error {
@@ -42,6 +56,18 @@ func (m *overridesModule) Initialize(sdk *jxscouttypes.ModuleSDK) error {
 
 type ToggleOverrideRequest struct {
 	AssetURL string
+}
+
+func (m *overridesModule) IsCaidoAuthenticated(ctx context.Context) bool {
+	return m.caidoClient.IsAuthenticated()
+}
+
+func (m *overridesModule) AuthenticateCaido(ctx context.Context) (string, error) {
+	verificationURL, err := m.caidoClient.Authenticate(ctx)
+	if err != nil {
+		return "", errutil.Wrap(err, "failed to authenticate with Caido")
+	}
+	return verificationURL, nil
 }
 
 func (m *overridesModule) ToggleOverride(ctx context.Context, request ToggleOverrideRequest) error {

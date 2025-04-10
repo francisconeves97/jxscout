@@ -66,6 +66,11 @@ func main() {
 		flagSet.IntVar(&options.LogFileMaxSizeMB, constants.FlagLogFileMaxSizeMB, constants.DefaultLogFileMaxSizeMB, constants.DescriptionLogFileMaxSizeMB),
 	)
 
+	flagSet.CreateGroup("overrides", "overrides configuration",
+		flagSet.StringVar(&options.CaidoHostname, constants.FlagCaidoHostname, constants.DefaultCaidoHostname, constants.DescriptionCaidoHostname),
+		flagSet.IntVar(&options.CaidoPort, constants.FlagCaidoPort, constants.DefaultCaidoPort, constants.DescriptionCaidoPort),
+	)
+
 	configFileLocation := path.Join(common.GetPrivateDirectory(), constants.ConfigFileName)
 	flagSet.SetConfigFilePath(configFileLocation)
 

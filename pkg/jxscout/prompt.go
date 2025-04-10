@@ -1,7 +1,10 @@
 package jxscout
 
 import (
+	"context"
+
 	"github.com/francisconeves97/jxscout/internal/core/tui"
+	"github.com/francisconeves97/jxscout/internal/modules/overrides"
 	jxscouttypes "github.com/francisconeves97/jxscout/pkg/types"
 )
 
@@ -30,6 +33,14 @@ func (t *tuiJXScoutWrapper) Restart(options jxscouttypes.Options) (tui.JXScout, 
 	t.jxscout = jxscout
 
 	return &tuiJXScoutWrapper{jxscout: jxscout}, nil
+}
+
+func (t *tuiJXScoutWrapper) GetOverridesModule() overrides.OverridesModule {
+	return t.jxscout.overridesModule
+}
+
+func (t *tuiJXScoutWrapper) Ctx() context.Context {
+	return t.jxscout.ctx
 }
 
 func (s *jxscout) runPrompt() {

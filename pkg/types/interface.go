@@ -57,6 +57,8 @@ type Options struct {
 	DownloadReferedJS                bool                `yaml:"download-refered-js"`
 	LogBufferSize                    int                 `yaml:"log-buffer-size"`
 	LogFileMaxSizeMB                 int                 `yaml:"log-file-max-size-mb"`
+	CaidoHostname                    string              `yaml:"caido-hostname"`
+	CaidoPort                        int                 `yaml:"caido-port"`
 }
 
 // AssetService interface

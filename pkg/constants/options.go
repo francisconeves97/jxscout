@@ -42,6 +42,10 @@ const (
 	// Logging configuration
 	DefaultLogBufferSize    = 10000
 	DefaultLogFileMaxSizeMB = 10
+
+	// Overrides configuration
+	DefaultCaidoHostname = "localhost"
+	DefaultCaidoPort     = 8080
 )
 
 // Flag names for jxscout options
@@ -81,6 +85,10 @@ const (
 	// Logging configuration
 	FlagLogBufferSize    = "log-buffer-size"
 	FlagLogFileMaxSizeMB = "log-file-max-size-mb"
+
+	// Overrides configuration
+	FlagCaidoHostname = "caido-hostname"
+	FlagCaidoPort     = "caido-port"
 )
 
 // Descriptions for jxscout options
@@ -120,4 +128,8 @@ const (
 	// Logging configuration
 	DescriptionLogBufferSize    = "how many log lines to show in the logs panel"
 	DescriptionLogFileMaxSizeMB = "max size of the log file in MB"
+
+	// Overrides configuration
+	DescriptionCaidoHostname = "hostname where Caido is running"
+	DescriptionCaidoPort     = "port where Caido is running"
 )
