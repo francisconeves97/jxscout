@@ -48,6 +48,7 @@ type JXScout interface {
 	Restart(options jxscouttypes.Options) (JXScout, error)
 	GetOverridesModule() overrides.OverridesModule
 	Ctx() context.Context
+	GetAssetService() jxscouttypes.AssetService
 }
 
 func New(jxscout JXScout) *TUI {

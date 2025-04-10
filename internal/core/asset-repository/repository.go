@@ -17,6 +17,14 @@ type Repository interface {
 	SaveAsset(ctx context.Context, asset Asset) (int64, error)
 	GetAssetsByProjectName(projectName string) ([]Asset, error)
 	GetAssetByURL(ctx context.Context, url string) (Asset, bool, error)
+	GetAssets(ctx context.Context, params GetAssetsParams) ([]Asset, int, error)
+}
+
+type GetAssetsParams struct {
+	ProjectName string
+	SearchTerm  string
+	Page        int
+	PageSize    int
 }
 
 type assetRepository struct {
@@ -218,4 +226,44 @@ func (r *assetRepository) GetAssetByURL(ctx context.Context, url string) (Asset,
 	}
 
 	return asset, true, nil
+}
+
+func (r *assetRepository) GetAssets(ctx context.Context, params GetAssetsParams) ([]Asset, int, error) {
+	// Build the base query
+	baseQuery := "FROM assets WHERE project = ? AND url NOT LIKE '%inline.js'"
+	args := []interface{}{params.ProjectName}
+
+	// Add search condition if search term is provided
+	if params.SearchTerm != "" {
+		baseQuery += " AND url LIKE ?"
+		args = append(args, "%"+params.SearchTerm+"%")
+	}
+
+	// Get total count
+	var total int
+	countQuery := "SELECT COUNT(*) " + baseQuery
+	err := r.db.GetContext(ctx, &total, countQuery, args...)
+	if err != nil {
+		return nil, 0, errutil.Wrap(err, "failed to get total count")
+	}
+
+	// Calculate offset
+	offset := (params.Page - 1) * params.PageSize
+
+	// Get paginated assets
+	query := `
+		SELECT id, url, content_hash, content_type, fs_path, project, request_headers, created_at, updated_at
+		` + baseQuery + `
+		ORDER BY created_at DESC
+		LIMIT ? OFFSET ?
+	`
+	args = append(args, params.PageSize, offset)
+
+	var assets []Asset
+	err = r.db.SelectContext(ctx, &assets, query, args...)
+	if err != nil {
+		return nil, 0, errutil.Wrap(err, "failed to get assets")
+	}
+
+	return assets, total, nil
 }

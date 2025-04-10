@@ -13,6 +13,7 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	assetrepository "github.com/francisconeves97/jxscout/internal/core/asset-repository"
 	"github.com/francisconeves97/jxscout/internal/core/common"
 	"github.com/francisconeves97/jxscout/internal/modules/overrides"
 	"github.com/francisconeves97/jxscout/pkg/constants"
@@ -540,6 +541,83 @@ func (t *TUI) RegisterDefaultCommands() {
 			return nil, nil
 		},
 	})
+
+	t.RegisterCommand(Command{
+		Name:        "assets",
+		ShortName:   "a",
+		Description: "List assets with pagination and search",
+		Usage:       "assets [page=<page_number>] [page-size=<page_size>] [search=<search_term>]",
+		Execute: func(args []string) (tea.Cmd, error) {
+			params := assetrepository.GetAssetsParams{
+				ProjectName: t.jxscout.GetOptions().ProjectName,
+				Page:        1,
+				PageSize:    15,
+			}
+
+			// Parse arguments
+			for _, arg := range args {
+				parts := strings.SplitN(arg, "=", 2)
+				if len(parts) != 2 {
+					return nil, fmt.Errorf("invalid argument format: %s. Expected format: key=value", arg)
+				}
+
+				key := parts[0]
+				value := parts[1]
+
+				switch key {
+				case "page":
+					page, err := strconv.Atoi(value)
+					if err != nil {
+						return nil, fmt.Errorf("invalid page number: %s", value)
+					}
+					params.Page = page
+				case "page-size":
+					pageSize, err := strconv.Atoi(value)
+					if err != nil {
+						return nil, fmt.Errorf("invalid page size: %s", value)
+					}
+					params.PageSize = pageSize
+				case "search":
+					params.SearchTerm = value
+				default:
+					return nil, fmt.Errorf("unknown argument: %s", key)
+				}
+			}
+
+			// Get assets from service
+			assets, total, err := t.jxscout.GetAssetService().GetAssets(t.jxscout.Ctx(), params)
+			if err != nil {
+				return nil, fmt.Errorf("failed to get assets: %w", err)
+			}
+
+			// Calculate total pages
+			totalPages := (total + params.PageSize - 1) / params.PageSize
+
+			// Print header
+			t.writeLineToOutput(fmt.Sprintf("\nAssets for project '%s' (page %d of %d):\n",
+				params.ProjectName, params.Page, totalPages))
+
+			if params.SearchTerm != "" {
+				t.writeLineToOutput(fmt.Sprintf("Search term: '%s'\n", params.SearchTerm))
+			}
+
+			// Print assets
+			for i, asset := range assets {
+				t.writeLineToOutput(fmt.Sprintf("%d. %s (%s)", i+1, asset.URL, asset.ContentType))
+			}
+
+			// Print pagination info
+			t.writeLineToOutput(fmt.Sprintf("\nTotal assets: %d", total))
+			if totalPages > 1 {
+				t.writeLineToOutput("Use 'assets page=<number>' to view other pages")
+			}
+			if params.SearchTerm == "" {
+				t.writeLineToOutput("Use 'assets search=<term>' to search assets")
+			}
+
+			return nil, nil
+		},
+	})
 }
 
 // RegisterCommand registers a new command with the TUI
@@ -614,12 +692,12 @@ func (t *TUI) GetHelp() string {
 
 // writeCommandHelp writes the help text for a command to the builder
 func (t *TUI) writeCommandHelp(builder *strings.Builder, cmd Command) {
-	builder.WriteString(fmt.Sprintf("\n%s", cmd.Name))
+	builder.WriteString("\n" + cmd.Name)
 	if cmd.ShortName != "" {
-		builder.WriteString(fmt.Sprintf(" (%s)", cmd.ShortName))
+		builder.WriteString(" (" + cmd.ShortName + ")")
 	}
-	builder.WriteString(fmt.Sprintf(" - %s\n", cmd.Description))
-	builder.WriteString(fmt.Sprintf("  Usage: %s\n", cmd.Usage))
+	builder.WriteString(" - " + cmd.Description + "\n")
+	builder.WriteString("  Usage: " + cmd.Usage + "\n")
 }
 
 // GetCommandHelp returns the help text for a specific command

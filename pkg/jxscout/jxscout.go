@@ -309,3 +309,7 @@ func (s *jxscout) GetOverridesModule() overrides.OverridesModule {
 func (s *jxscout) Ctx() context.Context {
 	return s.ctx
 }
+
+func (s *jxscout) GetAssetService() jxscouttypes.AssetService {
+	return s.assetService
+}

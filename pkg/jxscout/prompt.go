@@ -39,6 +39,10 @@ func (t *tuiJXScoutWrapper) GetOverridesModule() overrides.OverridesModule {
 	return t.jxscout.overridesModule
 }
 
+func (t *tuiJXScoutWrapper) GetAssetService() jxscouttypes.AssetService {
+	return t.jxscout.assetService
+}
+
 func (t *tuiJXScoutWrapper) Ctx() context.Context {
 	return t.jxscout.ctx
 }

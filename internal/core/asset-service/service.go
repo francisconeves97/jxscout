@@ -19,6 +19,7 @@ type AssetService interface {
 	UpdateWorkingDirectory(path string)
 	GetProjectAssets(projectName string) ([]Asset, error)
 	GetAssetByURL(ctx context.Context, url string) (Asset, bool, error)
+	GetAssets(ctx context.Context, params assetrepository.GetAssetsParams) ([]Asset, int, error)
 }
 
 type Asset struct {
@@ -216,4 +217,18 @@ func (s *assetService) GetAssetByURL(ctx context.Context, url string) (Asset, bo
 	}
 
 	return s.mapRepoAssetToAsset(repoAsset), true, nil
+}
+
+func (s *assetService) GetAssets(ctx context.Context, params assetrepository.GetAssetsParams) ([]Asset, int, error) {
+	repoAssets, total, err := s.repository.GetAssets(ctx, params)
+	if err != nil {
+		return nil, 0, errutil.Wrap(err, "failed to get assets from repo")
+	}
+
+	assets := []Asset{}
+	for _, repoAsset := range repoAssets {
+		assets = append(assets, s.mapRepoAssetToAsset(repoAsset))
+	}
+
+	return assets, total, nil
 }
