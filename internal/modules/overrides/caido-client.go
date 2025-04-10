@@ -2,6 +2,7 @@ package overrides
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -65,6 +66,10 @@ func (c *CaidoClient) Authenticate(ctx context.Context) (string, error) {
 	err := c.client.Mutate(ctx, &mutation, nil)
 	if err != nil {
 		return "", errutil.Wrap(err, "failed to start authentication flow")
+	}
+
+	if mutation.StartAuthenticationFlow.Request.VerificationURL == "" {
+		return "", errors.New("failed to start authentication flow")
 	}
 
 	return mutation.StartAuthenticationFlow.Request.VerificationURL, nil

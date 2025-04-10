@@ -13,10 +13,10 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/francisconeves97/jxscout/internal/core/common"
-	"github.com/francisconeves97/jxscout/internal/modules/overrides"
 	"github.com/francisconeves97/jxscout/pkg/constants"
 	jxscouttypes "github.com/francisconeves97/jxscout/pkg/types"
 	"github.com/muesli/reflow/wordwrap"
+	"github.com/pkg/browser"
 	"gopkg.in/yaml.v3"
 )
 
@@ -489,7 +489,7 @@ func (t *TUI) RegisterDefaultCommands() {
 				return nil, fmt.Errorf("asset url is required")
 			}
 
-			url := args[0]
+			// url := args[0]
 
 			// Get the overrides module from jxscout
 			overridesModule := t.jxscout.GetOverridesModule()
@@ -500,25 +500,25 @@ func (t *TUI) RegisterDefaultCommands() {
 			if !overridesModule.IsCaidoAuthenticated(t.jxscout.Ctx()) {
 				t.writeLineToOutput("Not authenticated with Caido. Starting authentication flow...")
 
-				verificationURL, err := overridesModule.AuthenticateCaido(t.jxscout.Ctx())
-				if err != nil {
-					return nil, fmt.Errorf("failed to authenticate with Caido: %w", err)
-				}
+				go func() {
+					verificationURL, err := overridesModule.AuthenticateCaido(t.jxscout.Ctx())
+					if err != nil {
+						t.writeLineToOutput(fmt.Sprintf("Failed to authenticate with Caido: %v", err))
+						return
+					}
 
-				t.writeLineToOutput(fmt.Sprintf("Please visit %s to complete authentication", verificationURL))
-				t.writeLineToOutput("After authenticating, run the override command again")
-				return nil, nil
+					err = browser.OpenURL(verificationURL)
+					if err != nil {
+						t.writeLineToOutput(fmt.Sprintf("Failed to open verification URL in your browser: %v", err))
+						t.writeLineToOutput(fmt.Sprintf("Please visit %s to complete authentication", verificationURL))
+					} else {
+						t.writeLineToOutput("Please complete the authentication with Caido on your browser")
+					}
+
+					t.writeLineToOutput("After authenticating, run the override command again")
+				}()
 			}
 
-			// Toggle the override
-			err := overridesModule.ToggleOverride(t.jxscout.Ctx(), overrides.ToggleOverrideRequest{
-				AssetURL: url,
-			})
-			if err != nil {
-				return nil, fmt.Errorf("failed to toggle override: %w", err)
-			}
-
-			t.writeLineToOutput(fmt.Sprintf("Successfully toggled override for %s", url))
 			return nil, nil
 		},
 	})
