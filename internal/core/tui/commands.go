@@ -1,6 +1,7 @@
 package tui
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -13,6 +14,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/francisconeves97/jxscout/internal/core/common"
+	"github.com/francisconeves97/jxscout/internal/modules/overrides"
 	"github.com/francisconeves97/jxscout/pkg/constants"
 	jxscouttypes "github.com/francisconeves97/jxscout/pkg/types"
 	"github.com/muesli/reflow/wordwrap"
@@ -489,7 +491,7 @@ func (t *TUI) RegisterDefaultCommands() {
 				return nil, fmt.Errorf("asset url is required")
 			}
 
-			// url := args[0]
+			url := args[0]
 
 			// Get the overrides module from jxscout
 			overridesModule := t.jxscout.GetOverridesModule()
@@ -514,6 +516,25 @@ func (t *TUI) RegisterDefaultCommands() {
 
 					t.writeLineToOutput("After authenticating, run the override command again")
 				}()
+
+				return nil, nil
+			}
+
+			overriden, err := overridesModule.ToggleOverride(t.jxscout.Ctx(), overrides.ToggleOverrideRequest{
+				AssetURL: url,
+			})
+			if errors.Is(err, overrides.ErrAssetNotFound) {
+				t.writeLineToOutput(fmt.Sprintf("Asset %s not found. Confirm the URL is correct and that asset is being tracked by jxscout", url))
+				return nil, nil
+			}
+			if err != nil {
+				return nil, fmt.Errorf("failed to toggle override: %w", err)
+			}
+
+			if overriden {
+				t.writeLineToOutput(fmt.Sprintf("Override added for %s", url))
+			} else {
+				t.writeLineToOutput(fmt.Sprintf("Override removed for %s", url))
 			}
 
 			return nil, nil

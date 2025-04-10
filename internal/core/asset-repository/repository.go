@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"strings"
+	"time"
 
 	"github.com/francisconeves97/jxscout/internal/core/errutil"
 
@@ -68,13 +69,15 @@ func initialize(db *sqlx.DB) (*sqlx.DB, error) {
 }
 
 type Asset struct {
-	ID             int64  `db:"id"`
-	URL            string `db:"url"`
-	ContentHash    string `db:"content_hash"`
-	ContentType    string `db:"content_type"`
-	FileSystemPath string `db:"fs_path"`
-	Project        string `db:"project"`
-	RequestHeaders string `db:"request_headers"`
+	ID             int64     `db:"id"`
+	URL            string    `db:"url"`
+	ContentHash    string    `db:"content_hash"`
+	ContentType    string    `db:"content_type"`
+	FileSystemPath string    `db:"fs_path"`
+	Project        string    `db:"project"`
+	RequestHeaders string    `db:"request_headers"`
+	CreatedAt      time.Time `db:"created_at"`
+	UpdatedAt      time.Time `db:"updated_at"`
 
 	Parent *Asset
 

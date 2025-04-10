@@ -133,8 +133,6 @@ func (c *CaidoClient) listenForAuthenticationToken(ctx context.Context, requestI
 			return nil
 		}
 
-		c.log.Info("authentication subscription data", "data", string(data))
-
 		var response CreatedAuthenticationToken
 		if err := json.Unmarshal(data, &response); err != nil {
 			errChan <- err

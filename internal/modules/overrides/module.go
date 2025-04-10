@@ -2,6 +2,7 @@ package overrides
 
 import (
 	"context"
+	"errors"
 
 	"github.com/francisconeves97/jxscout/internal/core/errutil"
 	jxscouttypes "github.com/francisconeves97/jxscout/pkg/types"
@@ -10,7 +11,7 @@ import (
 type OverridesModule interface {
 	IsCaidoAuthenticated(ctx context.Context) bool
 	AuthenticateCaido(ctx context.Context) (string, error)
-	ToggleOverride(ctx context.Context, request ToggleOverrideRequest) error
+	ToggleOverride(ctx context.Context, request ToggleOverrideRequest) (bool, error)
 }
 
 type overridesModule struct {
@@ -74,30 +75,41 @@ func (m *overridesModule) AuthenticateCaido(ctx context.Context) (string, error)
 	return verificationURL, nil
 }
 
-func (m *overridesModule) ToggleOverride(ctx context.Context, request ToggleOverrideRequest) error {
+var ErrAssetNotFound = errors.New("asset not found")
+
+func (m *overridesModule) ToggleOverride(ctx context.Context, request ToggleOverrideRequest) (bool, error) {
 	asset, exists, err := m.sdk.AssetService.GetAssetByURL(ctx, request.AssetURL)
 	if err != nil {
-		return errutil.Wrap(err, "failed to get asset by URL")
+		return false, errutil.Wrap(err, "failed to get asset by URL")
+	}
+	if !exists {
+		return false, ErrAssetNotFound
 	}
 
 	if !exists {
 		err := m.createOverride(ctx, asset)
 		if err != nil {
-			return errutil.Wrap(err, "failed to create override")
+			return false, errutil.Wrap(err, "failed to create override")
 		}
 
-		return nil
+		return true, nil
 	}
 
 	err = m.deleteOverride(ctx, asset)
 	if err != nil {
-		return errutil.Wrap(err, "failed to delete override")
+		return false, errutil.Wrap(err, "failed to delete override")
 	}
 
-	return nil
+	return false, nil
 }
 
 func (m *overridesModule) createOverride(ctx context.Context, asset jxscouttypes.Asset) error {
+	tamperRuleCollections, err := m.caidoClient.GetTamperRuleCollections(ctx)
+	if err != nil {
+		return errutil.Wrap(err, "failed to get tamper rule collections")
+	}
+
+	m.sdk.Logger.Info("tamper rule collections", "collections", tamperRuleCollections)
 
 	return nil
 }
