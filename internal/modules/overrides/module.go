@@ -14,27 +14,31 @@ type OverridesModule interface {
 }
 
 type overridesModule struct {
-	sdk         *jxscouttypes.ModuleSDK
-	caidoClient *CaidoClient
+	sdk           *jxscouttypes.ModuleSDK
+	caidoClient   *CaidoClient
+	caidoHostname string
+	caidoPort     int
 }
 
-func NewOverridesModule(caidoHostname string, caidoPort int) (*overridesModule, error) {
-	caidoClient, err := NewCaidoClient(caidoHostname, caidoPort)
-	if err != nil {
-		return nil, errutil.Wrap(err, "failed to create Caido client")
-	}
-
+func NewOverridesModule(caidoHostname string, caidoPort int) *overridesModule {
 	return &overridesModule{
-		caidoClient: caidoClient,
-	}, nil
+		caidoHostname: caidoHostname,
+		caidoPort:     caidoPort,
+	}
 }
 
 func (m *overridesModule) Initialize(sdk *jxscouttypes.ModuleSDK) error {
 	m.sdk = sdk
 
+	caidoClient, err := NewCaidoClient(m.caidoHostname, m.caidoPort, m.sdk.Logger)
+	if err != nil {
+		return errutil.Wrap(err, "failed to create Caido client")
+	}
+	m.caidoClient = caidoClient
+
 	db := m.sdk.Database
 
-	_, err := db.Exec(
+	_, err = db.Exec(
 		`
 		CREATE TABLE IF NOT EXISTS overrides (
 			id INTEGER PRIMARY KEY,

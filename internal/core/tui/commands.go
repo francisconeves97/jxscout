@@ -493,9 +493,6 @@ func (t *TUI) RegisterDefaultCommands() {
 
 			// Get the overrides module from jxscout
 			overridesModule := t.jxscout.GetOverridesModule()
-			if overridesModule == nil {
-				return nil, fmt.Errorf("overrides module was not initialized correctly")
-			}
 
 			if !overridesModule.IsCaidoAuthenticated(t.jxscout.Ctx()) {
 				t.writeLineToOutput("Not authenticated with Caido. Starting authentication flow...")

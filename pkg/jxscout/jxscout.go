@@ -134,11 +134,7 @@ func initJxscout(options jxscouttypes.Options) (*jxscout, error) {
 }
 
 func (s *jxscout) registerCoreModules() {
-	overridesModule, err := overrides.NewOverridesModule(s.options.CaidoHostname, s.options.CaidoPort)
-	if err != nil {
-		s.log.Error("failed to register overrides module", "error", err)
-	}
-
+	overridesModule := overrides.NewOverridesModule(s.options.CaidoHostname, s.options.CaidoPort)
 	s.overridesModule = overridesModule
 
 	coreModules := []jxscouttypes.Module{
@@ -152,10 +148,7 @@ func (s *jxscout) registerCoreModules() {
 		),
 		gitcommiter.NewGitCommiter(s.options.GitCommitInterval),
 		sourcemaps.NewSourceMaps(s.options.AssetSaveConcurrency),
-	}
-
-	if overridesModule != nil {
-		coreModules = append(coreModules, overridesModule)
+		overridesModule,
 	}
 
 	for _, module := range coreModules {
