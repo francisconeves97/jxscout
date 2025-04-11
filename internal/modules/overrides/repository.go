@@ -196,3 +196,28 @@ func (r *overridesRepository) updateOverride(ctx context.Context, o *override) e
 
 	return nil
 }
+
+func (r *overridesRepository) getOverrides(ctx context.Context, page, pageSize int) ([]*override, int, error) {
+	var total int
+	err := r.db.GetContext(ctx, &total, `
+		SELECT COUNT(*) FROM overrides WHERE deleted_at IS NULL
+	`)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	overrides := []*override{}
+	err = r.db.SelectContext(ctx, &overrides, `
+		SELECT o.*, a.url as asset_url, a.fs_path as fs_path
+		FROM overrides o
+		LEFT JOIN assets a ON o.asset_id = a.id
+		WHERE o.deleted_at IS NULL
+		ORDER BY o.created_at DESC
+		LIMIT ? OFFSET ?
+	`, pageSize, (page-1)*pageSize)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return overrides, total, nil
+}

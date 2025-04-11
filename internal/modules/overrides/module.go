@@ -23,6 +23,7 @@ type OverridesModule interface {
 	IsCaidoAuthenticated(ctx context.Context) bool
 	AuthenticateCaido(ctx context.Context) (string, error)
 	ToggleOverride(ctx context.Context, request ToggleOverrideRequest) (bool, error)
+	GetOverrides(ctx context.Context, page, pageSize int) ([]*override, int, error)
 }
 
 type overridesModule struct {
@@ -354,4 +355,8 @@ func (m *overridesModule) getOrCreateTamperRuleCollection(ctx context.Context) (
 	}
 
 	return collection, nil
+}
+
+func (m *overridesModule) GetOverrides(ctx context.Context, page, pageSize int) ([]*override, int, error) {
+	return m.repo.getOverrides(ctx, page, pageSize)
 }

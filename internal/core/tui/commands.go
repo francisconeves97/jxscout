@@ -723,6 +723,120 @@ func (t *TUI) RegisterDefaultCommands() {
 			return nil, nil
 		},
 	})
+
+	t.RegisterCommand(Command{
+		Name:        "overrides",
+		ShortName:   "lo",
+		Description: "List overrides",
+		Usage:       "overrides [page=<page_number>] [page-size=<page_size>]",
+		Execute: func(args []string) (tea.Cmd, error) {
+			params := struct {
+				Page     int
+				PageSize int
+			}{
+				Page:     1,
+				PageSize: 15,
+			}
+
+			// Parse arguments
+			for _, arg := range args {
+				parts := strings.SplitN(arg, "=", 2)
+				if len(parts) != 2 {
+					return nil, fmt.Errorf("invalid argument format: %s. Expected format: key=value", arg)
+				}
+
+				key := parts[0]
+				value := parts[1]
+
+				switch key {
+				case "page":
+					page, err := strconv.Atoi(value)
+					if err != nil {
+						return nil, fmt.Errorf("invalid page number: %s", value)
+					}
+					params.Page = page
+				case "page-size":
+					pageSize, err := strconv.Atoi(value)
+					if err != nil {
+						return nil, fmt.Errorf("invalid page size: %s", value)
+					}
+					params.PageSize = pageSize
+				default:
+					return nil, fmt.Errorf("unknown argument: %s", key)
+				}
+			}
+
+			// Get overrides from service
+			overrides, total, err := t.jxscout.GetOverridesModule().GetOverrides(t.jxscout.Ctx(), params.Page, params.PageSize)
+			if err != nil {
+				return nil, fmt.Errorf("failed to get overrides: %w", err)
+			}
+
+			// Calculate total pages
+			totalPages := (total + params.PageSize - 1) / params.PageSize
+
+			// Print header
+			t.writeLineToOutput(fmt.Sprintf("\nOverrides (page %d of %d):\n",
+				params.Page, totalPages))
+
+			// Print overrides
+			if len(overrides) == 0 {
+				t.writeLineToOutput("No overrides found.")
+			} else {
+				for i, override := range overrides {
+					t.writeLineToOutput(fmt.Sprintf("%d. %s", (i+1)+((params.Page-1)*params.PageSize), *override.AssetURL))
+				}
+			}
+
+			// Print pagination info
+			t.writeLineToOutput(fmt.Sprintf("\nTotal overrides: %d", total))
+			if totalPages > 1 {
+				t.writeLineToOutput("Use 'overrides page=<number>' to view other pages")
+				t.writeLineToOutput("Use 'overrides page-size=<page-size>' to change the page size")
+			}
+
+			// Print authentication note
+			if !t.jxscout.GetOverridesModule().IsCaidoAuthenticated(t.jxscout.Ctx()) {
+				t.writeLineToOutput("\n⚠️ Note: You are not authenticated with Caido. Overrides content won't be updated automatically.")
+				t.writeLineToOutput("Run 'caido-auth' to authenticate with Caido so that overrides are updated.")
+			}
+
+			return nil, nil
+		},
+	})
+
+	t.RegisterCommand(Command{
+		Name:        "caido-auth",
+		ShortName:   "ca",
+		Description: "Authenticate with Caido",
+		Usage:       "caido-auth",
+		Execute: func(args []string) (tea.Cmd, error) {
+			// Get the overrides module from jxscout
+			overridesModule := t.jxscout.GetOverridesModule()
+
+			if overridesModule.IsCaidoAuthenticated(t.jxscout.Ctx()) {
+				t.writeLineToOutput("Already authenticated with Caido.")
+				return nil, nil
+			}
+
+			t.writeLineToOutput("Starting authentication flow with Caido...")
+
+			verificationURL, err := overridesModule.AuthenticateCaido(t.jxscout.Ctx())
+			if err != nil {
+				return nil, fmt.Errorf("failed to authenticate with Caido: %w", err)
+			}
+
+			err = browser.OpenURL(verificationURL)
+			if err != nil {
+				t.writeLineToOutput(fmt.Sprintf("Failed to open verification URL in your browser: %v", err))
+				t.writeLineToOutput(fmt.Sprintf("Please visit %s to complete authentication", verificationURL))
+			} else {
+				t.writeLineToOutput("Please complete the authentication with Caido on your browser")
+			}
+
+			return nil, nil
+		},
+	})
 }
 
 // RegisterCommand registers a new command with the TUI
