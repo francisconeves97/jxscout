@@ -217,6 +217,7 @@ func (m *overridesModule) StartContentCheck() {
 
 var ErrAssetNotFound = errors.New("asset not found")
 var ErrAssetNoLongerExists = errors.New("asset no longer exists")
+var ErrAssetContentTypeNotSupported = errors.New("override is only supported for JS files")
 
 func (m *overridesModule) ToggleOverride(ctx context.Context, request ToggleOverrideRequest) (bool, error) {
 	asset, exists, err := m.sdk.AssetService.GetAssetByURL(ctx, request.AssetURL)
@@ -225,6 +226,10 @@ func (m *overridesModule) ToggleOverride(ctx context.Context, request ToggleOver
 	}
 	if !exists {
 		return false, ErrAssetNotFound
+	}
+
+	if asset.ContentType != common.ContentTypeJS {
+		return false, ErrAssetContentTypeNotSupported
 	}
 
 	// Check if the file still exists

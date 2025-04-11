@@ -549,9 +549,11 @@ func (t *TUI) RegisterDefaultCommands() {
 			if errors.Is(err, overrides.ErrAssetNotFound) {
 				t.writeLineToOutput(fmt.Sprintf("Asset %s not found. Confirm the URL is correct and that asset is being tracked by jxscout", url))
 				return nil, nil
-			}
-			if errors.Is(err, overrides.ErrAssetNoLongerExists) {
+			} else if errors.Is(err, overrides.ErrAssetNoLongerExists) {
 				t.writeLineToOutput(fmt.Sprintf("Asset %s no longer exists.\nYou probably deleted it manually from your file system.", url))
+				return nil, nil
+			} else if errors.Is(err, overrides.ErrAssetContentTypeNotSupported) {
+				t.writeLineToOutput("Only JS files can be overridden.")
 				return nil, nil
 			}
 			if err != nil {
@@ -648,7 +650,7 @@ func (t *TUI) RegisterDefaultCommands() {
 
 	t.RegisterCommand(Command{
 		Name:        "loads",
-		ShortName:   "lo",
+		ShortName:   "ld",
 		Description: "Show assets that load a specific JavaScript asset",
 		Usage:       "loads <asset_url> [page=<page_number>] [page-size=<page_size>]",
 		Execute: func(args []string) (tea.Cmd, error) {
