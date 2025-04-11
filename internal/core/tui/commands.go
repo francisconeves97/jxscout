@@ -553,7 +553,7 @@ func (t *TUI) RegisterDefaultCommands() {
 				t.writeLineToOutput(fmt.Sprintf("Asset %s no longer exists.\nYou probably deleted it manually from your file system.", url))
 				return nil, nil
 			} else if errors.Is(err, overrides.ErrAssetContentTypeNotSupported) {
-				t.writeLineToOutput("Only JS files can be overridden.")
+				t.writeLineToOutput("Only HTML or JS files can be overridden.")
 				return nil, nil
 			}
 			if err != nil {

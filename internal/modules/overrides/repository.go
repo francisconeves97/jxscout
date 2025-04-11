@@ -19,6 +19,7 @@ type override struct {
 	DeletedAt         *time.Time `db:"deleted_at"`
 	AssetURL          *string    `db:"asset_url"`
 	AssetPath         *string    `db:"fs_path"`
+	AssetContentType  *string    `db:"content_type"`
 }
 
 type overridesRepository struct {
@@ -137,7 +138,8 @@ func (r *overridesRepository) getAllOverrides(ctx context.Context) ([]*override,
 			overrides.created_at, 
 			overrides.deleted_at, 
 			assets.url, 
-			assets.fs_path
+			assets.fs_path,
+			assets.content_type
 		FROM overrides JOIN assets ON overrides.asset_id = assets.id
 		WHERE overrides.deleted_at IS NULL
 	`

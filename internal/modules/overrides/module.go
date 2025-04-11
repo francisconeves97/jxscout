@@ -144,9 +144,14 @@ func (m *overridesModule) checkAllOverrides(ctx context.Context) error {
 			m.sdk.Logger.Error("asset URL is nil", "override", o)
 			continue
 		}
+		if o.AssetContentType == nil {
+			m.sdk.Logger.Error("asset content type is nil", "override", o)
+			continue
+		}
 
 		assetPath := *o.AssetPath
 		assetURL := *o.AssetURL
+		assetContentType := *o.AssetContentType
 
 		if _, err := os.Stat(assetPath); os.IsNotExist(err) {
 			m.sdk.Logger.Error("asset file no longer exists", "url", assetURL)
@@ -165,6 +170,10 @@ func (m *overridesModule) checkAllOverrides(ctx context.Context) error {
 		if currentHash == o.ContentHash {
 			m.sdk.Logger.Debug("no changes to override", "url", assetURL)
 			continue
+		}
+
+		if assetContentType == common.ContentTypeHTML {
+			assetURL = strings.TrimSuffix(assetURL, "(index).html")
 		}
 
 		// If hash has changed, update the tamper rule
@@ -217,7 +226,7 @@ func (m *overridesModule) StartContentCheck() {
 
 var ErrAssetNotFound = errors.New("asset not found")
 var ErrAssetNoLongerExists = errors.New("asset no longer exists")
-var ErrAssetContentTypeNotSupported = errors.New("override is only supported for JS files")
+var ErrAssetContentTypeNotSupported = errors.New("override is only supported for HTML or JS files")
 
 func (m *overridesModule) ToggleOverride(ctx context.Context, request ToggleOverrideRequest) (bool, error) {
 	asset, exists, err := m.sdk.AssetService.GetAssetByURL(ctx, request.AssetURL)
@@ -228,7 +237,7 @@ func (m *overridesModule) ToggleOverride(ctx context.Context, request ToggleOver
 		return false, ErrAssetNotFound
 	}
 
-	if asset.ContentType != common.ContentTypeJS {
+	if strings.HasSuffix(asset.URL, ".inline.js") {
 		return false, ErrAssetContentTypeNotSupported
 	}
 
@@ -271,8 +280,13 @@ func (m *overridesModule) createOverride(ctx context.Context, asset jxscouttypes
 		return errutil.Wrap(err, "failed to read asset file")
 	}
 
+	assetURL := asset.URL
+	if asset.ContentType == common.ContentTypeHTML {
+		assetURL = strings.TrimSuffix(assetURL, "(index).html")
+	}
+
 	// Parse the URL to get host and path
-	parsedURL, err := url.Parse(asset.URL)
+	parsedURL, err := url.Parse(assetURL)
 	if err != nil {
 		return errutil.Wrap(err, "failed to parse asset URL")
 	}
