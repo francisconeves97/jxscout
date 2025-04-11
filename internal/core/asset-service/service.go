@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"log/slog"
+	"time"
 
 	"github.com/jmoiron/sqlx"
 
@@ -64,15 +65,19 @@ type assetService struct {
 	log            *slog.Logger
 	fileService    FileService
 	repository     assetrepository.Repository
+	htmlCacheTTL   time.Duration
+	jsCacheTTL     time.Duration
 }
 
 type AssetServiceConfig struct {
-	EventBus         eventbus.EventBus
-	SaveConcurrency  int
-	FetchConcurrency int
-	Logger           *slog.Logger
-	FileService      FileService
-	Database         *sqlx.DB
+	EventBus                   eventbus.EventBus
+	SaveConcurrency            int
+	FetchConcurrency           int
+	Logger                     *slog.Logger
+	FileService                FileService
+	Database                   *sqlx.DB
+	HTMLRequestsCacheTTL       time.Duration
+	JavascriptRequestsCacheTTL time.Duration
 }
 
 func NewAssetService(cfg AssetServiceConfig) (AssetService, error) {
@@ -87,6 +92,8 @@ func NewAssetService(cfg AssetServiceConfig) (AssetService, error) {
 		log:            cfg.Logger,
 		fileService:    cfg.FileService,
 		repository:     repository,
+		htmlCacheTTL:   cfg.HTMLRequestsCacheTTL,
+		jsCacheTTL:     cfg.JavascriptRequestsCacheTTL,
 	}
 
 	s.initializeQueueHandlers()
@@ -106,6 +113,54 @@ func (s *assetService) initializeQueueHandlers() {
 
 func (s *assetService) handleSaveAssetRequest(ctx context.Context, asset Asset) error {
 	s.log.DebugContext(ctx, "processing request to save asset", "asset_url", asset.URL)
+
+	dbAsset, exists, err := s.repository.GetAssetByURL(ctx, asset.URL)
+	if err != nil {
+		return errutil.Wrap(err, "failed to get asset from repo")
+	}
+	if exists {
+		s.log.DebugContext(ctx, "asset already exists", "asset_url", asset.URL)
+
+		if asset.Parent != nil {
+			dbAsset.Parent = &assetrepository.Asset{
+				URL: asset.Parent.URL,
+			}
+
+			err = s.repository.SaveAssetRelationship(ctx, dbAsset)
+			if err != nil {
+				return errutil.Wrap(err, "failed to save asset relationship")
+			}
+		}
+
+		if asset.ContentType == common.ContentTypeJS && dbAsset.ContentHash != common.Hash(asset.Content) {
+			overrideExists, err := s.repository.OverrideExists(ctx, dbAsset.ID)
+			if err != nil {
+				return errutil.Wrap(err, "failed to check if override exists")
+			}
+
+			if overrideExists {
+				s.log.DebugContext(ctx, "override exists, skipping updating JS file content", "asset_url", asset.URL)
+				return nil
+			}
+
+			s.log.DebugContext(ctx, "asset content has changed, updating", "asset_url", asset.URL)
+		}
+
+		if dbAsset.ContentHash == common.Hash(asset.Content) {
+			s.log.DebugContext(ctx, "asset content has not changed, skipping", "asset_url", asset.URL)
+			return nil
+		}
+
+		if asset.ContentType == common.ContentTypeHTML && dbAsset.UpdatedAt.After(time.Now().Add(-s.htmlCacheTTL)) {
+			s.log.DebugContext(ctx, "HTML file is still fresh, skipping", "asset_url", asset.URL)
+			return nil
+		}
+
+		if asset.ContentType == common.ContentTypeJS && dbAsset.UpdatedAt.After(time.Now().Add(-s.jsCacheTTL)) {
+			s.log.DebugContext(ctx, "JS file is still fresh, skipping", "asset_url", asset.URL)
+			return nil
+		}
+	}
 
 	path, err := s.fileService.Save(ctx, SaveFileRequest{
 		PathURL: asset.URL,

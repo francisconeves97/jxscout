@@ -20,6 +20,8 @@ type Repository interface {
 	GetAssetByURL(ctx context.Context, url string) (Asset, bool, error)
 	GetAssets(ctx context.Context, params GetAssetsParams) ([]Asset, int, error)
 	GetAssetsThatLoad(ctx context.Context, url string, params GetAssetsParams) ([]Asset, int, error)
+	OverrideExists(ctx context.Context, assetID int64) (bool, error)
+	SaveAssetRelationship(ctx context.Context, asset Asset) error
 }
 
 type GetAssetsParams struct {
@@ -143,6 +145,35 @@ func (r *assetRepository) SaveAsset(ctx context.Context, asset Asset) (int64, er
 	}
 
 	return assetID, nil
+}
+
+func (r *assetRepository) SaveAssetRelationship(ctx context.Context, asset Asset) error {
+	if asset.Parent == nil || strings.TrimSpace(asset.Parent.URL) == "" {
+		return nil
+	}
+
+	var parentID int64
+	err := r.db.GetContext(ctx, &parentID, `SELECT id FROM assets WHERE url = ?`, asset.Parent.URL)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			parentID, err = r.SaveAsset(ctx, *asset.Parent)
+			if err != nil {
+				return errutil.Wrap(err, "failed to save parent aset")
+			}
+		}
+		return errutil.Wrap(err, "parent asset not found")
+	}
+
+	_, err = r.db.ExecContext(ctx, `
+		INSERT INTO asset_relationships (parent_id, child_id, created_at, updated_at)
+		VALUES (?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+		ON CONFLICT(parent_id, child_id) DO UPDATE SET updated_at = CURRENT_TIMESTAMP
+	`, parentID, asset.ID)
+	if err != nil {
+		return errutil.Wrap(err, "failed to insert asset relationship")
+	}
+
+	return nil
 }
 
 func (r *assetRepository) GetAssetsByProjectName(projectName string) ([]Asset, error) {
@@ -319,4 +350,21 @@ func (r *assetRepository) GetAssetsThatLoad(ctx context.Context, url string, par
 	}
 
 	return assets, total, nil
+}
+
+// Meh, I'll need to refactor the overrides module and probably put everything into the same repository
+func (r *assetRepository) OverrideExists(ctx context.Context, assetID int64) (bool, error) {
+	query := `
+		SELECT COUNT(*) 
+		FROM overrides
+		WHERE asset_id = ? AND deleted_at IS NULL
+	`
+
+	var count int
+	err := r.db.GetContext(ctx, &count, query, assetID)
+	if err != nil {
+		return false, errutil.Wrap(err, "failed to check if override exists")
+	}
+
+	return count > 0, nil
 }

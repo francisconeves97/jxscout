@@ -8,7 +8,6 @@ import (
 
 	assetfetcher "github.com/francisconeves97/jxscout/internal/core/asset-fetcher"
 	assetservice "github.com/francisconeves97/jxscout/internal/core/asset-service"
-	"github.com/francisconeves97/jxscout/internal/core/cache"
 	"github.com/francisconeves97/jxscout/internal/core/eventbus"
 
 	"github.com/go-chi/chi"
@@ -35,7 +34,6 @@ type Scope interface {
 }
 
 // Cache interface
-type Cache = cache.Cache
 
 // JXScout Options
 type Options struct {
@@ -80,7 +78,6 @@ type ModuleSDK struct {
 	AssetFetcher AssetFetcher
 	Options      Options
 	HTTPServer   HTTPServer
-	Cache        Cache
 	Logger       *slog.Logger
 	Scope        Scope
 	FileService  FileService

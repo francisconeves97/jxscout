@@ -11,7 +11,6 @@ import (
 
 	assetfetcher "github.com/francisconeves97/jxscout/internal/core/asset-fetcher"
 	assetservice "github.com/francisconeves97/jxscout/internal/core/asset-service"
-	"github.com/francisconeves97/jxscout/internal/core/cache"
 	"github.com/francisconeves97/jxscout/internal/core/common"
 	"github.com/francisconeves97/jxscout/internal/core/database"
 	"github.com/francisconeves97/jxscout/internal/core/errutil"
@@ -42,7 +41,6 @@ type jxscout struct {
 	assetFetcher    jxscouttypes.AssetFetcher
 	httpServer      jxscouttypes.HTTPServer
 	scopeChecker    jxscouttypes.Scope
-	cache           jxscouttypes.Cache
 	fileService     jxscouttypes.FileService
 	db              *sqlx.DB
 	overridesModule overrides.OverridesModule
@@ -91,20 +89,20 @@ func initJxscout(options jxscouttypes.Options) (*jxscout, error) {
 	}
 
 	assetService, err := assetservice.NewAssetService(assetservice.AssetServiceConfig{
-		EventBus:         eventBus,
-		SaveConcurrency:  options.AssetSaveConcurrency,
-		FetchConcurrency: options.AssetFetchConcurrency,
-		Logger:           logger,
-		FileService:      fileService,
-		Database:         db,
+		EventBus:                   eventBus,
+		SaveConcurrency:            options.AssetSaveConcurrency,
+		FetchConcurrency:           options.AssetFetchConcurrency,
+		Logger:                     logger,
+		FileService:                fileService,
+		Database:                   db,
+		HTMLRequestsCacheTTL:       options.HTMLRequestsCacheTTL,
+		JavascriptRequestsCacheTTL: options.JavascriptRequestsCacheTTL,
 	})
 	if err != nil {
 		return nil, errutil.Wrap(err, "failed to initialize asset service")
 	}
 
 	httpServer := newHttpServer(logger)
-
-	cache := cache.NewInMemoryCache()
 
 	assetFetcher := assetfetcher.NewAssetFetcher(assetfetcher.AssetFetcherOptions{
 		RateLimitingMaxRequestsPerMinute: options.RateLimitingMaxRequestsPerMinute,
@@ -122,7 +120,6 @@ func initJxscout(options jxscouttypes.Options) (*jxscout, error) {
 		modules:      []jxscouttypes.Module{},
 		httpServer:   httpServer,
 		scopeChecker: scopeChecker,
-		cache:        cache,
 		assetFetcher: assetFetcher,
 		fileService:  fileService,
 		db:           db,
@@ -224,7 +221,6 @@ func (s *jxscout) initializeModules(r jxscouttypes.Router) error {
 		HTTPServer:   s.httpServer,
 		Logger:       s.log,
 		Scope:        s.scopeChecker,
-		Cache:        s.cache,
 		AssetFetcher: s.assetFetcher,
 		FileService:  s.fileService,
 		Database:     s.db,
@@ -262,8 +258,6 @@ func (s *jxscout) Stop() error {
 }
 
 func (s *jxscout) Restart(options jxscouttypes.Options) (*jxscout, error) {
-	cache := s.cache // keep previous cache
-
 	jxscout, err := initJxscout(options)
 	if err != nil {
 		s.log.Error("failed to restart jxscout", "error", err)
@@ -283,7 +277,6 @@ func (s *jxscout) Restart(options jxscouttypes.Options) (*jxscout, error) {
 	s.log.Info("starting new server")
 
 	s = jxscout
-	s.cache = cache // keep previous cache
 
 	s.registerCoreModules()
 

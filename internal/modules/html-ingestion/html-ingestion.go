@@ -70,15 +70,6 @@ func (m *htmlIngestionModule) handleIngestionRequest(req ingestion.IngestionRequ
 		return nil // request is not valid, skip
 	}
 
-	// request was processed recently, skip
-	if _, ok := m.sdk.Cache.Get(req.Request.URL); ok {
-		return nil
-	}
-
-	// populate cache before processing to avoid unnecessary work
-	// note: some requests might be incorrectly dropped if some flaky error happens in between, but should be fine
-	m.sdk.Cache.Set(req.Request.URL, true, m.cacheTTL)
-
 	htmlPath, err := common.NormalizeHTMLURL(req.Request.URL)
 	if err != nil {
 		return errutil.Wrap(err, "failed to join html path with (index).html")
