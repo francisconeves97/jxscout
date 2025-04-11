@@ -31,6 +31,9 @@ type overridesModule struct {
 	caidoHostname string
 	caidoPort     int
 	repo          *overridesRepository
+	// goroutine management
+	contentCheckCtx    context.Context
+	contentCheckCancel context.CancelFunc
 }
 
 func NewOverridesModule(caidoHostname string, caidoPort int) *overridesModule {
@@ -63,18 +66,61 @@ func (m *overridesModule) Initialize(sdk *jxscouttypes.ModuleSDK) error {
 
 // checkOverridesContent periodically checks all overrides for content changes
 func (m *overridesModule) checkOverridesContent(ctx context.Context) {
+	// Create a new context for this goroutine
+	m.contentCheckCtx, m.contentCheckCancel = context.WithCancel(ctx)
+	defer m.contentCheckCancel()
+
 	ticker := time.NewTicker(m.sdk.Options.OverrideContentCheckInterval)
 	defer ticker.Stop()
 
 	for {
 		select {
-		case <-ctx.Done():
+		case <-m.contentCheckCtx.Done():
 			return
 		case <-ticker.C:
+			// Check if we're authenticated
+			if !m.caidoClient.IsAuthenticated() {
+				m.sdk.Logger.Debug("stopping content check routine - not authenticated with Caido")
+				return
+			}
+
+			// Check if we have any overrides
+			overrides, err := m.repo.getAllOverrides(ctx)
+			if err != nil {
+				m.sdk.Logger.Error("failed to get all overrides", "error", err)
+				continue
+			}
+
+			if len(overrides) == 0 {
+				m.sdk.Logger.Debug("stopping content check routine - no overrides found")
+				return
+			}
+
 			if err := m.checkAllOverrides(ctx); err != nil {
 				m.sdk.Logger.Error("failed to check overrides content", "error", err)
 			}
 		}
+	}
+}
+
+// startContentCheck starts the content check goroutine if it's not already running
+func (m *overridesModule) startContentCheck() {
+	// If we already have a context, the goroutine is running
+	if m.contentCheckCtx != nil {
+		return
+	}
+
+	// Start a new goroutine
+	go m.checkOverridesContent(m.sdk.Ctx)
+}
+
+// stopContentCheck stops the content check goroutine if it's running
+func (m *overridesModule) stopContentCheck() {
+	if m.contentCheckCancel != nil {
+		m.sdk.Logger.Debug("stopping content check routine")
+		m.contentCheckCancel()
+		m.contentCheckCtx = nil
+		m.contentCheckCancel = nil
 	}
 }
 
@@ -247,6 +293,9 @@ func (m *overridesModule) createOverride(ctx context.Context, asset jxscouttypes
 		return errutil.Wrap(err, "failed to save override to database")
 	}
 
+	// Start the content check routine since we now have an override
+	m.startContentCheck()
+
 	return nil
 }
 
@@ -269,6 +318,17 @@ func (m *overridesModule) deleteOverride(ctx context.Context, asset jxscouttypes
 	// Delete the override from our database
 	if err := m.repo.deleteOverride(ctx, asset.ID); err != nil {
 		return errutil.Wrap(err, "failed to delete override from database")
+	}
+
+	// Check if we have any remaining overrides
+	overrides, err := m.repo.getAllOverrides(ctx)
+	if err != nil {
+		return errutil.Wrap(err, "failed to check remaining overrides")
+	}
+
+	// If no overrides remain, stop the content check routine
+	if len(overrides) == 0 {
+		m.stopContentCheck()
 	}
 
 	return nil
