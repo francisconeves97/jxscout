@@ -650,10 +650,10 @@ func (t *TUI) RegisterDefaultCommands() {
 	})
 
 	t.RegisterCommand(Command{
-		Name:        "loads",
-		ShortName:   "ld",
-		Description: "Show assets that load a specific JavaScript asset",
-		Usage:       "loads <asset_url> [page=<page_number>] [page-size=<page_size>]",
+		Name:        "loaded",
+		ShortName:   "ldd",
+		Description: "Show assets that loaded a specific JavaScript asset",
+		Usage:       "loaded <asset_url> [page=<page_number>] [page-size=<page_size>]",
 		Execute: func(args []string) (tea.Cmd, error) {
 			if len(args) == 0 {
 				return nil, fmt.Errorf("asset url is required")
@@ -732,6 +732,95 @@ func (t *TUI) RegisterDefaultCommands() {
 			if totalPages > 1 {
 				t.writeLineToOutput("Use 'loads <asset_url> page=<number>' to view other pages")
 				t.writeLineToOutput("Use 'loads <asset_url> page-size=<page-size>' to change the page size")
+			}
+
+			return nil, nil
+		},
+	})
+
+	t.RegisterCommand(Command{
+		Name:        "loads",
+		ShortName:   "lds",
+		Description: "Show JavaScript assets loaded by a specific HTML page",
+		Usage:       "loads <html_url> [page=<page_number>] [page-size=<page_size>]",
+		Execute: func(args []string) (tea.Cmd, error) {
+			if len(args) == 0 {
+				return nil, fmt.Errorf("HTML URL is required")
+			}
+
+			url := args[0]
+			params := assetrepository.GetAssetsParams{
+				Page:     1,
+				PageSize: 15,
+			}
+
+			// Parse arguments
+			for i := 1; i < len(args); i++ {
+				parts := strings.SplitN(args[i], "=", 2)
+				if len(parts) != 2 {
+					return nil, fmt.Errorf("invalid argument format: %s. Expected format: key=value", args[i])
+				}
+
+				key := parts[0]
+				value := parts[1]
+
+				switch key {
+				case "page":
+					page, err := strconv.Atoi(value)
+					if err != nil {
+						return nil, fmt.Errorf("invalid page number: %s", value)
+					}
+					params.Page = page
+				case "page-size":
+					pageSize, err := strconv.Atoi(value)
+					if err != nil {
+						return nil, fmt.Errorf("invalid page size: %s", value)
+					}
+					params.PageSize = pageSize
+				default:
+					return nil, fmt.Errorf("unknown argument: %s", key)
+				}
+			}
+
+			// First check if the asset exists and is an HTML asset
+			asset, exists, err := t.jxscout.GetAssetService().GetAssetByURL(t.jxscout.Ctx(), url)
+			if err != nil {
+				return nil, fmt.Errorf("failed to get asset: %w", err)
+			}
+			if !exists {
+				return nil, fmt.Errorf("asset not found: %s", url)
+			}
+			if !strings.Contains(asset.ContentType, common.ContentTypeHTML) {
+				return nil, fmt.Errorf("asset must be an HTML file")
+			}
+
+			// Get assets loaded by this HTML page
+			assets, total, err := t.jxscout.GetAssetService().GetAssetsLoadedBy(t.jxscout.Ctx(), url, params)
+			if err != nil {
+				return nil, fmt.Errorf("failed to get assets loaded by: %w", err)
+			}
+
+			// Calculate total pages
+			totalPages := (total + params.PageSize - 1) / params.PageSize
+
+			// Print header
+			t.writeLineToOutput(fmt.Sprintf("\nJavaScript assets loaded by '%s' (page %d of %d):\n",
+				url, params.Page, totalPages))
+
+			// Print assets
+			if len(assets) == 0 {
+				t.writeLineToOutput("No JavaScript assets found loaded by this HTML page.")
+			} else {
+				for i, asset := range assets {
+					t.writeLineToOutput(fmt.Sprintf("%d. %s", (i+1)+((params.Page-1)*params.PageSize), asset.URL))
+				}
+			}
+
+			// Print pagination info
+			t.writeLineToOutput(fmt.Sprintf("\nTotal assets: %d", total))
+			if totalPages > 1 {
+				t.writeLineToOutput("Use 'loads <html_url> page=<number>' to view other pages")
+				t.writeLineToOutput("Use 'loads <html_url> page-size=<page-size>' to change the page size")
 			}
 
 			return nil, nil

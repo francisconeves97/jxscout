@@ -20,6 +20,7 @@ type Repository interface {
 	GetAssetByURL(ctx context.Context, url string) (Asset, bool, error)
 	GetAssets(ctx context.Context, params GetAssetsParams) ([]Asset, int, error)
 	GetAssetsThatLoad(ctx context.Context, url string, params GetAssetsParams) ([]Asset, int, error)
+	GetAssetsLoadedBy(ctx context.Context, url string, params GetAssetsParams) ([]Asset, int, error)
 	OverrideExists(ctx context.Context, assetID int64) (bool, error)
 	SaveAssetRelationship(ctx context.Context, asset Asset) error
 }
@@ -347,6 +348,47 @@ func (r *assetRepository) GetAssetsThatLoad(ctx context.Context, url string, par
 	`, targetAsset.ID, params.PageSize, offset)
 	if err != nil {
 		return nil, 0, errutil.Wrap(err, "failed to get assets that load target")
+	}
+
+	return assets, total, nil
+}
+
+func (r *assetRepository) GetAssetsLoadedBy(ctx context.Context, url string, params GetAssetsParams) ([]Asset, int, error) {
+	// First get the target asset
+	targetAsset, exists, err := r.GetAssetByURL(ctx, url)
+	if err != nil {
+		return nil, 0, errutil.Wrap(err, "failed to get target asset")
+	}
+	if !exists {
+		return nil, 0, errutil.Wrap(errors.New("asset not found"), "failed to get target asset")
+	}
+
+	// Get total count
+	var total int
+	countQuery := `
+		SELECT COUNT(*) FROM assets a
+		JOIN asset_relationships ar ON a.id = ar.child_id
+		WHERE ar.parent_id = ?
+	`
+	err = r.db.GetContext(ctx, &total, countQuery, targetAsset.ID)
+	if err != nil {
+		return nil, 0, errutil.Wrap(err, "failed to get total count")
+	}
+
+	// Calculate offset
+	offset := (params.Page - 1) * params.PageSize
+
+	// Get paginated assets
+	var assets []Asset
+	err = r.db.SelectContext(ctx, &assets, `
+		SELECT a.* FROM assets a
+		JOIN asset_relationships ar ON a.id = ar.child_id
+		WHERE ar.parent_id = ?
+		ORDER BY a.created_at DESC
+		LIMIT ? OFFSET ?
+	`, targetAsset.ID, params.PageSize, offset)
+	if err != nil {
+		return nil, 0, errutil.Wrap(err, "failed to get assets loaded by target")
 	}
 
 	return assets, total, nil
