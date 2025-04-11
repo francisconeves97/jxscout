@@ -151,6 +151,10 @@ bun run pkg/chunk-discoverer/index.ts /path/to/the/js/file 10
 
 Feel free to leave suggestions and open pull requests, all contributions are welcome!
 
+## Support
+
+Happy hunting! 🐛 If jxscout helped you find cool bugs, [consider buying me a coffee](https://ko-fi.com/francisconeves97)! ☕
+
 ## License
 
 This project is licensed under the GNU General Public License. See the COPYING file for the full license text.
