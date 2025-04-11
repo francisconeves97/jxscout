@@ -106,7 +106,7 @@ truncate-tables (tt) - Delete all data tracked in jxscout database (requires con
 jxscout | static files downloader for vulnerability analysis
 
 Usage:
-  jxscout [flags]
+  /Users/francisconeves/Library/Caches/go-build/21/21578004e7aa83d51489155574a36feb8d7489e75edcd2938bd8a3d392f13c9a-d/main [flags]
 
 Flags:
 SERVER CONFIGURATION:
@@ -135,7 +135,8 @@ GIT COMMITER CONFIGURATION:
    -git-commit-interval value  how often commits are made to the working directory (default 5m0s)
 
 RATE LIMITING CONFIGURATION:
-   -rate-limiter-max-requests-per-minute int  max requests per minute for source maps and chunk discovery (default 120)
+   -rate-limiter-max-requests-per-second int  max requests per second for source maps and chunk discovery (0 = unlimited) (default 2)
+   -rate-limiter-max-requests-per-minute int  max requests per minute for source maps and chunk discovery (0 = unlimited)
 
 JS INGESTION CONFIGURATION:
    -download-refered-js  download JS files from out-of-scope domains if they're linked from in-scope pages
@@ -143,6 +144,11 @@ JS INGESTION CONFIGURATION:
 LOGGING CONFIGURATION:
    -log-buffer-size int       how many log lines to show in the logs panel (default 10000)
    -log-file-max-size-mb int  max size of the log file in MB (default 10)
+
+OVERRIDES CONFIGURATION:
+   -caido-hostname string                  hostname where Caido is running (default "localhost")
+   -caido-port int                         port where Caido is running (default 8080)
+   -override-content-check-interval value  interval at which to check for changes in override content and update match/replace rules (default 5s)
 ```
 
 ## Building locally
