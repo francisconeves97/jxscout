@@ -49,6 +49,7 @@ type JXScout interface {
 	GetOverridesModule() overrides.OverridesModule
 	Ctx() context.Context
 	GetAssetService() jxscouttypes.AssetService
+	TruncateTables() error
 }
 
 func New(jxscout JXScout) *TUI {

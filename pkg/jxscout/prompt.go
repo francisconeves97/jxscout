@@ -47,6 +47,10 @@ func (t *tuiJXScoutWrapper) Ctx() context.Context {
 	return t.jxscout.ctx
 }
 
+func (t *tuiJXScoutWrapper) TruncateTables() error {
+	return t.jxscout.TruncateTables()
+}
+
 func (s *jxscout) runPrompt() {
 	t := tui.New(&tuiJXScoutWrapper{jxscout: s})
 	t.RegisterDefaultCommands()

@@ -313,3 +313,17 @@ func (s *jxscout) Ctx() context.Context {
 func (s *jxscout) GetAssetService() jxscouttypes.AssetService {
 	return s.assetService
 }
+
+func (s *jxscout) TruncateTables() error {
+	_, err := s.db.Exec(`
+		DELETE FROM asset_relationships;
+		DELETE FROM overrides;
+		DELETE FROM assets;
+		DELETE FROM sqlite_sequence;
+	`)
+	if err != nil {
+		return errutil.Wrap(err, "failed to truncate tables")
+	}
+
+	return nil
+}

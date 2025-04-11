@@ -862,6 +862,34 @@ func (t *TUI) RegisterDefaultCommands() {
 			return nil, nil
 		},
 	})
+
+	t.RegisterCommand(Command{
+		Name:        "truncate-tables",
+		ShortName:   "tt",
+		Description: "Delete all data tracked in jxscout database (requires confirmation)",
+		Usage:       "truncate-tables",
+		Execute: func(args []string) (tea.Cmd, error) {
+			if len(args) == 0 {
+				t.writeLineToOutput("⚠️  WARNING: This will delete ALL data tracked in the jxscout database!")
+				t.writeLineToOutput("This includes all assets, relationships, and overrides.")
+				t.writeLineToOutput("This action cannot be undone.")
+				t.writeLineToOutput("\nTo confirm, please type: truncate-tables IREALLYWANTTHIS")
+				return nil, nil
+			}
+
+			if args[0] != "IREALLYWANTTHIS" {
+				t.writeLineToOutput("❌ Invalid confirmation. To delete all data, type: truncate-tables IREALLYWANTTHIS")
+				return nil, nil
+			}
+
+			err := t.jxscout.TruncateTables()
+			if err != nil {
+				return nil, fmt.Errorf("failed to truncate tables: %w", err)
+			}
+			t.writeLineToOutput("✅ Database tables have been truncated successfully.")
+			return nil, nil
+		},
+	})
 }
 
 // RegisterCommand registers a new command with the TUI
