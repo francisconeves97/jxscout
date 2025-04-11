@@ -12,8 +12,6 @@ import (
 	"github.com/projectdiscovery/goflags"
 )
 
-const Version = "0.4.0"
-
 func main() {
 	options := jxscouttypes.Options{}
 

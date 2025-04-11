@@ -1,6 +1,7 @@
 package tui
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -887,6 +888,51 @@ func (t *TUI) RegisterDefaultCommands() {
 				return nil, fmt.Errorf("failed to truncate tables: %w", err)
 			}
 			t.writeLineToOutput("✅ Database tables have been truncated successfully.")
+			return nil, nil
+		},
+	})
+
+	t.RegisterCommand(Command{
+		Name:        "version",
+		ShortName:   "v",
+		Description: "Show the current version and check for updates",
+		Usage:       "version",
+		Execute: func(args []string) (tea.Cmd, error) {
+			// Print current version
+			t.writeLineToOutput(fmt.Sprintf("Current version: %s", constants.Version))
+
+			// Check for updates in a goroutine to avoid blocking the UI
+			go func() {
+				// Use curl to check the latest release on GitHub
+				cmd := exec.Command("curl", "-s", "https://api.github.com/repos/francisconeves97/jxscout/releases/latest")
+				output, err := cmd.CombinedOutput()
+				if err != nil {
+					t.writeLineToOutput("❌ Failed to check for updates: " + err.Error())
+					return
+				}
+
+				// Parse the JSON response to extract the tag_name
+				var response struct {
+					TagName string `json:"tag_name"`
+				}
+				if err := json.Unmarshal(output, &response); err != nil {
+					t.writeLineToOutput("❌ Failed to parse GitHub response: " + err.Error())
+					return
+				}
+
+				// Remove 'v' prefix if present
+				latestVersion := strings.TrimPrefix(response.TagName, "v")
+				currentVersion := constants.Version
+
+				// Compare versions
+				if latestVersion != currentVersion {
+					t.writeLineToOutput(fmt.Sprintf("🔄 A new version is available: %s", latestVersion))
+					t.writeLineToOutput("Visit https://github.com/francisconeves97/jxscout to download the latest version.")
+				} else {
+					t.writeLineToOutput("✅ You are running the latest version.")
+				}
+			}()
+
 			return nil, nil
 		},
 	})
