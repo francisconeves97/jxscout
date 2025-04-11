@@ -512,7 +512,10 @@ func (t *TUI) RegisterDefaultCommands() {
 				t.writeLineToOutput("Not authenticated with Caido. Starting authentication flow...")
 
 				go func() {
-					verificationURL, err := overridesModule.AuthenticateCaido(t.jxscout.Ctx())
+					// Create a channel to signal authentication completion
+					authCompleteChan := make(chan bool, 1)
+
+					verificationURL, err := overridesModule.AuthenticateCaido(t.jxscout.Ctx(), authCompleteChan)
 					if err != nil {
 						t.writeLineToOutput(fmt.Sprintf("Failed to authenticate with Caido: %v", err))
 						return
@@ -524,9 +527,16 @@ func (t *TUI) RegisterDefaultCommands() {
 						t.writeLineToOutput(fmt.Sprintf("Please visit %s to complete authentication", verificationURL))
 					} else {
 						t.writeLineToOutput("Please complete the authentication with Caido on your browser")
+						t.writeLineToOutput("Waiting for authentication token...")
 					}
 
-					t.writeLineToOutput("After authenticating, run the override command again")
+					// Wait for authentication to complete
+					select {
+					case <-authCompleteChan:
+						t.writeLineToOutput("Authentication successful! ✅ You can now use the override command.")
+					case <-time.After(5 * time.Minute):
+						t.writeLineToOutput("Authentication timed out. Please try again.")
+					}
 				}()
 
 				return nil, nil
@@ -821,7 +831,10 @@ func (t *TUI) RegisterDefaultCommands() {
 
 			t.writeLineToOutput("Starting authentication flow with Caido...")
 
-			verificationURL, err := overridesModule.AuthenticateCaido(t.jxscout.Ctx())
+			// Create a channel to signal authentication completion
+			authCompleteChan := make(chan bool, 1)
+
+			verificationURL, err := overridesModule.AuthenticateCaido(t.jxscout.Ctx(), authCompleteChan)
 			if err != nil {
 				return nil, fmt.Errorf("failed to authenticate with Caido: %w", err)
 			}
@@ -832,7 +845,19 @@ func (t *TUI) RegisterDefaultCommands() {
 				t.writeLineToOutput(fmt.Sprintf("Please visit %s to complete authentication", verificationURL))
 			} else {
 				t.writeLineToOutput("Please complete the authentication with Caido on your browser")
+				t.writeLineToOutput("Waiting for authentication token...")
 			}
+
+			// Wait for authentication to complete
+			go func() {
+				select {
+				case <-authCompleteChan:
+					t.writeLineToOutput("Authentication successful! ✅")
+					overridesModule.StartContentCheck()
+				case <-time.After(5 * time.Minute):
+					t.writeLineToOutput("Authentication timed out. Please try again.")
+				}
+			}()
 
 			return nil, nil
 		},

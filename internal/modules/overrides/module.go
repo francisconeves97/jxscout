@@ -21,9 +21,10 @@ const (
 
 type OverridesModule interface {
 	IsCaidoAuthenticated(ctx context.Context) bool
-	AuthenticateCaido(ctx context.Context) (string, error)
+	AuthenticateCaido(ctx context.Context, authCompleteChan chan<- bool) (string, error)
 	ToggleOverride(ctx context.Context, request ToggleOverrideRequest) (bool, error)
 	GetOverrides(ctx context.Context, page, pageSize int) ([]*override, int, error)
+	StartContentCheck()
 }
 
 type overridesModule struct {
@@ -69,7 +70,7 @@ func (m *overridesModule) Initialize(sdk *jxscouttypes.ModuleSDK) error {
 func (m *overridesModule) checkOverridesContent(ctx context.Context) {
 	// Create a new context for this goroutine
 	m.contentCheckCtx, m.contentCheckCancel = context.WithCancel(ctx)
-	defer m.contentCheckCancel()
+	defer m.stopContentCheck()
 
 	ticker := time.NewTicker(m.sdk.Options.OverrideContentCheckInterval)
 	defer ticker.Stop()
@@ -110,6 +111,8 @@ func (m *overridesModule) startContentCheck() {
 	if m.contentCheckCtx != nil {
 		return
 	}
+
+	m.sdk.Logger.Debug("starting content check routine")
 
 	// Start a new goroutine
 	go m.checkOverridesContent(m.sdk.Ctx)
@@ -200,12 +203,16 @@ func (m *overridesModule) IsCaidoAuthenticated(ctx context.Context) bool {
 	return m.caidoClient.IsAuthenticated()
 }
 
-func (m *overridesModule) AuthenticateCaido(ctx context.Context) (string, error) {
-	verificationURL, err := m.caidoClient.Authenticate(ctx)
+func (m *overridesModule) AuthenticateCaido(ctx context.Context, authCompleteChan chan<- bool) (string, error) {
+	verificationURL, err := m.caidoClient.Authenticate(ctx, authCompleteChan)
 	if err != nil {
 		return "", errutil.Wrap(err, "failed to authenticate with Caido")
 	}
 	return verificationURL, nil
+}
+
+func (m *overridesModule) StartContentCheck() {
+	m.startContentCheck()
 }
 
 var ErrAssetNotFound = errors.New("asset not found")

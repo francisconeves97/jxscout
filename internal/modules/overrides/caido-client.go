@@ -70,7 +70,7 @@ type AuthenticationResponse struct {
 	} `graphql:"authenticationFlow"`
 }
 
-func (c *CaidoClient) Authenticate(ctx context.Context) (string, error) {
+func (c *CaidoClient) Authenticate(ctx context.Context, authCompleteChan chan<- bool) (string, error) {
 	var mutation struct {
 		StartAuthenticationFlow struct {
 			Request AuthenticationRequest `graphql:"request"`
@@ -90,7 +90,7 @@ func (c *CaidoClient) Authenticate(ctx context.Context) (string, error) {
 	readyChan := make(chan error, 1)
 
 	// Start listening for the authentication token in a goroutine
-	go c.listenForAuthenticationToken(ctx, mutation.StartAuthenticationFlow.Request.ID, readyChan)
+	go c.listenForAuthenticationToken(ctx, mutation.StartAuthenticationFlow.Request.ID, readyChan, authCompleteChan)
 
 	// Wait for the subscription to be ready or context to be cancelled
 	select {
@@ -114,7 +114,7 @@ type CreatedAuthenticationToken struct {
 }
 
 // listenForAuthenticationToken starts a subscription to listen for the authentication token
-func (c *CaidoClient) listenForAuthenticationToken(ctx context.Context, requestID string, readyChan chan<- error) {
+func (c *CaidoClient) listenForAuthenticationToken(ctx context.Context, requestID string, readyChan chan<- error, authCompleteChan chan<- bool) {
 	subscriptionClient := graphql.NewSubscriptionClient(fmt.Sprintf("ws://%s/ws/graphql", c.url))
 	defer subscriptionClient.Close()
 
@@ -142,6 +142,12 @@ func (c *CaidoClient) listenForAuthenticationToken(ctx context.Context, requestI
 		if response.CreatedAuthenticationToken.Token.AccessToken != "" {
 			authChan <- response.CreatedAuthenticationToken.Token.AccessToken
 			c.log.Info("caido authentication successful")
+
+			// Signal authentication completion if channel is provided
+			if authCompleteChan != nil {
+				authCompleteChan <- true
+			}
+
 			return graphql.ErrSubscriptionStopped
 		}
 
