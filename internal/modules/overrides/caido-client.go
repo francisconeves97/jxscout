@@ -342,3 +342,23 @@ func (c *CaidoClient) ToggleTamperRule(ctx context.Context, ruleID string, enabl
 		ID: mutation.ToggleTamperRule.Rule.ID,
 	}, nil
 }
+
+// DeleteTamperRule deletes a tamper rule
+func (c *CaidoClient) DeleteTamperRule(ctx context.Context, ruleID string) (string, error) {
+	var mutation struct {
+		DeleteTamperRule struct {
+			DeletedID string `graphql:"deletedId"`
+		} `graphql:"deleteTamperRule(id: $id)"`
+	}
+
+	variables := map[string]interface{}{
+		"id": ruleID,
+	}
+
+	err := c.client.Mutate(ctx, &mutation, variables)
+	if err != nil {
+		return "", errutil.Wrap(err, "failed to delete tamper rule")
+	}
+
+	return mutation.DeleteTamperRule.DeletedID, nil
+}

@@ -162,7 +162,26 @@ func (m *overridesModule) createOverride(ctx context.Context, asset jxscouttypes
 }
 
 func (m *overridesModule) deleteOverride(ctx context.Context, asset jxscouttypes.Asset) error {
-	// return m.repo.deleteOverride(ctx, asset.ID)
+	// Get the existing override
+	existingOverride, err := m.repo.getOverrideByAssetID(ctx, asset.ID)
+	if err != nil {
+		return errutil.Wrap(err, "failed to get existing override")
+	}
+	if existingOverride == nil {
+		return nil // No override exists, nothing to delete
+	}
+
+	// Delete the tamper rule from Caido
+	_, err = m.caidoClient.DeleteTamperRule(ctx, existingOverride.CaidoTamperRuleID)
+	if err != nil {
+		return errutil.Wrap(err, "failed to delete tamper rule from Caido")
+	}
+
+	// Delete the override from our database
+	if err := m.repo.deleteOverride(ctx, asset.ID); err != nil {
+		return errutil.Wrap(err, "failed to delete override from database")
+	}
+
 	return nil
 }
 
