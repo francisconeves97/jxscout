@@ -51,6 +51,55 @@ Watch the demo movie to see jxscout in action:
 
 https://github.com/user-attachments/assets/64f161c3-46b0-41a9-8b34-706cc795a034
 
+### Available Commands
+
+```
+Available commands:
+
+assets (la) - List assets with pagination and search
+  Usage: assets [page=<page_number>] [page-size=<page_size>] [search=<search_term>]
+
+caido-auth (ca) - Authenticate with Caido
+  Usage: caido-auth
+
+clear (c) - Clears the output
+  Usage: clear
+
+config (cf) - View or update jxscout configuration options
+  Usage: config [options] | Use 'config' without arguments to view current configuration
+
+config-reset (cfr) - Reset all configuration options to default values
+  Usage: config-reset
+
+exit (q) - Exits the application
+  Usage: exit
+
+guide (g) - Show a guide on how to use jxscout
+  Usage: guide
+
+help (h) - Shows help information for commands
+  Usage: help [command]
+
+install (i) - Install jxscout dependencies (npm, bun, prettier, reverse-sourcemap)
+  Usage: install
+
+loads (lo) - Show assets that load a specific JavaScript asset
+  Usage: loads <asset_url> [page=<page_number>] [page-size=<page_size>]
+
+logs (l) - Toggle logs panel
+  Usage: logs
+
+override (o) - Toggle local override for a specific URL (only available for Caido). 
+This will override the content of an asset when you visit it in your browser.
+  Usage: override <url>
+
+overrides (lo) - List overrides
+  Usage: overrides [page=<page_number>] [page-size=<page_size>]
+
+truncate-tables (tt) - Delete all data tracked in jxscout database (requires confirmation)
+  Usage: truncate-tables
+```
+
 ### CLI Options
 
 ```bash
