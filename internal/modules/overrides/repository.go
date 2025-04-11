@@ -17,6 +17,8 @@ type override struct {
 	ContentHash       string     `db:"content_hash"`
 	CreatedAt         time.Time  `db:"created_at"`
 	DeletedAt         *time.Time `db:"deleted_at"`
+	AssetURL          *string    `db:"asset_url"`
+	AssetPath         *string    `db:"fs_path"`
 }
 
 type overridesRepository struct {
@@ -119,6 +121,77 @@ func (r *overridesRepository) deleteOverride(ctx context.Context, assetID int64)
 	_, err := r.db.ExecContext(ctx, query, assetID)
 	if err != nil {
 		return errutil.Wrap(err, "failed to delete override")
+	}
+
+	return nil
+}
+
+func (r *overridesRepository) getAllOverrides(ctx context.Context) ([]*override, error) {
+	query := `
+		SELECT 
+			overrides.id, 
+			overrides.asset_id, 
+			overrides.caido_collection_id, 
+			overrides.caido_tamper_rule_id, 
+			overrides.content_hash, 
+			overrides.created_at, 
+			overrides.deleted_at, 
+			assets.url, 
+			assets.fs_path
+		FROM overrides JOIN assets ON overrides.asset_id = assets.id
+		WHERE overrides.deleted_at IS NULL
+	`
+
+	rows, err := r.db.QueryContext(ctx, query)
+	if err != nil {
+		return nil, errutil.Wrap(err, "failed to get all overrides")
+	}
+	defer rows.Close()
+
+	var overrides []*override
+	for rows.Next() {
+		var o override
+		var deletedAt sql.NullTime
+
+		err := rows.Scan(
+			&o.ID,
+			&o.AssetID,
+			&o.CaidoCollectionID,
+			&o.CaidoTamperRuleID,
+			&o.ContentHash,
+			&o.CreatedAt,
+			&deletedAt,
+			&o.AssetURL,
+			&o.AssetPath,
+		)
+		if err != nil {
+			return nil, errutil.Wrap(err, "failed to scan override")
+		}
+
+		if deletedAt.Valid {
+			o.DeletedAt = &deletedAt.Time
+		}
+
+		overrides = append(overrides, &o)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, errutil.Wrap(err, "error iterating overrides")
+	}
+
+	return overrides, nil
+}
+
+func (r *overridesRepository) updateOverride(ctx context.Context, o *override) error {
+	query := `
+		UPDATE overrides
+		SET content_hash = ?
+		WHERE id = ? AND deleted_at IS NULL
+	`
+
+	_, err := r.db.ExecContext(ctx, query, o.ContentHash, o.ID)
+	if err != nil {
+		return errutil.Wrap(err, "failed to update override")
 	}
 
 	return nil

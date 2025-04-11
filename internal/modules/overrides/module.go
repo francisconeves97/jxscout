@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/francisconeves97/jxscout/internal/core/common"
 	"github.com/francisconeves97/jxscout/internal/core/errutil"
@@ -53,6 +54,93 @@ func (m *overridesModule) Initialize(sdk *jxscouttypes.ModuleSDK) error {
 		return errutil.Wrap(err, "failed to create overrides repository")
 	}
 	m.repo = repo
+
+	// Start the background routine to check for content changes
+	go m.checkOverridesContent(sdk.Ctx)
+
+	return nil
+}
+
+// checkOverridesContent periodically checks all overrides for content changes
+func (m *overridesModule) checkOverridesContent(ctx context.Context) {
+	ticker := time.NewTicker(m.sdk.Options.OverrideContentCheckInterval)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			if err := m.checkAllOverrides(ctx); err != nil {
+				m.sdk.Logger.Error("failed to check overrides content", "error", err)
+			}
+		}
+	}
+}
+
+// checkAllOverrides checks all overrides for content changes
+func (m *overridesModule) checkAllOverrides(ctx context.Context) error {
+	overrides, err := m.repo.getAllOverrides(ctx)
+	if err != nil {
+		return errutil.Wrap(err, "failed to get all overrides")
+	}
+
+	for _, o := range overrides {
+		if o.AssetPath == nil {
+			m.sdk.Logger.Error("asset path is nil", "override", o)
+			continue
+		}
+		if o.AssetURL == nil {
+			m.sdk.Logger.Error("asset URL is nil", "override", o)
+			continue
+		}
+
+		assetPath := *o.AssetPath
+		assetURL := *o.AssetURL
+
+		if _, err := os.Stat(assetPath); os.IsNotExist(err) {
+			m.sdk.Logger.Error("asset file no longer exists", "url", assetURL)
+			continue
+		}
+
+		// Read the current content
+		content, err := os.ReadFile(assetPath)
+		if err != nil {
+			m.sdk.Logger.Error("failed to read asset file", "url", assetURL, "error", err)
+			continue
+		}
+
+		currentHash := common.Hash(string(content))
+
+		if currentHash == o.ContentHash {
+			m.sdk.Logger.Debug("no changes to override", "url", assetURL)
+			continue
+		}
+
+		// If hash has changed, update the tamper rule
+		// Parse the URL to get host and path
+		parsedURL, err := url.Parse(assetURL)
+		if err != nil {
+			m.sdk.Logger.Error("failed to parse asset URL", "url", assetURL, "error", err)
+			continue
+		}
+
+		// Update the tamper rule
+		_, err = m.caidoClient.UpdateTamperRule(ctx, o.CaidoTamperRuleID, parsedURL.Path, string(content), parsedURL.Host, strings.TrimSuffix(parsedURL.Path, "/"))
+		if err != nil {
+			m.sdk.Logger.Error("failed to update tamper rule", "url", assetURL, "error", err)
+			continue
+		}
+
+		// Update the hash in our database
+		o.ContentHash = currentHash
+		if err := m.repo.updateOverride(ctx, o); err != nil {
+			m.sdk.Logger.Error("failed to update override hash", "url", assetURL, "error", err)
+			continue
+		}
+
+		m.sdk.Logger.Info("updated match and replace rule with updated content", "url", assetURL)
+	}
 
 	return nil
 }
