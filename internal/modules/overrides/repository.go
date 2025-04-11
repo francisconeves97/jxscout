@@ -165,6 +165,7 @@ func (r *overridesRepository) getAllOverrides(ctx context.Context) ([]*override,
 			&deletedAt,
 			&o.AssetURL,
 			&o.AssetPath,
+			&o.AssetContentType,
 		)
 		if err != nil {
 			return nil, errutil.Wrap(err, "failed to scan override")

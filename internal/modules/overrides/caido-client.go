@@ -381,6 +381,9 @@ func (c *CaidoClient) UpdateTamperRule(ctx context.Context, ruleID string, name 
 	}
 
 	condition := fmt.Sprintf(`req.host.cont:"%s" and req.path.cont:"%s"`, host, path)
+	if path == "" {
+		condition = fmt.Sprintf(`req.host.cont:"%s" and req.path.eq:"/"`, host)
+	}
 
 	variables := map[string]interface{}{
 		"id":        ruleID,
