@@ -1,7 +1,10 @@
 package jxscout
 
 import (
+	"context"
+
 	"github.com/francisconeves97/jxscout/internal/core/tui"
+	"github.com/francisconeves97/jxscout/internal/modules/overrides"
 	jxscouttypes "github.com/francisconeves97/jxscout/pkg/types"
 )
 
@@ -30,6 +33,22 @@ func (t *tuiJXScoutWrapper) Restart(options jxscouttypes.Options) (tui.JXScout, 
 	t.jxscout = jxscout
 
 	return &tuiJXScoutWrapper{jxscout: jxscout}, nil
+}
+
+func (t *tuiJXScoutWrapper) GetOverridesModule() overrides.OverridesModule {
+	return t.jxscout.overridesModule
+}
+
+func (t *tuiJXScoutWrapper) GetAssetService() jxscouttypes.AssetService {
+	return t.jxscout.assetService
+}
+
+func (t *tuiJXScoutWrapper) Ctx() context.Context {
+	return t.jxscout.ctx
+}
+
+func (t *tuiJXScoutWrapper) TruncateTables() error {
+	return t.jxscout.TruncateTables()
 }
 
 func (s *jxscout) runPrompt() {
