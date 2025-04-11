@@ -56,10 +56,10 @@ https://github.com/user-attachments/assets/64f161c3-46b0-41a9-8b34-706cc795a034
 ```
 Available commands:
 
-assets (la) - List assets with pagination and search
+assets (la) - List assets for the current project with pagination and search
   Usage: assets [page=<page_number>] [page-size=<page_size>] [search=<search_term>]
 
-caido-auth (ca) - Authenticate with Caido
+caido-auth (ca) - Authenticate with Caido (token is stored in memory and will reset on server restart)
   Usage: caido-auth
 
 clear (c) - Clears the output
@@ -83,7 +83,7 @@ help (h) - Shows help information for commands
 install (i) - Install jxscout dependencies (npm, bun, prettier, reverse-sourcemap)
   Usage: install
 
-loads (lo) - Show assets that load a specific JavaScript asset
+loads (ld) - Show assets that load a specific JavaScript asset
   Usage: loads <asset_url> [page=<page_number>] [page-size=<page_size>]
 
 logs (l) - Toggle logs panel
@@ -98,6 +98,9 @@ overrides (lo) - List overrides
 
 truncate-tables (tt) - Delete all data tracked in jxscout database (requires confirmation)
   Usage: truncate-tables
+
+version (v) - Show the current version and checks for updates
+  Usage: version
 ```
 
 ### CLI Options

@@ -573,7 +573,7 @@ func (t *TUI) RegisterDefaultCommands() {
 	t.RegisterCommand(Command{
 		Name:        "assets",
 		ShortName:   "la",
-		Description: "List assets with pagination and search",
+		Description: "List assets for the current project with pagination and search",
 		Usage:       "assets [page=<page_number>] [page-size=<page_size>] [search=<search_term>]",
 		Execute: func(args []string) (tea.Cmd, error) {
 			params := assetrepository.GetAssetsParams{
@@ -897,7 +897,7 @@ func (t *TUI) RegisterDefaultCommands() {
 	t.RegisterCommand(Command{
 		Name:        "version",
 		ShortName:   "v",
-		Description: "Show the current version and check for updates",
+		Description: "Show the current version and checks for updates",
 		Usage:       "version",
 		Execute: func(args []string) (tea.Cmd, error) {
 			// Print current version
