@@ -74,6 +74,7 @@ func (m *overridesModule) AuthenticateCaido(ctx context.Context) (string, error)
 }
 
 var ErrAssetNotFound = errors.New("asset not found")
+var ErrAssetNoLongerExists = errors.New("asset no longer exists")
 
 func (m *overridesModule) ToggleOverride(ctx context.Context, request ToggleOverrideRequest) (bool, error) {
 	asset, exists, err := m.sdk.AssetService.GetAssetByURL(ctx, request.AssetURL)
@@ -86,7 +87,7 @@ func (m *overridesModule) ToggleOverride(ctx context.Context, request ToggleOver
 
 	// Check if the file still exists
 	if _, err := os.Stat(asset.Path); os.IsNotExist(err) {
-		return false, errutil.Wrap(err, "asset file no longer exists")
+		return false, ErrAssetNoLongerExists
 	}
 
 	existingOverride, err := m.repo.getOverrideByAssetID(ctx, asset.ID)

@@ -485,7 +485,7 @@ func (t *TUI) RegisterDefaultCommands() {
 	t.RegisterCommand(Command{
 		Name:        "override",
 		ShortName:   "o",
-		Description: "Toggle override for a specific URL",
+		Description: "Toggle local override for a specific URL (only available for Caido). \nThis will override the content of an asset when you visit it in your browser.",
 		Usage:       "override <url>",
 		Execute: func(args []string) (tea.Cmd, error) {
 			if len(args) == 0 {
@@ -526,6 +526,10 @@ func (t *TUI) RegisterDefaultCommands() {
 			})
 			if errors.Is(err, overrides.ErrAssetNotFound) {
 				t.writeLineToOutput(fmt.Sprintf("Asset %s not found. Confirm the URL is correct and that asset is being tracked by jxscout", url))
+				return nil, nil
+			}
+			if errors.Is(err, overrides.ErrAssetNoLongerExists) {
+				t.writeLineToOutput(fmt.Sprintf("Asset %s no longer exists.\nYou probably deleted it manually from your file system.", url))
 				return nil, nil
 			}
 			if err != nil {
@@ -621,10 +625,10 @@ func (t *TUI) RegisterDefaultCommands() {
 	})
 
 	t.RegisterCommand(Command{
-		Name:        "deps",
-		ShortName:   "d",
+		Name:        "loads",
+		ShortName:   "lo",
 		Description: "Show assets that load a specific JavaScript asset",
-		Usage:       "deps <asset_url>",
+		Usage:       "loads <asset_url>",
 		Execute: func(args []string) (tea.Cmd, error) {
 			if len(args) == 0 {
 				return nil, fmt.Errorf("asset url is required")
