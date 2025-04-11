@@ -69,6 +69,7 @@ func main() {
 	flagSet.CreateGroup("overrides", "overrides configuration",
 		flagSet.StringVar(&options.CaidoHostname, constants.FlagCaidoHostname, constants.DefaultCaidoHostname, constants.DescriptionCaidoHostname),
 		flagSet.IntVar(&options.CaidoPort, constants.FlagCaidoPort, constants.DefaultCaidoPort, constants.DescriptionCaidoPort),
+		flagSet.DurationVar(&options.OverrideContentCheckInterval, constants.FlagOverrideContentCheckInterval, constants.DefaultOverrideContentCheckInterval, constants.DescriptionOverrideContentCheckInterval),
 	)
 
 	configFileLocation := path.Join(common.GetPrivateDirectory(), constants.ConfigFileName)

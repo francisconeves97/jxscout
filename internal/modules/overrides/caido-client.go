@@ -362,3 +362,34 @@ func (c *CaidoClient) DeleteTamperRule(ctx context.Context, ruleID string) (stri
 
 	return mutation.DeleteTamperRule.DeletedID, nil
 }
+
+// UpdateTamperRule updates an existing tamper rule
+func (c *CaidoClient) UpdateTamperRule(ctx context.Context, ruleID string, name string, content string, host string, path string) (TamperRule, error) {
+	var mutation struct {
+		UpdateTamperRule struct {
+			Rule struct {
+				ID   string `graphql:"id"`
+				Name string `graphql:"name"`
+			} `graphql:"rule"`
+		} `graphql:"updateTamperRule(id: $id, input: { name: $name, condition: $condition, section: { responseBody: { operation: { raw: { matcher: { full: { full: true } }, replacer: { term: { term: $content } } } } } } })"`
+	}
+
+	condition := fmt.Sprintf(`req.host.cont:"%s" and req.path.cont:"%s"`, host, path)
+
+	variables := map[string]interface{}{
+		"id":        ruleID,
+		"name":      name,
+		"content":   content,
+		"condition": condition,
+	}
+
+	err := c.client.Mutate(ctx, &mutation, variables)
+	if err != nil {
+		return TamperRule{}, errutil.Wrap(err, "failed to update tamper rule")
+	}
+
+	return TamperRule{
+		ID:   mutation.UpdateTamperRule.Rule.ID,
+		Name: mutation.UpdateTamperRule.Rule.Name,
+	}, nil
+}

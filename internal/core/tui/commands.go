@@ -181,6 +181,8 @@ func (t *TUI) RegisterDefaultCommands() {
 						currentOptions.CaidoHostname = constants.DefaultCaidoHostname
 					case constants.FlagCaidoPort:
 						currentOptions.CaidoPort = constants.DefaultCaidoPort
+					case constants.FlagOverrideContentCheckInterval:
+						currentOptions.OverrideContentCheckInterval = constants.DefaultOverrideContentCheckInterval
 					default:
 						return nil, fmt.Errorf("unknown option: %s", option)
 					}
@@ -333,6 +335,12 @@ func (t *TUI) RegisterDefaultCommands() {
 						return nil, fmt.Errorf("invalid caido-port value: %s", value)
 					}
 					currentOptions.CaidoPort = port
+				case constants.FlagOverrideContentCheckInterval:
+					duration, err := time.ParseDuration(value)
+					if err != nil {
+						return nil, fmt.Errorf("invalid override-content-check-interval value: %s", value)
+					}
+					currentOptions.OverrideContentCheckInterval = duration
 				default:
 				}
 			}
@@ -393,6 +401,9 @@ func (t *TUI) RegisterDefaultCommands() {
 				DownloadReferedJS:                constants.DefaultDownloadReferedJS,
 				LogBufferSize:                    constants.DefaultLogBufferSize,
 				LogFileMaxSizeMB:                 constants.DefaultLogFileMaxSizeMB,
+				CaidoHostname:                    constants.DefaultCaidoHostname,
+				CaidoPort:                        constants.DefaultCaidoPort,
+				OverrideContentCheckInterval:     constants.DefaultOverrideContentCheckInterval,
 			}
 
 			// Restart jxscout with default options
@@ -895,4 +906,9 @@ func (t *TUI) printCurrentConfig() {
 		constants.FlagCaidoPort,
 		fmt.Sprintf("%d", currentOptions.CaidoPort),
 		descStyle.Render(constants.DescriptionCaidoPort)))
+
+	t.writeLineToOutput(formatLine(
+		constants.FlagOverrideContentCheckInterval,
+		fmt.Sprintf("%v", currentOptions.OverrideContentCheckInterval),
+		descStyle.Render(constants.DescriptionOverrideContentCheckInterval)))
 }

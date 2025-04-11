@@ -59,6 +59,7 @@ type Options struct {
 	LogFileMaxSizeMB                 int                 `yaml:"log-file-max-size-mb"`
 	CaidoHostname                    string              `yaml:"caido-hostname"`
 	CaidoPort                        int                 `yaml:"caido-port"`
+	OverrideContentCheckInterval     time.Duration       `yaml:"override-content-check-interval"`
 }
 
 // AssetService interface

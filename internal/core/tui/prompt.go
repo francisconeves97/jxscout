@@ -19,6 +19,9 @@ Type 'help' to see available commands
 Type 'exit' to quit
 
 Happy hunting! 🐛
+
+If jxscout helped you find some cool bugs,
+consider buying me a coffee: https://ko-fi.com/francisconeves97 ☕
 `
 
 func (t *TUI) Run() error {

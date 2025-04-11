@@ -44,8 +44,9 @@ const (
 	DefaultLogFileMaxSizeMB = 10
 
 	// Overrides configuration
-	DefaultCaidoHostname = "localhost"
-	DefaultCaidoPort     = 8080
+	DefaultCaidoHostname                = "localhost"
+	DefaultCaidoPort                    = 8080
+	DefaultOverrideContentCheckInterval = time.Second * 5
 )
 
 // Flag names for jxscout options
@@ -87,8 +88,9 @@ const (
 	FlagLogFileMaxSizeMB = "log-file-max-size-mb"
 
 	// Overrides configuration
-	FlagCaidoHostname = "caido-hostname"
-	FlagCaidoPort     = "caido-port"
+	FlagCaidoHostname                = "caido-hostname"
+	FlagCaidoPort                    = "caido-port"
+	FlagOverrideContentCheckInterval = "override-content-check-interval"
 )
 
 // Descriptions for jxscout options
@@ -130,6 +132,7 @@ const (
 	DescriptionLogFileMaxSizeMB = "max size of the log file in MB"
 
 	// Overrides configuration
-	DescriptionCaidoHostname = "hostname where Caido is running"
-	DescriptionCaidoPort     = "port where Caido is running"
+	DescriptionCaidoHostname                = "hostname where Caido is running"
+	DescriptionCaidoPort                    = "port where Caido is running"
+	DescriptionOverrideContentCheckInterval = "interval at which to check for changes in override content and update match/replace rules"
 )
