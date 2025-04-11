@@ -639,13 +639,45 @@ func (t *TUI) RegisterDefaultCommands() {
 		Name:        "loads",
 		ShortName:   "lo",
 		Description: "Show assets that load a specific JavaScript asset",
-		Usage:       "loads <asset_url>",
+		Usage:       "loads <asset_url> [page=<page_number>] [page-size=<page_size>]",
 		Execute: func(args []string) (tea.Cmd, error) {
 			if len(args) == 0 {
 				return nil, fmt.Errorf("asset url is required")
 			}
 
 			url := args[0]
+			params := assetrepository.GetAssetsParams{
+				Page:     1,
+				PageSize: 15,
+			}
+
+			// Parse arguments
+			for i := 1; i < len(args); i++ {
+				parts := strings.SplitN(args[i], "=", 2)
+				if len(parts) != 2 {
+					return nil, fmt.Errorf("invalid argument format: %s. Expected format: key=value", args[i])
+				}
+
+				key := parts[0]
+				value := parts[1]
+
+				switch key {
+				case "page":
+					page, err := strconv.Atoi(value)
+					if err != nil {
+						return nil, fmt.Errorf("invalid page number: %s", value)
+					}
+					params.Page = page
+				case "page-size":
+					pageSize, err := strconv.Atoi(value)
+					if err != nil {
+						return nil, fmt.Errorf("invalid page size: %s", value)
+					}
+					params.PageSize = pageSize
+				default:
+					return nil, fmt.Errorf("unknown argument: %s", key)
+				}
+			}
 
 			// First check if the asset exists and is a JavaScript asset
 			asset, exists, err := t.jxscout.GetAssetService().GetAssetByURL(t.jxscout.Ctx(), url)
@@ -660,19 +692,32 @@ func (t *TUI) RegisterDefaultCommands() {
 			}
 
 			// Get assets that load this asset
-			assets, err := t.jxscout.GetAssetService().GetAssetsThatLoad(t.jxscout.Ctx(), url)
+			assets, total, err := t.jxscout.GetAssetService().GetAssetsThatLoad(t.jxscout.Ctx(), url, params)
 			if err != nil {
 				return nil, fmt.Errorf("failed to get assets that load: %w", err)
 			}
 
-			// Print results
-			t.writeLineToOutput(fmt.Sprintf("\nAssets that load '%s':\n", url))
+			// Calculate total pages
+			totalPages := (total + params.PageSize - 1) / params.PageSize
+
+			// Print header
+			t.writeLineToOutput(fmt.Sprintf("\nAssets that load '%s' (page %d of %d):\n",
+				url, params.Page, totalPages))
+
+			// Print assets
 			if len(assets) == 0 {
 				t.writeLineToOutput("No assets found that load this JavaScript file.")
 			} else {
 				for i, asset := range assets {
-					t.writeLineToOutput(fmt.Sprintf("%d. %s", i+1, asset.URL))
+					t.writeLineToOutput(fmt.Sprintf("%d. %s", (i+1)+((params.Page-1)*params.PageSize), asset.URL))
 				}
+			}
+
+			// Print pagination info
+			t.writeLineToOutput(fmt.Sprintf("\nTotal assets: %d", total))
+			if totalPages > 1 {
+				t.writeLineToOutput("Use 'loads <asset_url> page=<number>' to view other pages")
+				t.writeLineToOutput("Use 'loads <asset_url> page-size=<page-size>' to change the page size")
 			}
 
 			return nil, nil
