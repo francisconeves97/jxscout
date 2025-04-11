@@ -297,11 +297,13 @@ func (m *overridesModule) createOverride(ctx context.Context, asset jxscouttypes
 	// Create the tamper rule
 	rule, err := m.caidoClient.CreateTamperRule(ctx, collection.ID, ruleName, string(content), parsedURL.Host, strings.TrimSuffix(parsedURL.Path, "/"))
 	if err != nil {
+		m.sdk.Logger.Info("failed to create tamper rule", "error", err)
 		return errutil.Wrap(err, "failed to create tamper rule")
 	}
 
 	_, err = m.caidoClient.ToggleTamperRule(ctx, rule.ID, true)
 	if err != nil {
+		m.sdk.Logger.Info("failed to toggle tamper rule", "error", err)
 		return errutil.Wrap(err, "failed to toggle tamper rule")
 	}
 
@@ -339,6 +341,7 @@ func (m *overridesModule) deleteOverride(ctx context.Context, asset jxscouttypes
 	// Delete the tamper rule from Caido
 	_, err = m.caidoClient.DeleteTamperRule(ctx, existingOverride.CaidoTamperRuleID)
 	if err != nil {
+		m.sdk.Logger.Info("failed to delete tamper rule", "error", err)
 		return errutil.Wrap(err, "failed to delete tamper rule from Caido")
 	}
 
@@ -364,6 +367,7 @@ func (m *overridesModule) deleteOverride(ctx context.Context, asset jxscouttypes
 func (m *overridesModule) getOrCreateTamperRuleCollection(ctx context.Context) (TamperRuleCollection, error) {
 	collections, err := m.caidoClient.GetTamperRuleCollections(ctx)
 	if err != nil {
+		m.sdk.Logger.Info("failed to get tamper rule collection rule", "error", err)
 		return TamperRuleCollection{}, errutil.Wrap(err, "failed to get tamper rule collections")
 	}
 
@@ -377,6 +381,7 @@ func (m *overridesModule) getOrCreateTamperRuleCollection(ctx context.Context) (
 	// Create a new collection if it doesn't exist
 	collection, err := m.caidoClient.CreateTamperRuleCollection(ctx, JXScoutTamperRuleCollectionName)
 	if err != nil {
+		m.sdk.Logger.Info("failed to create tamper rule collection rule", "error", err)
 		return TamperRuleCollection{}, errutil.Wrap(err, "failed to create tamper rule collection")
 	}
 

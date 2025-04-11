@@ -557,7 +557,8 @@ func (t *TUI) RegisterDefaultCommands() {
 				return nil, nil
 			}
 			if err != nil {
-				return nil, fmt.Errorf("failed to toggle override: %w", err)
+				t.writeLineToOutput(fmt.Sprintf("❌ Failed to toggle override.\nSince the Caido GraphQL API is not stable, this might not work with your current version. It was tested on 0.47.1.\nerr: %v", err))
+				return nil, nil
 			}
 
 			if overriden {
