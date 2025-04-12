@@ -83,14 +83,19 @@ help (h) - Shows help information for commands
 install (i) - Install jxscout dependencies (npm, bun, prettier, reverse-sourcemap)
   Usage: install
 
-loads (ld) - Show assets that load a specific JavaScript asset
-  Usage: loads <asset_url> [page=<page_number>] [page-size=<page_size>]
+loaded (ldd) - Show assets that loaded a specific JavaScript asset
+  Usage: loaded <asset_url> [page=<page_number>] [page-size=<page_size>]
+
+loads (lds) - Show JavaScript assets loaded by a specific HTML page
+  Usage: loads <html_url> [page=<page_number>] [page-size=<page_size>]
 
 logs (l) - Toggle logs panel
   Usage: logs
 
 override (o) - Toggle local override for a specific URL (only available for Caido). 
 This will override the content of an asset when you visit it in your browser.
+When overriding an HTML file keep the (index).html suffix.
+The `assets` command will give you the right URL to use.
   Usage: override <url>
 
 overrides (lo) - List overrides

@@ -497,7 +497,7 @@ func (t *TUI) RegisterDefaultCommands() {
 	t.RegisterCommand(Command{
 		Name:        "override",
 		ShortName:   "o",
-		Description: "Toggle local override for a specific URL (only available for Caido). \nThis will override the content of an asset when you visit it in your browser.",
+		Description: "Toggle local override for a specific URL (only available for Caido). \nThis will override the content of an asset when you visit it in your browser.\nWhen overriding an HTML file keep the (index).html suffix.\nThe `assets` command will give you the right URL to use.",
 		Usage:       "override <url>",
 		Execute: func(args []string) (tea.Cmd, error) {
 			if len(args) == 0 {
