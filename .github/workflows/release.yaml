@@ -29,7 +29,7 @@ jobs:
 
       - name: Get version
         id: get_version
-        run: echo "VERSION=$(grep 'const Version =' cmd/jxscout/main.go | awk '{print $4}' | tr -d '"')" >> $GITHUB_OUTPUT
+        run: echo "VERSION=$(grep 'const Version =' pkg/constants/version.go | awk '{print $4}' | tr -d '"')" >> $GITHUB_OUTPUT
 
       - name: Build Bun package
         run: |
