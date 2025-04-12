@@ -1,6 +1,7 @@
 package tui
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"time"
@@ -9,6 +10,7 @@ import (
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/francisconeves97/jxscout/internal/modules/overrides"
 	jxscouttypes "github.com/francisconeves97/jxscout/pkg/types"
 	"github.com/muesli/reflow/wordwrap"
 )
@@ -44,6 +46,10 @@ type JXScout interface {
 	GetOptions() jxscouttypes.Options
 	GetLogBuffer() LogBuffer
 	Restart(options jxscouttypes.Options) (JXScout, error)
+	GetOverridesModule() overrides.OverridesModule
+	Ctx() context.Context
+	GetAssetService() jxscouttypes.AssetService
+	TruncateTables() error
 }
 
 func New(jxscout JXScout) *TUI {

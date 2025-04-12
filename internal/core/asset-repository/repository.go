@@ -4,12 +4,11 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"os"
-	"path"
 	"strings"
+	"time"
 
-	"github.com/francisconeves97/jxscout/internal/core/common"
 	"github.com/francisconeves97/jxscout/internal/core/errutil"
+	"github.com/francisconeves97/jxscout/pkg/constants"
 
 	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3"
@@ -18,14 +17,27 @@ import (
 type Repository interface {
 	SaveAsset(ctx context.Context, asset Asset) (int64, error)
 	GetAssetsByProjectName(projectName string) ([]Asset, error)
+	GetAssetByURL(ctx context.Context, url string) (Asset, bool, error)
+	GetAssets(ctx context.Context, params GetAssetsParams) ([]Asset, int, error)
+	GetAssetsThatLoad(ctx context.Context, url string, params GetAssetsParams) ([]Asset, int, error)
+	GetAssetsLoadedBy(ctx context.Context, url string, params GetAssetsParams) ([]Asset, int, error)
+	OverrideExists(ctx context.Context, assetID int64) (bool, error)
+	SaveAssetRelationship(ctx context.Context, asset Asset) error
+}
+
+type GetAssetsParams struct {
+	ProjectName string
+	SearchTerm  string
+	Page        int
+	PageSize    int
 }
 
 type assetRepository struct {
 	db *sqlx.DB
 }
 
-func NewAssetRepository() (Repository, error) {
-	db, err := initialize()
+func NewAssetRepository(db *sqlx.DB) (Repository, error) {
+	db, err := initialize(db)
 	if err != nil {
 		return nil, errutil.Wrap(err, "failed to initialize db")
 	}
@@ -35,20 +47,8 @@ func NewAssetRepository() (Repository, error) {
 	}, nil
 }
 
-func initialize() (*sqlx.DB, error) {
-	saveDir := path.Join(common.GetPrivateDirectory(), "db")
-	dbPath := path.Join(saveDir, "db.sql")
-
-	err := os.MkdirAll(saveDir, 0755)
-	if err != nil {
-		return nil, errutil.Wrap(err, "failed to create database save dir")
-	}
-
-	db, err := sqlx.Open("sqlite3", dbPath)
-	if err != nil {
-		return nil, errutil.Wrap(err, "failed to open sqlite db")
-	}
-	_, err = db.Exec(
+func initialize(db *sqlx.DB) (*sqlx.DB, error) {
+	_, err := db.Exec(
 		`
 		CREATE TABLE IF NOT EXISTS assets (
 			id INTEGER PRIMARY KEY AUTOINCREMENT, 
@@ -61,6 +61,8 @@ func initialize() (*sqlx.DB, error) {
 			created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     	updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 		);
+
+		CREATE INDEX IF NOT EXISTS idx_assets_project ON assets(project);
 
 		CREATE TABLE IF NOT EXISTS asset_relationships (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -82,13 +84,15 @@ func initialize() (*sqlx.DB, error) {
 }
 
 type Asset struct {
-	ID             int64  `db:"id"`
-	URL            string `db:"url"`
-	ContentHash    string `db:"content_hash"`
-	ContentType    string `db:"content_type"`
-	FileSystemPath string `db:"fs_path"`
-	Project        string `db:"project"`
-	RequestHeaders string `db:"request_headers"`
+	ID             int64     `db:"id"`
+	URL            string    `db:"url"`
+	ContentHash    string    `db:"content_hash"`
+	ContentType    string    `db:"content_type"`
+	FileSystemPath string    `db:"fs_path"`
+	Project        string    `db:"project"`
+	RequestHeaders string    `db:"request_headers"`
+	CreatedAt      time.Time `db:"created_at"`
+	UpdatedAt      time.Time `db:"updated_at"`
 
 	Parent *Asset
 
@@ -142,6 +146,35 @@ func (r *assetRepository) SaveAsset(ctx context.Context, asset Asset) (int64, er
 	}
 
 	return assetID, nil
+}
+
+func (r *assetRepository) SaveAssetRelationship(ctx context.Context, asset Asset) error {
+	if asset.Parent == nil || strings.TrimSpace(asset.Parent.URL) == "" {
+		return nil
+	}
+
+	var parentID int64
+	err := r.db.GetContext(ctx, &parentID, `SELECT id FROM assets WHERE url = ?`, asset.Parent.URL)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			parentID, err = r.SaveAsset(ctx, *asset.Parent)
+			if err != nil {
+				return errutil.Wrap(err, "failed to save parent aset")
+			}
+		}
+		return errutil.Wrap(err, "parent asset not found")
+	}
+
+	_, err = r.db.ExecContext(ctx, `
+		INSERT INTO asset_relationships (parent_id, child_id, created_at, updated_at)
+		VALUES (?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+		ON CONFLICT(parent_id, child_id) DO UPDATE SET updated_at = CURRENT_TIMESTAMP
+	`, parentID, asset.ID)
+	if err != nil {
+		return errutil.Wrap(err, "failed to insert asset relationship")
+	}
+
+	return nil
 }
 
 func (r *assetRepository) GetAssetsByProjectName(projectName string) ([]Asset, error) {
@@ -210,4 +243,170 @@ func (r *assetRepository) GetAssetsByProjectName(projectName string) ([]Asset, e
 	}
 
 	return assetsReturn, nil
+}
+
+func (r *assetRepository) GetAssetByURL(ctx context.Context, url string) (Asset, bool, error) {
+	query := `
+		SELECT *
+		FROM assets
+		WHERE url = ?
+		`
+
+	var asset Asset
+	err := r.db.GetContext(ctx, &asset, query, url)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return Asset{}, false, nil
+		}
+		return Asset{}, false, errutil.Wrap(err, "failed to query asset by URL")
+	}
+
+	return asset, true, nil
+}
+
+func (r *assetRepository) GetAssets(ctx context.Context, params GetAssetsParams) ([]Asset, int, error) {
+	// Build the base query
+	baseQuery := "FROM assets WHERE (project = ?"
+	args := []interface{}{params.ProjectName}
+
+	if params.ProjectName == constants.DefaultProjectName {
+		baseQuery += " OR project = '')"
+	} else {
+		baseQuery += ")"
+	}
+
+	baseQuery += " AND url NOT LIKE '%inline.js'"
+
+	// Add search condition if search term is provided
+	if params.SearchTerm != "" {
+		baseQuery += " AND url LIKE ?"
+		args = append(args, "%"+params.SearchTerm+"%")
+	}
+
+	// Get total count
+	var total int
+	countQuery := "SELECT COUNT(*) " + baseQuery
+	err := r.db.GetContext(ctx, &total, countQuery, args...)
+	if err != nil {
+		return nil, 0, errutil.Wrap(err, "failed to get total count")
+	}
+
+	// Calculate offset
+	offset := (params.Page - 1) * params.PageSize
+
+	// Get paginated assets
+	query := `
+		SELECT id, url, content_hash, content_type, fs_path, project, request_headers, created_at, updated_at
+		` + baseQuery + `
+		ORDER BY created_at DESC
+		LIMIT ? OFFSET ?
+	`
+	args = append(args, params.PageSize, offset)
+
+	var assets []Asset
+	err = r.db.SelectContext(ctx, &assets, query, args...)
+	if err != nil {
+		return nil, 0, errutil.Wrap(err, "failed to get assets")
+	}
+
+	return assets, total, nil
+}
+
+func (r *assetRepository) GetAssetsThatLoad(ctx context.Context, url string, params GetAssetsParams) ([]Asset, int, error) {
+	// First get the target asset
+	targetAsset, exists, err := r.GetAssetByURL(ctx, url)
+	if err != nil {
+		return nil, 0, errutil.Wrap(err, "failed to get target asset")
+	}
+	if !exists {
+		return nil, 0, errutil.Wrap(errors.New("asset not found"), "failed to get target asset")
+	}
+
+	// Get total count
+	var total int
+	countQuery := `
+		SELECT COUNT(*) FROM assets a
+		JOIN asset_relationships ar ON a.id = ar.parent_id
+		WHERE ar.child_id = ?
+	`
+	err = r.db.GetContext(ctx, &total, countQuery, targetAsset.ID)
+	if err != nil {
+		return nil, 0, errutil.Wrap(err, "failed to get total count")
+	}
+
+	// Calculate offset
+	offset := (params.Page - 1) * params.PageSize
+
+	// Get paginated assets
+	var assets []Asset
+	err = r.db.SelectContext(ctx, &assets, `
+		SELECT a.* FROM assets a
+		JOIN asset_relationships ar ON a.id = ar.parent_id
+		WHERE ar.child_id = ?
+		ORDER BY a.created_at DESC
+		LIMIT ? OFFSET ?
+	`, targetAsset.ID, params.PageSize, offset)
+	if err != nil {
+		return nil, 0, errutil.Wrap(err, "failed to get assets that load target")
+	}
+
+	return assets, total, nil
+}
+
+func (r *assetRepository) GetAssetsLoadedBy(ctx context.Context, url string, params GetAssetsParams) ([]Asset, int, error) {
+	// First get the target asset
+	targetAsset, exists, err := r.GetAssetByURL(ctx, url)
+	if err != nil {
+		return nil, 0, errutil.Wrap(err, "failed to get target asset")
+	}
+	if !exists {
+		return nil, 0, errutil.Wrap(errors.New("asset not found"), "failed to get target asset")
+	}
+
+	// Get total count
+	var total int
+	countQuery := `
+		SELECT COUNT(*) FROM assets a
+		JOIN asset_relationships ar ON a.id = ar.child_id
+		WHERE ar.parent_id = ?
+	`
+	err = r.db.GetContext(ctx, &total, countQuery, targetAsset.ID)
+	if err != nil {
+		return nil, 0, errutil.Wrap(err, "failed to get total count")
+	}
+
+	// Calculate offset
+	offset := (params.Page - 1) * params.PageSize
+
+	// Get paginated assets
+	var assets []Asset
+	err = r.db.SelectContext(ctx, &assets, `
+		SELECT a.* FROM assets a
+		JOIN asset_relationships ar ON a.id = ar.child_id
+		WHERE ar.parent_id = ?
+		ORDER BY a.created_at DESC
+		LIMIT ? OFFSET ?
+	`, targetAsset.ID, params.PageSize, offset)
+	if err != nil {
+		return nil, 0, errutil.Wrap(err, "failed to get assets loaded by target")
+	}
+
+	return assets, total, nil
+}
+
+// Meh, I'll need to refactor the overrides module and probably put everything into the same repository
+func (r *assetRepository) OverrideExists(ctx context.Context, assetID int64) (bool, error) {
+	query := `
+		SELECT COUNT(*) 
+		FROM overrides
+		WHERE asset_id = ? AND deleted_at IS NULL
+	`
+
+	var count int
+	err := r.db.GetContext(ctx, &count, query, assetID)
+	if err != nil {
+		return false, errutil.Wrap(err, "failed to check if override exists")
+	}
+
+	return count > 0, nil
 }

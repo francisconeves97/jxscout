@@ -51,13 +51,70 @@ Watch the demo movie to see jxscout in action:
 
 https://github.com/user-attachments/assets/64f161c3-46b0-41a9-8b34-706cc795a034
 
+### Available Commands
+
+```
+Available commands:
+
+assets (la) - List assets for the current project with pagination and search
+  Usage: assets [page=<page_number>] [page-size=<page_size>] [search=<search_term>]
+
+caido-auth (ca) - Authenticate with Caido (token is stored in memory and will reset on server restart)
+  Usage: caido-auth
+
+clear (c) - Clears the output
+  Usage: clear
+
+config (cf) - View or update jxscout configuration options
+  Usage: config [options] | Use 'config' without arguments to view current configuration
+
+config-reset (cfr) - Reset all configuration options to default values
+  Usage: config-reset
+
+exit (q) - Exits the application
+  Usage: exit
+
+guide (g) - Show a guide on how to use jxscout
+  Usage: guide
+
+help (h) - Shows help information for commands
+  Usage: help [command]
+
+install (i) - Install jxscout dependencies (npm, bun, prettier, reverse-sourcemap)
+  Usage: install
+
+loaded (ldd) - Show assets that loaded a specific JavaScript asset
+  Usage: loaded <asset_url> [page=<page_number>] [page-size=<page_size>]
+
+loads (lds) - Show JavaScript assets loaded by a specific HTML page
+  Usage: loads <html_url> [page=<page_number>] [page-size=<page_size>]
+
+logs (l) - Toggle logs panel
+  Usage: logs
+
+override (o) - Toggle local override for a specific URL (only available for Caido). 
+This will override the content of an asset when you visit it in your browser.
+When overriding an HTML file keep the (index).html suffix.
+The `assets` command will give you the right URL to use.
+  Usage: override <url>
+
+overrides (lo) - List overrides
+  Usage: overrides [page=<page_number>] [page-size=<page_size>]
+
+truncate-tables (tt) - Delete all data tracked in jxscout database (requires confirmation)
+  Usage: truncate-tables
+
+version (v) - Show the current version and checks for updates
+  Usage: version
+```
+
 ### CLI Options
 
 ```bash
 jxscout | static files downloader for vulnerability analysis
 
 Usage:
-  jxscout [flags]
+  /Users/francisconeves/Library/Caches/go-build/21/21578004e7aa83d51489155574a36feb8d7489e75edcd2938bd8a3d392f13c9a-d/main [flags]
 
 Flags:
 SERVER CONFIGURATION:
@@ -86,7 +143,8 @@ GIT COMMITER CONFIGURATION:
    -git-commit-interval value  how often commits are made to the working directory (default 5m0s)
 
 RATE LIMITING CONFIGURATION:
-   -rate-limiter-max-requests-per-minute int  max requests per minute for source maps and chunk discovery (default 120)
+   -rate-limiter-max-requests-per-second int  max requests per second for source maps and chunk discovery (0 = unlimited) (default 2)
+   -rate-limiter-max-requests-per-minute int  max requests per minute for source maps and chunk discovery (0 = unlimited)
 
 JS INGESTION CONFIGURATION:
    -download-refered-js  download JS files from out-of-scope domains if they're linked from in-scope pages
@@ -94,6 +152,11 @@ JS INGESTION CONFIGURATION:
 LOGGING CONFIGURATION:
    -log-buffer-size int       how many log lines to show in the logs panel (default 10000)
    -log-file-max-size-mb int  max size of the log file in MB (default 10)
+
+OVERRIDES CONFIGURATION:
+   -caido-hostname string                  hostname where Caido is running (default "localhost")
+   -caido-port int                         port where Caido is running (default 8080)
+   -override-content-check-interval value  interval at which to check for changes in override content and update match/replace rules (default 5s)
 ```
 
 ## Building locally
@@ -150,6 +213,10 @@ bun run pkg/chunk-discoverer/index.ts /path/to/the/js/file 10
 ## Contributing
 
 Feel free to leave suggestions and open pull requests, all contributions are welcome!
+
+## Support
+
+Happy hunting! 🐛 If jxscout helped you find cool bugs, [consider buying me a coffee](https://ko-fi.com/francisconeves97)! ☕
 
 ## License
 

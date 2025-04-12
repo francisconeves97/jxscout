@@ -8,10 +8,10 @@ import (
 
 	assetfetcher "github.com/francisconeves97/jxscout/internal/core/asset-fetcher"
 	assetservice "github.com/francisconeves97/jxscout/internal/core/asset-service"
-	"github.com/francisconeves97/jxscout/internal/core/cache"
 	"github.com/francisconeves97/jxscout/internal/core/eventbus"
 
 	"github.com/go-chi/chi"
+	"github.com/jmoiron/sqlx"
 	"github.com/projectdiscovery/goflags"
 )
 
@@ -34,7 +34,6 @@ type Scope interface {
 }
 
 // Cache interface
-type Cache = cache.Cache
 
 // JXScout Options
 type Options struct {
@@ -56,6 +55,9 @@ type Options struct {
 	DownloadReferedJS                bool                `yaml:"download-refered-js"`
 	LogBufferSize                    int                 `yaml:"log-buffer-size"`
 	LogFileMaxSizeMB                 int                 `yaml:"log-file-max-size-mb"`
+	CaidoHostname                    string              `yaml:"caido-hostname"`
+	CaidoPort                        int                 `yaml:"caido-port"`
+	OverrideContentCheckInterval     time.Duration       `yaml:"override-content-check-interval"`
 }
 
 // AssetService interface
@@ -76,10 +78,10 @@ type ModuleSDK struct {
 	AssetFetcher AssetFetcher
 	Options      Options
 	HTTPServer   HTTPServer
-	Cache        Cache
 	Logger       *slog.Logger
 	Scope        Scope
 	FileService  FileService
+	Database     *sqlx.DB
 }
 
 type Module interface {

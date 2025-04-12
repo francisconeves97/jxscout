@@ -1,6 +1,8 @@
 package tui
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -12,10 +14,13 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	assetrepository "github.com/francisconeves97/jxscout/internal/core/asset-repository"
 	"github.com/francisconeves97/jxscout/internal/core/common"
+	"github.com/francisconeves97/jxscout/internal/modules/overrides"
 	"github.com/francisconeves97/jxscout/pkg/constants"
 	jxscouttypes "github.com/francisconeves97/jxscout/pkg/types"
 	"github.com/muesli/reflow/wordwrap"
+	"github.com/pkg/browser"
 	"gopkg.in/yaml.v3"
 )
 
@@ -173,6 +178,12 @@ func (t *TUI) RegisterDefaultCommands() {
 						currentOptions.LogBufferSize = constants.DefaultLogBufferSize
 					case constants.FlagLogFileMaxSizeMB:
 						currentOptions.LogFileMaxSizeMB = constants.DefaultLogFileMaxSizeMB
+					case constants.FlagCaidoHostname:
+						currentOptions.CaidoHostname = constants.DefaultCaidoHostname
+					case constants.FlagCaidoPort:
+						currentOptions.CaidoPort = constants.DefaultCaidoPort
+					case constants.FlagOverrideContentCheckInterval:
+						currentOptions.OverrideContentCheckInterval = constants.DefaultOverrideContentCheckInterval
 					default:
 						return nil, fmt.Errorf("unknown option: %s", option)
 					}
@@ -317,8 +328,21 @@ func (t *TUI) RegisterDefaultCommands() {
 						return nil, fmt.Errorf("invalid log-file-max-size-mb value: %s", value)
 					}
 					currentOptions.LogFileMaxSizeMB = size
+				case constants.FlagCaidoHostname:
+					currentOptions.CaidoHostname = value
+				case constants.FlagCaidoPort:
+					port, err := strconv.Atoi(value)
+					if err != nil {
+						return nil, fmt.Errorf("invalid caido-port value: %s", value)
+					}
+					currentOptions.CaidoPort = port
+				case constants.FlagOverrideContentCheckInterval:
+					duration, err := time.ParseDuration(value)
+					if err != nil {
+						return nil, fmt.Errorf("invalid override-content-check-interval value: %s", value)
+					}
+					currentOptions.OverrideContentCheckInterval = duration
 				default:
-					return nil, fmt.Errorf("unknown option: %s", option)
 				}
 			}
 
@@ -378,6 +402,9 @@ func (t *TUI) RegisterDefaultCommands() {
 				DownloadReferedJS:                constants.DefaultDownloadReferedJS,
 				LogBufferSize:                    constants.DefaultLogBufferSize,
 				LogFileMaxSizeMB:                 constants.DefaultLogFileMaxSizeMB,
+				CaidoHostname:                    constants.DefaultCaidoHostname,
+				CaidoPort:                        constants.DefaultCaidoPort,
+				OverrideContentCheckInterval:     constants.DefaultOverrideContentCheckInterval,
 			}
 
 			// Restart jxscout with default options
@@ -466,6 +493,541 @@ func (t *TUI) RegisterDefaultCommands() {
 			return nil, nil
 		},
 	})
+
+	t.RegisterCommand(Command{
+		Name:        "override",
+		ShortName:   "o",
+		Description: "Toggle local override for a specific URL (only available for Caido). \nThis will override the content of an asset when you visit it in your browser.\nWhen overriding an HTML file keep the (index).html suffix.\nThe `assets` command will give you the right URL to use.",
+		Usage:       "override <url>",
+		Execute: func(args []string) (tea.Cmd, error) {
+			if len(args) == 0 {
+				return nil, fmt.Errorf("asset url is required")
+			}
+
+			url := args[0]
+
+			// Get the overrides module from jxscout
+			overridesModule := t.jxscout.GetOverridesModule()
+
+			if !overridesModule.IsCaidoAuthenticated(t.jxscout.Ctx()) {
+				t.writeLineToOutput("Not authenticated with Caido. Starting authentication flow...")
+
+				go func() {
+					// Create a channel to signal authentication completion
+					authCompleteChan := make(chan bool, 1)
+
+					verificationURL, err := overridesModule.AuthenticateCaido(t.jxscout.Ctx(), authCompleteChan)
+					if err != nil {
+						t.writeLineToOutput(fmt.Sprintf("Failed to authenticate with Caido: %v", err))
+						return
+					}
+
+					err = browser.OpenURL(verificationURL)
+					if err != nil {
+						t.writeLineToOutput(fmt.Sprintf("Failed to open verification URL in your browser: %v", err))
+						t.writeLineToOutput(fmt.Sprintf("Please visit %s to complete authentication", verificationURL))
+					} else {
+						t.writeLineToOutput("Please complete the authentication with Caido on your browser")
+						t.writeLineToOutput("Waiting for authentication token...")
+					}
+
+					// Wait for authentication to complete
+					select {
+					case <-authCompleteChan:
+						t.writeLineToOutput("Authentication successful! ✅ You can now use the override command.")
+					case <-time.After(5 * time.Minute):
+						t.writeLineToOutput("Authentication timed out. Please try again.")
+					}
+				}()
+
+				return nil, nil
+			}
+
+			overriden, err := overridesModule.ToggleOverride(t.jxscout.Ctx(), overrides.ToggleOverrideRequest{
+				AssetURL: url,
+			})
+			if errors.Is(err, overrides.ErrAssetNotFound) {
+				t.writeLineToOutput(fmt.Sprintf("Asset %s not found. Confirm the URL is correct and that asset is being tracked by jxscout", url))
+				return nil, nil
+			} else if errors.Is(err, overrides.ErrAssetNoLongerExists) {
+				t.writeLineToOutput(fmt.Sprintf("Asset %s no longer exists.\nYou probably deleted it manually from your file system.", url))
+				return nil, nil
+			} else if errors.Is(err, overrides.ErrAssetContentTypeNotSupported) {
+				t.writeLineToOutput("Only HTML or JS files can be overridden.")
+				return nil, nil
+			}
+			if err != nil {
+				t.writeLineToOutput(fmt.Sprintf("❌ Failed to toggle override.\nSince the Caido GraphQL API is not stable, this might not work with your current version. It was tested on 0.47.1.\nerr: %v", err))
+				return nil, nil
+			}
+
+			if overriden {
+				t.writeLineToOutput(fmt.Sprintf("Override added for %s", url))
+			} else {
+				t.writeLineToOutput(fmt.Sprintf("Override removed for %s", url))
+			}
+
+			return nil, nil
+		},
+	})
+
+	t.RegisterCommand(Command{
+		Name:        "assets",
+		ShortName:   "la",
+		Description: "List assets for the current project with pagination and search",
+		Usage:       "assets [page=<page_number>] [page-size=<page_size>] [search=<search_term>]",
+		Execute: func(args []string) (tea.Cmd, error) {
+			params := assetrepository.GetAssetsParams{
+				ProjectName: t.jxscout.GetOptions().ProjectName,
+				Page:        1,
+				PageSize:    15,
+			}
+
+			// Parse arguments
+			for _, arg := range args {
+				parts := strings.SplitN(arg, "=", 2)
+				if len(parts) != 2 {
+					return nil, fmt.Errorf("invalid argument format: %s. Expected format: key=value", arg)
+				}
+
+				key := parts[0]
+				value := parts[1]
+
+				switch key {
+				case "page":
+					page, err := strconv.Atoi(value)
+					if err != nil {
+						return nil, fmt.Errorf("invalid page number: %s", value)
+					}
+					params.Page = page
+				case "page-size":
+					pageSize, err := strconv.Atoi(value)
+					if err != nil {
+						return nil, fmt.Errorf("invalid page size: %s", value)
+					}
+					params.PageSize = pageSize
+				case "search":
+					params.SearchTerm = value
+				default:
+					return nil, fmt.Errorf("unknown argument: %s", key)
+				}
+			}
+
+			// Get assets from service
+			assets, total, err := t.jxscout.GetAssetService().GetAssets(t.jxscout.Ctx(), params)
+			if err != nil {
+				return nil, fmt.Errorf("failed to get assets: %w", err)
+			}
+
+			// Calculate total pages
+			totalPages := (total + params.PageSize - 1) / params.PageSize
+
+			// Print header
+			t.writeLineToOutput(fmt.Sprintf("\nAssets for project '%s' (page %d of %d):\n",
+				params.ProjectName, params.Page, totalPages))
+
+			if params.SearchTerm != "" {
+				t.writeLineToOutput(fmt.Sprintf("Search term: '%s'\n", params.SearchTerm))
+			}
+
+			// Print assets
+			for i, asset := range assets {
+				t.writeLineToOutput(fmt.Sprintf("%d. %s", (i+1)+((params.Page-1)*params.PageSize), asset.URL))
+			}
+
+			// Print pagination info
+			t.writeLineToOutput(fmt.Sprintf("\nTotal assets: %d", total))
+			if totalPages > 1 {
+				t.writeLineToOutput("Use 'assets page=<number>' to view other pages")
+				t.writeLineToOutput("Use 'assets page-size=<page-size>' to change the page size")
+			}
+			if params.SearchTerm == "" {
+				t.writeLineToOutput("Use 'assets search=<term>' to search assets")
+			}
+
+			return nil, nil
+		},
+	})
+
+	t.RegisterCommand(Command{
+		Name:        "loaded",
+		ShortName:   "ldd",
+		Description: "Show assets that loaded a specific JavaScript asset",
+		Usage:       "loaded <asset_url> [page=<page_number>] [page-size=<page_size>]",
+		Execute: func(args []string) (tea.Cmd, error) {
+			if len(args) == 0 {
+				return nil, fmt.Errorf("asset url is required")
+			}
+
+			url := args[0]
+			params := assetrepository.GetAssetsParams{
+				Page:     1,
+				PageSize: 15,
+			}
+
+			// Parse arguments
+			for i := 1; i < len(args); i++ {
+				parts := strings.SplitN(args[i], "=", 2)
+				if len(parts) != 2 {
+					return nil, fmt.Errorf("invalid argument format: %s. Expected format: key=value", args[i])
+				}
+
+				key := parts[0]
+				value := parts[1]
+
+				switch key {
+				case "page":
+					page, err := strconv.Atoi(value)
+					if err != nil {
+						return nil, fmt.Errorf("invalid page number: %s", value)
+					}
+					params.Page = page
+				case "page-size":
+					pageSize, err := strconv.Atoi(value)
+					if err != nil {
+						return nil, fmt.Errorf("invalid page size: %s", value)
+					}
+					params.PageSize = pageSize
+				default:
+					return nil, fmt.Errorf("unknown argument: %s", key)
+				}
+			}
+
+			// First check if the asset exists and is a JavaScript asset
+			asset, exists, err := t.jxscout.GetAssetService().GetAssetByURL(t.jxscout.Ctx(), url)
+			if err != nil {
+				return nil, fmt.Errorf("failed to get asset: %w", err)
+			}
+			if !exists {
+				return nil, fmt.Errorf("asset not found: %s", url)
+			}
+			if !strings.Contains(asset.ContentType, common.ContentTypeJS) {
+				return nil, fmt.Errorf("asset must be a JS file")
+			}
+
+			// Get assets that load this asset
+			assets, total, err := t.jxscout.GetAssetService().GetAssetsThatLoad(t.jxscout.Ctx(), url, params)
+			if err != nil {
+				return nil, fmt.Errorf("failed to get assets that load: %w", err)
+			}
+
+			// Calculate total pages
+			totalPages := (total + params.PageSize - 1) / params.PageSize
+
+			// Print header
+			t.writeLineToOutput(fmt.Sprintf("\nAssets that load '%s' (page %d of %d):\n",
+				url, params.Page, totalPages))
+
+			// Print assets
+			if len(assets) == 0 {
+				t.writeLineToOutput("No assets found that load this JavaScript file.")
+			} else {
+				for i, asset := range assets {
+					t.writeLineToOutput(fmt.Sprintf("%d. %s", (i+1)+((params.Page-1)*params.PageSize), asset.URL))
+				}
+			}
+
+			// Print pagination info
+			t.writeLineToOutput(fmt.Sprintf("\nTotal assets: %d", total))
+			if totalPages > 1 {
+				t.writeLineToOutput("Use 'loads <asset_url> page=<number>' to view other pages")
+				t.writeLineToOutput("Use 'loads <asset_url> page-size=<page-size>' to change the page size")
+			}
+
+			return nil, nil
+		},
+	})
+
+	t.RegisterCommand(Command{
+		Name:        "loads",
+		ShortName:   "lds",
+		Description: "Show JavaScript assets loaded by a specific HTML page",
+		Usage:       "loads <html_url> [page=<page_number>] [page-size=<page_size>]",
+		Execute: func(args []string) (tea.Cmd, error) {
+			if len(args) == 0 {
+				return nil, fmt.Errorf("HTML URL is required")
+			}
+
+			url := args[0]
+			params := assetrepository.GetAssetsParams{
+				Page:     1,
+				PageSize: 15,
+			}
+
+			// Parse arguments
+			for i := 1; i < len(args); i++ {
+				parts := strings.SplitN(args[i], "=", 2)
+				if len(parts) != 2 {
+					return nil, fmt.Errorf("invalid argument format: %s. Expected format: key=value", args[i])
+				}
+
+				key := parts[0]
+				value := parts[1]
+
+				switch key {
+				case "page":
+					page, err := strconv.Atoi(value)
+					if err != nil {
+						return nil, fmt.Errorf("invalid page number: %s", value)
+					}
+					params.Page = page
+				case "page-size":
+					pageSize, err := strconv.Atoi(value)
+					if err != nil {
+						return nil, fmt.Errorf("invalid page size: %s", value)
+					}
+					params.PageSize = pageSize
+				default:
+					return nil, fmt.Errorf("unknown argument: %s", key)
+				}
+			}
+
+			// First check if the asset exists and is an HTML asset
+			asset, exists, err := t.jxscout.GetAssetService().GetAssetByURL(t.jxscout.Ctx(), url)
+			if err != nil {
+				return nil, fmt.Errorf("failed to get asset: %w", err)
+			}
+			if !exists {
+				return nil, fmt.Errorf("asset not found: %s", url)
+			}
+			if !strings.Contains(asset.ContentType, common.ContentTypeHTML) {
+				return nil, fmt.Errorf("asset must be an HTML file")
+			}
+
+			// Get assets loaded by this HTML page
+			assets, total, err := t.jxscout.GetAssetService().GetAssetsLoadedBy(t.jxscout.Ctx(), url, params)
+			if err != nil {
+				return nil, fmt.Errorf("failed to get assets loaded by: %w", err)
+			}
+
+			// Calculate total pages
+			totalPages := (total + params.PageSize - 1) / params.PageSize
+
+			// Print header
+			t.writeLineToOutput(fmt.Sprintf("\nJavaScript assets loaded by '%s' (page %d of %d):\n",
+				url, params.Page, totalPages))
+
+			// Print assets
+			if len(assets) == 0 {
+				t.writeLineToOutput("No JavaScript assets found loaded by this HTML page.")
+			} else {
+				for i, asset := range assets {
+					t.writeLineToOutput(fmt.Sprintf("%d. %s", (i+1)+((params.Page-1)*params.PageSize), asset.URL))
+				}
+			}
+
+			// Print pagination info
+			t.writeLineToOutput(fmt.Sprintf("\nTotal assets: %d", total))
+			if totalPages > 1 {
+				t.writeLineToOutput("Use 'loads <html_url> page=<number>' to view other pages")
+				t.writeLineToOutput("Use 'loads <html_url> page-size=<page-size>' to change the page size")
+			}
+
+			return nil, nil
+		},
+	})
+
+	t.RegisterCommand(Command{
+		Name:        "overrides",
+		ShortName:   "lo",
+		Description: "List overrides",
+		Usage:       "overrides [page=<page_number>] [page-size=<page_size>]",
+		Execute: func(args []string) (tea.Cmd, error) {
+			params := struct {
+				Page     int
+				PageSize int
+			}{
+				Page:     1,
+				PageSize: 15,
+			}
+
+			// Parse arguments
+			for _, arg := range args {
+				parts := strings.SplitN(arg, "=", 2)
+				if len(parts) != 2 {
+					return nil, fmt.Errorf("invalid argument format: %s. Expected format: key=value", arg)
+				}
+
+				key := parts[0]
+				value := parts[1]
+
+				switch key {
+				case "page":
+					page, err := strconv.Atoi(value)
+					if err != nil {
+						return nil, fmt.Errorf("invalid page number: %s", value)
+					}
+					params.Page = page
+				case "page-size":
+					pageSize, err := strconv.Atoi(value)
+					if err != nil {
+						return nil, fmt.Errorf("invalid page size: %s", value)
+					}
+					params.PageSize = pageSize
+				default:
+					return nil, fmt.Errorf("unknown argument: %s", key)
+				}
+			}
+
+			// Get overrides from service
+			overrides, total, err := t.jxscout.GetOverridesModule().GetOverrides(t.jxscout.Ctx(), params.Page, params.PageSize)
+			if err != nil {
+				return nil, fmt.Errorf("failed to get overrides: %w", err)
+			}
+
+			// Calculate total pages
+			totalPages := (total + params.PageSize - 1) / params.PageSize
+
+			// Print header
+			t.writeLineToOutput(fmt.Sprintf("\nOverrides (page %d of %d):\n",
+				params.Page, totalPages))
+
+			// Print overrides
+			if len(overrides) == 0 {
+				t.writeLineToOutput("No overrides found.")
+			} else {
+				for i, override := range overrides {
+					t.writeLineToOutput(fmt.Sprintf("%d. %s", (i+1)+((params.Page-1)*params.PageSize), *override.AssetURL))
+				}
+			}
+
+			// Print pagination info
+			t.writeLineToOutput(fmt.Sprintf("\nTotal overrides: %d", total))
+			if totalPages > 1 {
+				t.writeLineToOutput("Use 'overrides page=<number>' to view other pages")
+				t.writeLineToOutput("Use 'overrides page-size=<page-size>' to change the page size")
+			}
+
+			// Print authentication note
+			if !t.jxscout.GetOverridesModule().IsCaidoAuthenticated(t.jxscout.Ctx()) {
+				t.writeLineToOutput("\n⚠️ Note: You are not authenticated with Caido. Overrides content won't be updated automatically.")
+				t.writeLineToOutput("Run 'caido-auth' to authenticate with Caido so that overrides are updated.")
+			}
+
+			return nil, nil
+		},
+	})
+
+	t.RegisterCommand(Command{
+		Name:        "caido-auth",
+		ShortName:   "ca",
+		Description: "Authenticate with Caido (token is stored in memory and will reset on server restart)",
+		Usage:       "caido-auth",
+		Execute: func(args []string) (tea.Cmd, error) {
+			// Get the overrides module from jxscout
+			overridesModule := t.jxscout.GetOverridesModule()
+
+			if overridesModule.IsCaidoAuthenticated(t.jxscout.Ctx()) {
+				t.writeLineToOutput("Already authenticated with Caido.")
+				return nil, nil
+			}
+
+			t.writeLineToOutput("Starting authentication flow with Caido...")
+
+			// Create a channel to signal authentication completion
+			authCompleteChan := make(chan bool, 1)
+
+			verificationURL, err := overridesModule.AuthenticateCaido(t.jxscout.Ctx(), authCompleteChan)
+			if err != nil {
+				return nil, fmt.Errorf("failed to authenticate with Caido: %w", err)
+			}
+
+			err = browser.OpenURL(verificationURL)
+			if err != nil {
+				t.writeLineToOutput(fmt.Sprintf("Failed to open verification URL in your browser: %v", err))
+				t.writeLineToOutput(fmt.Sprintf("Please visit %s to complete authentication", verificationURL))
+			} else {
+				t.writeLineToOutput("Please complete the authentication with Caido on your browser")
+				t.writeLineToOutput("Waiting for authentication token...")
+			}
+
+			// Wait for authentication to complete
+			go func() {
+				select {
+				case <-authCompleteChan:
+					t.writeLineToOutput("Authentication successful! ✅")
+					overridesModule.StartContentCheck()
+				case <-time.After(5 * time.Minute):
+					t.writeLineToOutput("Authentication timed out. Please try again.")
+				}
+			}()
+
+			return nil, nil
+		},
+	})
+
+	t.RegisterCommand(Command{
+		Name:        "truncate-tables",
+		ShortName:   "tt",
+		Description: "Delete all data tracked in jxscout database (requires confirmation)",
+		Usage:       "truncate-tables",
+		Execute: func(args []string) (tea.Cmd, error) {
+			if len(args) == 0 {
+				t.writeLineToOutput("⚠️  WARNING: This will delete ALL data tracked in the jxscout database!")
+				t.writeLineToOutput("This includes all assets, relationships, and overrides.")
+				t.writeLineToOutput("This action cannot be undone.")
+				t.writeLineToOutput("\nTo confirm, please type: truncate-tables IREALLYWANTTHIS")
+				return nil, nil
+			}
+
+			if args[0] != "IREALLYWANTTHIS" {
+				t.writeLineToOutput("❌ Invalid confirmation. To delete all data, type: truncate-tables IREALLYWANTTHIS")
+				return nil, nil
+			}
+
+			err := t.jxscout.TruncateTables()
+			if err != nil {
+				return nil, fmt.Errorf("failed to truncate tables: %w", err)
+			}
+			t.writeLineToOutput("✅ Database tables have been truncated successfully.")
+			return nil, nil
+		},
+	})
+
+	t.RegisterCommand(Command{
+		Name:        "version",
+		ShortName:   "v",
+		Description: "Show the current version and checks for updates",
+		Usage:       "version",
+		Execute: func(args []string) (tea.Cmd, error) {
+			// Print current version
+			t.writeLineToOutput(fmt.Sprintf("Current version: %s", constants.Version))
+
+			// Check for updates in a goroutine to avoid blocking the UI
+			go func() {
+				// Use curl to check the latest release on GitHub
+				cmd := exec.Command("curl", "-s", "https://api.github.com/repos/francisconeves97/jxscout/releases/latest")
+				output, err := cmd.CombinedOutput()
+				if err != nil {
+					t.writeLineToOutput("❌ Failed to check for updates: " + err.Error())
+					return
+				}
+
+				// Parse the JSON response to extract the tag_name
+				var response struct {
+					TagName string `json:"tag_name"`
+				}
+				if err := json.Unmarshal(output, &response); err != nil {
+					t.writeLineToOutput("❌ Failed to parse GitHub response: " + err.Error())
+					return
+				}
+
+				// Remove 'v' prefix if present
+				latestVersion := strings.TrimPrefix(response.TagName, "v")
+				currentVersion := constants.Version
+
+				// Compare versions
+				if latestVersion != currentVersion {
+					t.writeLineToOutput(fmt.Sprintf("🔄 A new version is available: %s", latestVersion))
+					t.writeLineToOutput("Visit https://github.com/francisconeves97/jxscout to download the latest version.")
+				} else {
+					t.writeLineToOutput("✅ You are running the latest version.")
+				}
+			}()
+
+			return nil, nil
+		},
+	})
 }
 
 // RegisterCommand registers a new command with the TUI
@@ -540,12 +1102,12 @@ func (t *TUI) GetHelp() string {
 
 // writeCommandHelp writes the help text for a command to the builder
 func (t *TUI) writeCommandHelp(builder *strings.Builder, cmd Command) {
-	builder.WriteString(fmt.Sprintf("\n%s", cmd.Name))
+	builder.WriteString("\n" + cmd.Name)
 	if cmd.ShortName != "" {
-		builder.WriteString(fmt.Sprintf(" (%s)", cmd.ShortName))
+		builder.WriteString(" (" + cmd.ShortName + ")")
 	}
-	builder.WriteString(fmt.Sprintf(" - %s\n", cmd.Description))
-	builder.WriteString(fmt.Sprintf("  Usage: %s\n", cmd.Usage))
+	builder.WriteString(" - " + cmd.Description + "\n")
+	builder.WriteString("  Usage: " + cmd.Usage + "\n")
 }
 
 // GetCommandHelp returns the help text for a specific command
@@ -683,4 +1245,20 @@ func (t *TUI) printCurrentConfig() {
 		constants.FlagLogFileMaxSizeMB,
 		fmt.Sprintf("%d", currentOptions.LogFileMaxSizeMB),
 		descStyle.Render(constants.DescriptionLogFileMaxSizeMB)))
+
+	// Overrides configuration
+	t.writeLineToOutput(formatLine(
+		constants.FlagCaidoHostname,
+		currentOptions.CaidoHostname,
+		descStyle.Render(constants.DefaultCaidoHostname)))
+
+	t.writeLineToOutput(formatLine(
+		constants.FlagCaidoPort,
+		fmt.Sprintf("%d", currentOptions.CaidoPort),
+		descStyle.Render(constants.DescriptionCaidoPort)))
+
+	t.writeLineToOutput(formatLine(
+		constants.FlagOverrideContentCheckInterval,
+		fmt.Sprintf("%v", currentOptions.OverrideContentCheckInterval),
+		descStyle.Render(constants.DescriptionOverrideContentCheckInterval)))
 }

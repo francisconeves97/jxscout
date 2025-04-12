@@ -12,7 +12,7 @@ import (
 	"github.com/projectdiscovery/goflags"
 )
 
-const Version = "0.4.0"
+const Version = constants.Version
 
 func main() {
 	options := jxscouttypes.Options{}
@@ -64,6 +64,12 @@ func main() {
 	flagSet.CreateGroup("logging", "logging configuration",
 		flagSet.IntVar(&options.LogBufferSize, constants.FlagLogBufferSize, constants.DefaultLogBufferSize, constants.DescriptionLogBufferSize),
 		flagSet.IntVar(&options.LogFileMaxSizeMB, constants.FlagLogFileMaxSizeMB, constants.DefaultLogFileMaxSizeMB, constants.DescriptionLogFileMaxSizeMB),
+	)
+
+	flagSet.CreateGroup("overrides", "overrides configuration",
+		flagSet.StringVar(&options.CaidoHostname, constants.FlagCaidoHostname, constants.DefaultCaidoHostname, constants.DescriptionCaidoHostname),
+		flagSet.IntVar(&options.CaidoPort, constants.FlagCaidoPort, constants.DefaultCaidoPort, constants.DescriptionCaidoPort),
+		flagSet.DurationVar(&options.OverrideContentCheckInterval, constants.FlagOverrideContentCheckInterval, constants.DefaultOverrideContentCheckInterval, constants.DescriptionOverrideContentCheckInterval),
 	)
 
 	configFileLocation := path.Join(common.GetPrivateDirectory(), constants.ConfigFileName)

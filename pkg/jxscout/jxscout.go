@@ -11,8 +11,8 @@ import (
 
 	assetfetcher "github.com/francisconeves97/jxscout/internal/core/asset-fetcher"
 	assetservice "github.com/francisconeves97/jxscout/internal/core/asset-service"
-	"github.com/francisconeves97/jxscout/internal/core/cache"
 	"github.com/francisconeves97/jxscout/internal/core/common"
+	"github.com/francisconeves97/jxscout/internal/core/database"
 	"github.com/francisconeves97/jxscout/internal/core/errutil"
 	"github.com/francisconeves97/jxscout/internal/core/eventbus"
 	"github.com/francisconeves97/jxscout/internal/modules/beautifier"
@@ -21,26 +21,29 @@ import (
 	htmlingestion "github.com/francisconeves97/jxscout/internal/modules/html-ingestion"
 	"github.com/francisconeves97/jxscout/internal/modules/ingestion"
 	jsingestion "github.com/francisconeves97/jxscout/internal/modules/js-ingestion"
+	"github.com/francisconeves97/jxscout/internal/modules/overrides"
 	sourcemaps "github.com/francisconeves97/jxscout/internal/modules/source-maps"
 	jxscouttypes "github.com/francisconeves97/jxscout/pkg/types"
+	"github.com/jmoiron/sqlx"
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 )
 
 type jxscout struct {
-	ctx          context.Context
-	cancel       context.CancelFunc
-	logBuffer    *logBuffer
-	log          *slog.Logger
-	eventBus     jxscouttypes.EventBus
-	options      jxscouttypes.Options
-	assetService jxscouttypes.AssetService
-	assetFetcher jxscouttypes.AssetFetcher
-	httpServer   jxscouttypes.HTTPServer
-	scopeChecker jxscouttypes.Scope
-	cache        jxscouttypes.Cache
-	fileService  jxscouttypes.FileService
+	ctx             context.Context
+	cancel          context.CancelFunc
+	logBuffer       *logBuffer
+	log             *slog.Logger
+	eventBus        jxscouttypes.EventBus
+	options         jxscouttypes.Options
+	assetService    jxscouttypes.AssetService
+	assetFetcher    jxscouttypes.AssetFetcher
+	httpServer      jxscouttypes.HTTPServer
+	scopeChecker    jxscouttypes.Scope
+	fileService     jxscouttypes.FileService
+	db              *sqlx.DB
+	overridesModule overrides.OverridesModule
 
 	modules      []jxscouttypes.Module
 	modulesMutex sync.Mutex
@@ -80,20 +83,26 @@ func initJxscout(options jxscouttypes.Options) (*jxscout, error) {
 
 	eventBus := eventbus.NewInMemoryEventBus()
 
+	db, err := database.GetDatabase()
+	if err != nil {
+		return nil, errutil.Wrap(err, "failed to initialize database")
+	}
+
 	assetService, err := assetservice.NewAssetService(assetservice.AssetServiceConfig{
-		EventBus:         eventBus,
-		SaveConcurrency:  options.AssetSaveConcurrency,
-		FetchConcurrency: options.AssetFetchConcurrency,
-		Logger:           logger,
-		FileService:      fileService,
+		EventBus:                   eventBus,
+		SaveConcurrency:            options.AssetSaveConcurrency,
+		FetchConcurrency:           options.AssetFetchConcurrency,
+		Logger:                     logger,
+		FileService:                fileService,
+		Database:                   db,
+		HTMLRequestsCacheTTL:       options.HTMLRequestsCacheTTL,
+		JavascriptRequestsCacheTTL: options.JavascriptRequestsCacheTTL,
 	})
 	if err != nil {
 		return nil, errutil.Wrap(err, "failed to initialize asset service")
 	}
 
 	httpServer := newHttpServer(logger)
-
-	cache := cache.NewInMemoryCache()
 
 	assetFetcher := assetfetcher.NewAssetFetcher(assetfetcher.AssetFetcherOptions{
 		RateLimitingMaxRequestsPerMinute: options.RateLimitingMaxRequestsPerMinute,
@@ -111,9 +120,9 @@ func initJxscout(options jxscouttypes.Options) (*jxscout, error) {
 		modules:      []jxscouttypes.Module{},
 		httpServer:   httpServer,
 		scopeChecker: scopeChecker,
-		cache:        cache,
 		assetFetcher: assetFetcher,
 		fileService:  fileService,
+		db:           db,
 		ctx:          ctx,
 		cancel:       cancel,
 	}
@@ -122,6 +131,9 @@ func initJxscout(options jxscouttypes.Options) (*jxscout, error) {
 }
 
 func (s *jxscout) registerCoreModules() {
+	overridesModule := overrides.NewOverridesModule(s.options.CaidoHostname, s.options.CaidoPort)
+	s.overridesModule = overridesModule
+
 	coreModules := []jxscouttypes.Module{
 		ingestion.NewIngestionModule(),
 		htmlingestion.NewHTMLIngestionModule(s.options.HTMLRequestsCacheTTL),
@@ -133,6 +145,7 @@ func (s *jxscout) registerCoreModules() {
 		),
 		gitcommiter.NewGitCommiter(s.options.GitCommitInterval),
 		sourcemaps.NewSourceMaps(s.options.AssetSaveConcurrency),
+		overridesModule,
 	}
 
 	for _, module := range coreModules {
@@ -208,9 +221,9 @@ func (s *jxscout) initializeModules(r jxscouttypes.Router) error {
 		HTTPServer:   s.httpServer,
 		Logger:       s.log,
 		Scope:        s.scopeChecker,
-		Cache:        s.cache,
 		AssetFetcher: s.assetFetcher,
 		FileService:  s.fileService,
+		Database:     s.db,
 		Ctx:          s.ctx,
 	}
 
@@ -245,8 +258,6 @@ func (s *jxscout) Stop() error {
 }
 
 func (s *jxscout) Restart(options jxscouttypes.Options) (*jxscout, error) {
-	cache := s.cache // keep previous cache
-
 	jxscout, err := initJxscout(options)
 	if err != nil {
 		s.log.Error("failed to restart jxscout", "error", err)
@@ -266,7 +277,6 @@ func (s *jxscout) Restart(options jxscouttypes.Options) (*jxscout, error) {
 	s.log.Info("starting new server")
 
 	s = jxscout
-	s.cache = cache // keep previous cache
 
 	s.registerCoreModules()
 
@@ -283,4 +293,30 @@ func (s *jxscout) Restart(options jxscouttypes.Options) (*jxscout, error) {
 
 func (s *jxscout) GetOptions() jxscouttypes.Options {
 	return s.options
+}
+
+func (s *jxscout) GetOverridesModule() overrides.OverridesModule {
+	return s.overridesModule
+}
+
+func (s *jxscout) Ctx() context.Context {
+	return s.ctx
+}
+
+func (s *jxscout) GetAssetService() jxscouttypes.AssetService {
+	return s.assetService
+}
+
+func (s *jxscout) TruncateTables() error {
+	_, err := s.db.Exec(`
+		DELETE FROM asset_relationships;
+		DELETE FROM overrides;
+		DELETE FROM assets;
+		DELETE FROM sqlite_sequence;
+	`)
+	if err != nil {
+		return errutil.Wrap(err, "failed to truncate tables")
+	}
+
+	return nil
 }
