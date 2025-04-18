@@ -57,10 +57,8 @@ func (m *chunkDiscovererModule) Initialize(sdk *jxscouttypes.ModuleSDK) error {
 
 	// Define the path for the extracted binary
 	binaryPath := filepath.Join(saveDir, "chunk-discoverer.js")
-	if _, err := os.Stat(binaryPath); os.IsNotExist(err) {
-		if err := os.WriteFile(binaryPath, chunkDiscovererBinary, 0755); err != nil {
-			return errutil.Wrap(err, "failed to write chunk discoverer file")
-		}
+	if err := os.WriteFile(binaryPath, chunkDiscovererBinary, 0755); err != nil {
+		return errutil.Wrap(err, "failed to write chunk discoverer file")
 	}
 
 	m.chunkDiscovererBinaryPath = binaryPath

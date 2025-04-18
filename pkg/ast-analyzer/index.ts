@@ -1,17 +1,68 @@
 import * as fs from "fs";
-import { findUrlPaths } from "./paths";
+import { parse, Program } from "acorn";
+import {
+  createRegexAnalyzer,
+  URL_PATH_REGEX,
+  EMAIL_ADDRESS_REGEX,
+} from "./regex-analyzer";
+
+// Cache for parsed ASTs to avoid re-parsing the same file
+const astCache = new Map<string, { ast: Program; content: string }>();
 
 interface Analyzer {
-  name: string;
   analyze: (filePath: string) => any;
 }
 
+// Function to parse a file and return its AST and content
+function parseFile(filePath: string): { ast: Program; content: string } {
+  // Check if we already have this file in the cache
+  if (astCache.has(filePath)) {
+    return astCache.get(filePath)!;
+  }
+
+  const fileContent = fs.readFileSync(filePath, "utf-8");
+  let ast: Program;
+
+  try {
+    ast = parse(fileContent, {
+      ecmaVersion: "latest",
+      sourceType: "module",
+      locations: true,
+    });
+  } catch (err) {
+    ast = parse(fileContent, {
+      ecmaVersion: "latest",
+      sourceType: "script",
+      locations: true,
+    });
+  }
+
+  const result = { ast, content: fileContent };
+  astCache.set(filePath, result);
+  return result;
+}
+
+// Define all available analyzers
 const analyzers: Record<string, Analyzer> = {
+  // URL Paths analyzer
   paths: {
-    name: "URL Paths Analyzer",
-    analyze: findUrlPaths,
+    analyze: (filePath: string) => {
+      const { ast, content } = parseFile(filePath);
+      return createRegexAnalyzer({ regex: URL_PATH_REGEX })(ast, content);
+    },
   },
-  // Add more analyzers here as they are created
+
+  // Email Addresses analyzer
+  emails: {
+    analyze: (filePath: string) => {
+      const { ast, content } = parseFile(filePath);
+      return createRegexAnalyzer({
+        regex: EMAIL_ADDRESS_REGEX,
+      })(ast, content);
+    },
+  },
+
+  // Add more analyzers here as needed
 };
 
 function printUsage() {
@@ -19,8 +70,8 @@ function printUsage() {
     "Usage: tsx pkg/ast-analyzers/index.ts <filepath> <analyzer1,analyzer2,...>"
   );
   console.error("\nAvailable analyzers:");
-  Object.entries(analyzers).forEach(([key, analyzer]) => {
-    console.error(`  - ${key}: ${analyzer.name}`);
+  Object.entries(analyzers).forEach(([key]) => {
+    console.error(`  - ${key}`);
   });
   process.exit(1);
 }

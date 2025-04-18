@@ -113,7 +113,7 @@ func (s *wsServer) handleGetAnalysis(conn *websocket.Conn, msgID string, req get
 	}
 
 	// Get all analyses for the asset
-	analyses, err := s.module.repo.getAllAnalysesByAssetID(s.module.sdk.Ctx, asset.ID)
+	analyses, err := s.module.repo.getAnalysesByAssetID(s.module.sdk.Ctx, asset.ID)
 	if err != nil {
 		s.sendError(conn, msgID, fmt.Sprintf("failed to get analyses: %v", err))
 		return
@@ -134,7 +134,7 @@ func (s *wsServer) handleGetAnalysis(conn *websocket.Conn, msgID string, req get
 		}
 
 		// Get the analyses again after running the analysis
-		analyses, err = s.module.repo.getAllAnalysesByAssetID(s.module.sdk.Ctx, asset.ID)
+		analyses, err = s.module.repo.getAnalysesByAssetID(s.module.sdk.Ctx, asset.ID)
 		if err != nil {
 			s.sendError(conn, msgID, fmt.Sprintf("failed to get analyses after running analysis: %v", err))
 			return
@@ -158,26 +158,30 @@ func (s *wsServer) handleGetAnalysis(conn *websocket.Conn, msgID string, req get
 		Results:  results,
 	}
 
-	responseMsg := wsMessage{
-		Type:    MsgTypeAnalysis,
-		ID:      msgID,
-		Payload: mustMarshalJSON(response),
-	}
-
-	if err := conn.WriteJSON(responseMsg); err != nil {
-		s.module.sdk.Logger.Error("failed to send analysis response", "err", err)
-	}
+	s.sendResponse(conn, msgID, response)
 }
 
-func (s *wsServer) sendError(conn *websocket.Conn, msgID, message string) {
+func (s *wsServer) sendError(conn *websocket.Conn, msgID string, errorMsg string) {
 	response := wsMessage{
 		Type:    MsgTypeError,
 		ID:      msgID,
-		Payload: mustMarshalJSON(errorResponse{Message: message}),
+		Payload: mustMarshalJSON(errorResponse{Message: errorMsg}),
 	}
 
 	if err := conn.WriteJSON(response); err != nil {
 		s.module.sdk.Logger.Error("failed to send error response", "err", err)
+	}
+}
+
+func (s *wsServer) sendResponse(conn *websocket.Conn, msgID string, payload interface{}) {
+	response := wsMessage{
+		Type:    MsgTypeAnalysis,
+		ID:      msgID,
+		Payload: mustMarshalJSON(payload),
+	}
+
+	if err := conn.WriteJSON(response); err != nil {
+		s.module.sdk.Logger.Error("failed to send response", "err", err)
 	}
 }
 
