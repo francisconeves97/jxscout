@@ -112,33 +112,22 @@ func (s *wsServer) handleGetAnalysis(conn *websocket.Conn, msgID string, req get
 		return
 	}
 
-	// Get all analyses for the asset
-	analyses, err := s.module.repo.getAnalysesByAssetID(s.module.sdk.Ctx, asset.ID)
-	if err != nil {
-		s.sendError(conn, msgID, fmt.Sprintf("failed to get analyses: %v", err))
+	assetObj := assetservice.Asset{
+		ID:   asset.ID,
+		Path: asset.Path,
+	}
+
+	// Trigger analysis
+	if err := s.module.analyzeAsset(assetObj); err != nil {
+		s.sendError(conn, msgID, fmt.Sprintf("failed to analyze asset: %v", err))
 		return
 	}
 
-	// If no analyses exist, trigger an analysis
-	if len(analyses) == 0 {
-		// Create an asset object for analysis
-		assetObj := assetservice.Asset{
-			ID:   asset.ID,
-			Path: asset.Path,
-		}
-
-		// Trigger analysis
-		if err := s.module.analyzeAsset(assetObj); err != nil {
-			s.sendError(conn, msgID, fmt.Sprintf("failed to analyze asset: %v", err))
-			return
-		}
-
-		// Get the analyses again after running the analysis
-		analyses, err = s.module.repo.getAnalysesByAssetID(s.module.sdk.Ctx, asset.ID)
-		if err != nil {
-			s.sendError(conn, msgID, fmt.Sprintf("failed to get analyses after running analysis: %v", err))
-			return
-		}
+	// Get the analyses again after running the analysis
+	analyses, err := s.module.repo.getAnalysesByAssetID(s.module.sdk.Ctx, asset.ID)
+	if err != nil {
+		s.sendError(conn, msgID, fmt.Sprintf("failed to get analyses after running analysis: %v", err))
+		return
 	}
 
 	// Create a map of results keyed by analyzer name
