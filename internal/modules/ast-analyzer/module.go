@@ -21,7 +21,7 @@ import (
 )
 
 var enabledAnalyzers = map[string]string{
-	"paths":  "0.0.3",
+	"paths":  "0.1.0",
 	"emails": "0.1.0",
 }
 

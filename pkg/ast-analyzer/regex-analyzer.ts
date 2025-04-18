@@ -64,6 +64,6 @@ export function createRegexAnalyzer(config: RegexAnalyzerConfig) {
 
 // Predefined regex patterns
 export const URL_PATH_REGEX =
-  /^[a-zA-Z0-9-_~:/?#[\]!$&'()*+,;={}]*\/[a-zA-Z0-9-_~:/?#[\]!$&'()*+,;={}]+$/;
+  /^[a-zA-Z0-9-_~/#?[\]!$&'()*+,;={}]*\/[a-zA-Z0-9-_~/#?[\]!$&'()*+,;={}]+$/;
 export const EMAIL_ADDRESS_REGEX =
   /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
