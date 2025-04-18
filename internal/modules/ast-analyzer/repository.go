@@ -2,7 +2,6 @@ package astanalyzer
 
 import (
 	"context"
-	"database/sql"
 	"time"
 
 	"github.com/francisconeves97/jxscout/internal/core/errutil"
@@ -15,6 +14,7 @@ type astAnalysis struct {
 	Analyzer  string     `db:"analyzer"`
 	Results   string     `db:"results"`
 	CreatedAt time.Time  `db:"created_at"`
+	UpdatedAt time.Time  `db:"updated_at"`
 	DeletedAt *time.Time `db:"deleted_at"`
 }
 
@@ -43,7 +43,9 @@ func (r *astAnalyzerRepository) initializeTable() error {
 			analyzer TEXT NOT NULL,
 			results TEXT NOT NULL,
 			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-			deleted_at TIMESTAMP
+			updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+			deleted_at TIMESTAMP,
+			UNIQUE(asset_id, analyzer)
 		)
 		`,
 	)
@@ -58,6 +60,9 @@ func (r *astAnalyzerRepository) createAnalysis(ctx context.Context, analysis *as
 	query := `
 		INSERT INTO ast_analysis (asset_id, analyzer, results)
 		VALUES (?, ?, ?)
+		ON CONFLICT(asset_id, analyzer) DO UPDATE SET
+			results = excluded.results,
+			updated_at = CURRENT_TIMESTAMP
 	`
 	_, err := r.db.ExecContext(ctx, query, analysis.AssetID, analysis.Analyzer, analysis.Results)
 	if err != nil {
@@ -66,48 +71,36 @@ func (r *astAnalyzerRepository) createAnalysis(ctx context.Context, analysis *as
 	return nil
 }
 
-func (r *astAnalyzerRepository) getAnalysisByAssetID(ctx context.Context, assetID int64) (*astAnalysis, error) {
-	query := `
-		SELECT id, asset_id, analyzer, results, created_at, deleted_at
-		FROM ast_analysis
-		WHERE asset_id = ? AND deleted_at IS NULL
-	`
+// func (r *astAnalyzerRepository) getAnalysisByAssetID(ctx context.Context, assetID int64) (*astAnalysis, error) {
+// 	query := `
+// 		SELECT id, asset_id, analyzer, results, created_at, updated_at, deleted_at
+// 		FROM ast_analysis
+// 		WHERE asset_id = ? AND deleted_at IS NULL
+// 	`
 
-	var a astAnalysis
-	var deletedAt sql.NullTime
+// 	var a astAnalysis
+// 	var deletedAt sql.NullTime
 
-	err := r.db.QueryRowContext(ctx, query, assetID).Scan(
-		&a.ID,
-		&a.AssetID,
-		&a.Analyzer,
-		&a.Results,
-		&a.CreatedAt,
-		&deletedAt,
-	)
+// 	err := r.db.QueryRowContext(ctx, query, assetID).Scan(
+// 		&a.ID,
+// 		&a.AssetID,
+// 		&a.Analyzer,
+// 		&a.Results,
+// 		&a.CreatedAt,
+// 		&a.UpdatedAt,
+// 		&deletedAt,
+// 	)
 
-	if err == sql.ErrNoRows {
-		return nil, nil
-	}
-	if err != nil {
-		return nil, errutil.Wrap(err, "failed to get ast analysis by asset ID")
-	}
+// 	if err == sql.ErrNoRows {
+// 		return nil, nil
+// 	}
+// 	if err != nil {
+// 		return nil, errutil.Wrap(err, "failed to get ast analysis by asset ID")
+// 	}
 
-	if deletedAt.Valid {
-		a.DeletedAt = &deletedAt.Time
-	}
+// 	if deletedAt.Valid {
+// 		a.DeletedAt = &deletedAt.Time
+// 	}
 
-	return &a, nil
-}
-
-func (r *astAnalyzerRepository) deleteAnalysis(ctx context.Context, assetID int64) error {
-	query := `
-		UPDATE ast_analysis
-		SET deleted_at = CURRENT_TIMESTAMP
-		WHERE asset_id = ? AND deleted_at IS NULL
-	`
-	_, err := r.db.ExecContext(ctx, query, assetID)
-	if err != nil {
-		return errutil.Wrap(err, "failed to delete ast analysis")
-	}
-	return nil
-}
+// 	return &a, nil
+// }

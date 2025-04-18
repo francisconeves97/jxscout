@@ -6,11 +6,13 @@ import (
 	"encoding/json"
 	"os"
 	"os/exec"
+	"path"
 	"path/filepath"
 
 	assetservice "github.com/francisconeves97/jxscout/internal/core/asset-service"
 	"github.com/francisconeves97/jxscout/internal/core/common"
 	"github.com/francisconeves97/jxscout/internal/core/errutil"
+	concurrentqueue "github.com/francisconeves97/jxscout/pkg/concurrent-queue"
 	jxscouttypes "github.com/francisconeves97/jxscout/pkg/types"
 )
 
@@ -21,10 +23,13 @@ type astAnalyzerModule struct {
 	sdk                   *jxscouttypes.ModuleSDK
 	repo                  *astAnalyzerRepository
 	astAnalyzerBinaryPath string
+	queue                 concurrentqueue.Queue[assetservice.Asset]
 }
 
-func NewAstAnalyzerModule() *astAnalyzerModule {
-	return &astAnalyzerModule{}
+func NewAstAnalyzerModule(concurrency int) *astAnalyzerModule {
+	return &astAnalyzerModule{
+		queue: concurrentqueue.NewQueue[assetservice.Asset](concurrency),
+	}
 }
 
 func (m *astAnalyzerModule) Initialize(sdk *jxscouttypes.ModuleSDK) error {
@@ -36,16 +41,22 @@ func (m *astAnalyzerModule) Initialize(sdk *jxscouttypes.ModuleSDK) error {
 	}
 	m.repo = repo
 
-	// Create a temporary file for the ast-analyzer.js script
-	tempFile, err := os.CreateTemp("", "ast-analyzer-*.js")
-	if err != nil {
-		return errutil.Wrap(err, "failed to create temporary file for ast-analyzer.js")
-	}
-	m.astAnalyzerBinaryPath = tempFile.Name()
+	saveDir := path.Join(common.GetPrivateDirectory(), "extracted")
 
-	if err := os.WriteFile(m.astAnalyzerBinaryPath, astAnalyzerBinary, 0644); err != nil {
-		return errutil.Wrap(err, "failed to write ast-analyzer.js to temporary file")
+	// Create the directory if it doesn't exist
+	if err := os.MkdirAll(saveDir, 0755); err != nil {
+		return errutil.Wrap(err, "failed to create binaries directory")
 	}
+
+	// Define the path for the extracted binary
+	binaryPath := filepath.Join(saveDir, "ast-analyzer.js")
+	if _, err := os.Stat(binaryPath); os.IsNotExist(err) {
+		if err := os.WriteFile(binaryPath, astAnalyzerBinary, 0755); err != nil {
+			return errutil.Wrap(err, "failed to write ast analyzer file")
+		}
+	}
+
+	m.astAnalyzerBinaryPath = binaryPath
 
 	go func() {
 		err := m.subscribeAssetSavedEvent()
@@ -54,7 +65,19 @@ func (m *astAnalyzerModule) Initialize(sdk *jxscouttypes.ModuleSDK) error {
 		}
 	}()
 
+	m.initializeQueueHandler()
+
 	return nil
+}
+
+func (m *astAnalyzerModule) initializeQueueHandler() {
+	m.queue.StartConsumers(func(ctx context.Context, asset assetservice.Asset) {
+		err := m.analyzeAsset(asset)
+		if err != nil {
+			m.sdk.Logger.ErrorContext(ctx, "failed to analyze asset", "err", err, "asset_url", asset.URL)
+			return
+		}
+	})
 }
 
 func (m *astAnalyzerModule) subscribeAssetSavedEvent() error {
@@ -80,9 +103,7 @@ func (m *astAnalyzerModule) subscribeAssetSavedEvent() error {
 			continue
 		}
 
-		if err := m.analyzeAsset(event.Asset); err != nil {
-			m.sdk.Logger.Error("failed to analyze asset", "err", err, "asset_id", event.Asset.ID)
-		}
+		m.queue.Produce(m.sdk.Ctx, event.Asset)
 	}
 
 	return nil
@@ -107,15 +128,30 @@ func (m *astAnalyzerModule) analyzeAsset(asset assetservice.Asset) error {
 		return errutil.Wrap(err, "failed to execute ast analyzer")
 	}
 
-	// Store the results in the database
-	analysis := &astAnalysis{
-		AssetID:  asset.ID,
-		Analyzer: "paths",
-		Results:  results,
+	// Parse the results to get analyzer name and results
+	var output map[string]interface{}
+	if err := json.Unmarshal([]byte(results), &output); err != nil {
+		return errutil.Wrap(err, "failed to parse ast analyzer output")
 	}
 
-	if err := m.repo.createAnalysis(context.Background(), analysis); err != nil {
-		return errutil.Wrap(err, "failed to store ast analysis results")
+	for analyzerName, analyzerResults := range output {
+		resultsJSON, err := json.Marshal(analyzerResults)
+		if err != nil {
+			m.sdk.Logger.Error("failed to marshal analyzer results", "err", err, "asset_id", asset.ID, "analyzer", analyzerName)
+			continue
+		}
+
+		analysis := &astAnalysis{
+			AssetID:  asset.ID,
+			Analyzer: analyzerName,
+			Results:  string(resultsJSON),
+		}
+
+		// Store the results in the database using bulk insert
+		if err := m.repo.createAnalysis(m.sdk.Ctx, analysis); err != nil {
+			m.sdk.Logger.Error("failed to store ast analysis results", "err", err, "asset_id", asset.ID, "analyzer", analyzerName)
+			continue
+		}
 	}
 
 	return nil

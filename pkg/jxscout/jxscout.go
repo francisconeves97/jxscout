@@ -15,6 +15,7 @@ import (
 	"github.com/francisconeves97/jxscout/internal/core/database"
 	"github.com/francisconeves97/jxscout/internal/core/errutil"
 	"github.com/francisconeves97/jxscout/internal/core/eventbus"
+	astanalyzer "github.com/francisconeves97/jxscout/internal/modules/ast-analyzer"
 	"github.com/francisconeves97/jxscout/internal/modules/beautifier"
 	chunkdiscoverer "github.com/francisconeves97/jxscout/internal/modules/chunk-discoverer"
 	gitcommiter "github.com/francisconeves97/jxscout/internal/modules/git-committer"
@@ -146,6 +147,7 @@ func (s *jxscout) registerCoreModules() {
 		gitcommiter.NewGitCommiter(s.options.GitCommitInterval),
 		sourcemaps.NewSourceMaps(s.options.AssetSaveConcurrency),
 		overridesModule,
+		astanalyzer.NewAstAnalyzerModule(s.options.ASTAnalyzerConcurrency),
 	}
 
 	for _, module := range coreModules {

@@ -37,6 +37,7 @@ func main() {
 		flagSet.IntVar(&options.AssetSaveConcurrency, constants.FlagAssetSaveConcurrency, constants.DefaultAssetSaveConcurrency, constants.DescriptionAssetSaveConcurrency),
 		flagSet.IntVar(&options.BeautifierConcurrency, constants.FlagBeautifierConcurrency, constants.DefaultBeautifierConcurrency, constants.DescriptionBeautifierConcurrency),
 		flagSet.IntVar(&options.ChunkDiscovererConcurrency, constants.FlagChunkDiscovererConcurrency, constants.DefaultChunkDiscovererConcurrency, constants.DescriptionChunkDiscovererConcurrency),
+		flagSet.IntVar(&options.ASTAnalyzerConcurrency, constants.FlagASTAnalyzerConcurrency, constants.DefaultASTAnalyzerConcurrency, constants.DescriptionASTAnalyzerConcurrency),
 	)
 
 	flagSet.CreateGroup("chunk discovery", "chunk discovery configuration",

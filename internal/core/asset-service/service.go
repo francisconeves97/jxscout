@@ -200,11 +200,12 @@ func (s *assetService) handleSaveAssetRequest(ctx context.Context, asset Asset) 
 		}
 	}
 
-	_, err = s.repository.SaveAsset(ctx, repoAsset)
+	assetID, err := s.repository.SaveAsset(ctx, repoAsset)
 	if err != nil {
 		return errutil.Wrap(err, "failed to save asset to db")
 	}
 
+	asset.ID = assetID
 	asset.Path = path
 
 	err = s.eventBus.Publish(TopicAssetSaved, eventbus.Message{
