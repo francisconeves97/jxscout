@@ -66,7 +66,7 @@ func (m *jsIngestionModule) subscribeIngestionRequestTopic() error {
 func (m *jsIngestionModule) handleIngestionRequest(req ingestion.IngestionRequest) error {
 	err := m.validateIngestionRequest(&req)
 	if err != nil {
-		m.sdk.Logger.Debug("request is not valid", "err", err)
+		m.sdk.Logger.Debug("request is not valid", "err", err, "req_url", req.Request.URL)
 		return nil // request is not valid, skip
 	}
 
@@ -127,7 +127,7 @@ func (m *jsIngestionModule) validateIngestionRequest(req *ingestion.IngestionReq
 	}
 
 	if strings.HasSuffix(req.Request.URL, ".map") {
-		return errors.New("should be a JS map file")
+		return errors.New("should not be a JS map file")
 	}
 
 	if strings.ToUpper(req.Request.Method) != http.MethodGet {

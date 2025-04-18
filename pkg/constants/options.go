@@ -21,6 +21,7 @@ const (
 	DefaultAssetSaveConcurrency       = 5
 	DefaultBeautifierConcurrency      = 5
 	DefaultChunkDiscovererConcurrency = 5
+	DefaultASTAnalyzerConcurrency     = 5
 
 	// Chunk discovery configuration
 	DefaultChunkDiscovererBruteForceLimit = 3000
@@ -65,6 +66,7 @@ const (
 	FlagAssetSaveConcurrency       = "save-concurrency"
 	FlagBeautifierConcurrency      = "beautifier-concurrency"
 	FlagChunkDiscovererConcurrency = "chunk-discoverer-concurrency"
+	FlagASTAnalyzerConcurrency     = "ast-analyzer-concurrency"
 
 	// Chunk discovery configuration
 	FlagChunkDiscovererBruteForceLimit = "chunk-discoverer-bruteforce-limit"
@@ -109,6 +111,7 @@ const (
 	DescriptionAssetSaveConcurrency       = "how many files to save to disk at once"
 	DescriptionBeautifierConcurrency      = "how many files to beautify at once"
 	DescriptionChunkDiscovererConcurrency = "how many chunk discovery processes to run at once"
+	DescriptionASTAnalyzerConcurrency     = "how many AST analysis processes to run at once"
 
 	// Chunk discovery configuration
 	DescriptionChunkDiscovererBruteForceLimit = "how many potential chunks to bruteforce when automatic discovery fails"
