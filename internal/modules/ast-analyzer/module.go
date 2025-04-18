@@ -4,10 +4,13 @@ import (
 	"context"
 	_ "embed"
 	"encoding/json"
+	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"path"
 	"path/filepath"
+	"strings"
 
 	assetservice "github.com/francisconeves97/jxscout/internal/core/asset-service"
 	"github.com/francisconeves97/jxscout/internal/core/common"
@@ -166,16 +169,45 @@ func (m *astAnalyzerModule) execASTAnalyzer(asset assetservice.Asset) (string, e
 
 	// Run the AST analyzer script with Node.js
 	cmd := exec.Command("bun", "run", m.astAnalyzerBinaryPath, absPath, "paths")
-	output, err := cmd.CombinedOutput()
+
+	stdout, err := cmd.StdoutPipe()
 	if err != nil {
-		return "", errutil.Wrap(err, "failed to run ast analyzer script")
+		return "", errutil.Wrap(err, "error creating stdout pipe")
+	}
+	stderr, err := cmd.StderrPipe()
+	if err != nil {
+		return "", errutil.Wrap(err, "error creating stderr pipe")
+	}
+
+	if err := cmd.Start(); err != nil {
+		return "", errutil.Wrap(err, "error starting command")
+	}
+
+	// Read the output
+	outputBytes, err := io.ReadAll(stdout)
+	if err != nil {
+		return "", errutil.Wrap(err, "failed to read stdout")
+	}
+
+	// Check for errors in stderr
+	stderrBytes, err := io.ReadAll(stderr)
+	if err != nil {
+		return "", errutil.Wrap(err, "failed to read stderr")
+	}
+	if len(stderrBytes) > 0 {
+		return "", fmt.Errorf("error executing ast analyzer: %s", strings.TrimSpace(string(stderrBytes)))
+	}
+
+	// Wait for the command to finish
+	if err := cmd.Wait(); err != nil {
+		return "", errutil.Wrap(err, "error running ast analyzer script")
 	}
 
 	// Parse the output to ensure it's valid JSON
 	var results interface{}
-	if err := json.Unmarshal(output, &results); err != nil {
+	if err := json.Unmarshal(outputBytes, &results); err != nil {
 		return "", errutil.Wrap(err, "failed to parse ast analyzer output as JSON")
 	}
 
-	return string(output), nil
+	return string(outputBytes), nil
 }

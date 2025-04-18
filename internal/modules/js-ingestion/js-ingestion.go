@@ -127,7 +127,7 @@ func (m *jsIngestionModule) validateIngestionRequest(req *ingestion.IngestionReq
 	}
 
 	if strings.HasSuffix(req.Request.URL, ".map") {
-		return errors.New("should be a JS map file")
+		return errors.New("should not be a JS map file")
 	}
 
 	if strings.ToUpper(req.Request.Method) != http.MethodGet {
