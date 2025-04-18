@@ -21,7 +21,7 @@ type astAnalysis struct {
 
 type asset struct {
 	ID   int64  `db:"id"`
-	Path string `db:"path"`
+	Path string `db:"fs_path"`
 }
 
 type astAnalyzerRepository struct {
@@ -79,9 +79,9 @@ func (r *astAnalyzerRepository) createAnalysis(ctx context.Context, analysis *as
 
 func (r *astAnalyzerRepository) getAssetByPath(ctx context.Context, filePath string) (*asset, error) {
 	query := `
-		SELECT id, path
+		SELECT id, fs_path
 		FROM assets
-		WHERE path = ? AND deleted_at IS NULL
+		WHERE fs_path = ?
 		LIMIT 1
 	`
 
@@ -97,37 +97,17 @@ func (r *astAnalyzerRepository) getAssetByPath(ctx context.Context, filePath str
 	return &a, nil
 }
 
-func (r *astAnalyzerRepository) getAnalysisByAssetID(ctx context.Context, assetID int64) (*astAnalysis, error) {
+func (r *astAnalyzerRepository) getAllAnalysesByAssetID(ctx context.Context, assetID int64) ([]*astAnalysis, error) {
 	query := `
 		SELECT id, asset_id, analyzer, results, created_at, updated_at, deleted_at
 		FROM ast_analysis
 		WHERE asset_id = ? AND deleted_at IS NULL
-		LIMIT 1
 	`
 
-	var a astAnalysis
-	var deletedAt sql.NullTime
-
-	err := r.db.QueryRowContext(ctx, query, assetID).Scan(
-		&a.ID,
-		&a.AssetID,
-		&a.Analyzer,
-		&a.Results,
-		&a.CreatedAt,
-		&a.UpdatedAt,
-		&deletedAt,
-	)
-
-	if err == sql.ErrNoRows {
-		return nil, nil
-	}
-	if err != nil {
-		return nil, errutil.Wrap(err, "failed to get ast analysis by asset ID")
+	var analyses []*astAnalysis
+	if err := r.db.SelectContext(ctx, &analyses, query, assetID); err != nil {
+		return nil, errutil.Wrap(err, "failed to get ast analyses by asset ID")
 	}
 
-	if deletedAt.Valid {
-		a.DeletedAt = &deletedAt.Time
-	}
-
-	return &a, nil
+	return analyses, nil
 }

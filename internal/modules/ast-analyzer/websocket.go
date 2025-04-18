@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"sync"
 
+	assetservice "github.com/francisconeves97/jxscout/internal/core/asset-service"
 	"github.com/gorilla/websocket"
 )
 
@@ -111,22 +112,44 @@ func (s *wsServer) handleGetAnalysis(conn *websocket.Conn, msgID string, req get
 		return
 	}
 
-	// Get analysis results
-	analysis, err := s.module.repo.getAnalysisByAssetID(s.module.sdk.Ctx, asset.ID)
+	// Get all analyses for the asset
+	analyses, err := s.module.repo.getAllAnalysesByAssetID(s.module.sdk.Ctx, asset.ID)
 	if err != nil {
-		s.sendError(conn, msgID, fmt.Sprintf("failed to get analysis: %v", err))
-		return
-	}
-	if analysis == nil {
-		s.sendError(conn, msgID, "analysis not found")
+		s.sendError(conn, msgID, fmt.Sprintf("failed to get analyses: %v", err))
 		return
 	}
 
-	// Parse results
-	var results map[string]interface{}
-	if err := json.Unmarshal([]byte(analysis.Results), &results); err != nil {
-		s.sendError(conn, msgID, fmt.Sprintf("failed to parse analysis results: %v", err))
-		return
+	// If no analyses exist, trigger an analysis
+	if len(analyses) == 0 {
+		// Create an asset object for analysis
+		assetObj := assetservice.Asset{
+			ID:   asset.ID,
+			Path: asset.Path,
+		}
+
+		// Trigger analysis
+		if err := s.module.analyzeAsset(assetObj); err != nil {
+			s.sendError(conn, msgID, fmt.Sprintf("failed to analyze asset: %v", err))
+			return
+		}
+
+		// Get the analyses again after running the analysis
+		analyses, err = s.module.repo.getAllAnalysesByAssetID(s.module.sdk.Ctx, asset.ID)
+		if err != nil {
+			s.sendError(conn, msgID, fmt.Sprintf("failed to get analyses after running analysis: %v", err))
+			return
+		}
+	}
+
+	// Create a map of results keyed by analyzer name
+	results := make(map[string]interface{})
+	for _, analysis := range analyses {
+		var analyzerResults interface{}
+		if err := json.Unmarshal([]byte(analysis.Results), &analyzerResults); err != nil {
+			s.module.sdk.Logger.Error("failed to parse analysis results", "err", err, "analyzer", analysis.Analyzer)
+			continue
+		}
+		results[analysis.Analyzer] = analyzerResults
 	}
 
 	// Send response
