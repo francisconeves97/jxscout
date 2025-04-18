@@ -8,6 +8,7 @@ import (
 	assetservice "github.com/francisconeves97/jxscout/internal/core/asset-service"
 	"github.com/francisconeves97/jxscout/internal/core/common"
 	"github.com/francisconeves97/jxscout/internal/core/errutil"
+	"github.com/francisconeves97/jxscout/internal/core/eventbus"
 	concurrentqueue "github.com/francisconeves97/jxscout/pkg/concurrent-queue"
 	jxscouttypes "github.com/francisconeves97/jxscout/pkg/types"
 )
@@ -48,6 +49,16 @@ func (m *beautifierModule) initializeQueueHandler() {
 		err := m.beautify(asset.Path, asset.ContentType)
 		if err != nil {
 			m.sdk.Logger.ErrorContext(ctx, "failed to save asset", "err", err)
+			return
+		}
+
+		err = m.sdk.EventBus.Publish(TopicBeautifierAssetSaved, eventbus.Message{
+			Data: EventBeautifierAssetSaved{
+				Asset: asset,
+			},
+		})
+		if err != nil {
+			m.sdk.Logger.ErrorContext(ctx, "failed to publish asset saved event", "err", err)
 			return
 		}
 	})

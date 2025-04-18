@@ -15,6 +15,7 @@ import (
 	assetservice "github.com/francisconeves97/jxscout/internal/core/asset-service"
 	"github.com/francisconeves97/jxscout/internal/core/common"
 	"github.com/francisconeves97/jxscout/internal/core/errutil"
+	"github.com/francisconeves97/jxscout/internal/modules/beautifier"
 	concurrentqueue "github.com/francisconeves97/jxscout/pkg/concurrent-queue"
 	jxscouttypes "github.com/francisconeves97/jxscout/pkg/types"
 )
@@ -68,7 +69,7 @@ func (m *astAnalyzerModule) Initialize(sdk *jxscouttypes.ModuleSDK) error {
 	m.sdk.Router.HandleFunc("/ast-analyzer/ws", m.wsServer.handleWebSocket)
 
 	go func() {
-		err := m.subscribeAssetSavedEvent()
+		err := m.subscribeAssetBeautified()
 		if err != nil {
 			m.sdk.Logger.Error("failed to subscribe to asset saved topic", "err", err)
 		}
@@ -89,16 +90,16 @@ func (m *astAnalyzerModule) initializeQueueHandler() {
 	})
 }
 
-func (m *astAnalyzerModule) subscribeAssetSavedEvent() error {
-	messages, err := m.sdk.EventBus.Subscribe(assetservice.TopicAssetSaved)
+func (m *astAnalyzerModule) subscribeAssetBeautified() error {
+	messages, err := m.sdk.EventBus.Subscribe(beautifier.TopicBeautifierAssetSaved)
 	if err != nil {
 		return errutil.Wrap(err, "failed to subscribe to asset saved topic")
 	}
 
 	for msg := range messages {
-		event, ok := msg.Data.(assetservice.EventAssetSaved)
+		event, ok := msg.Data.(beautifier.EventBeautifierAssetSaved)
 		if !ok {
-			m.sdk.Logger.Error("expected event EventAssetSaved but event is other type")
+			m.sdk.Logger.Error("expected event EventBeautifierAssetSaved but event is other type")
 			continue
 		}
 
