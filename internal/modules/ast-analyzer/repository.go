@@ -2,6 +2,7 @@ package astanalyzer
 
 import (
 	"context"
+	"database/sql"
 	"time"
 
 	"github.com/francisconeves97/jxscout/internal/core/errutil"
@@ -16,6 +17,11 @@ type astAnalysis struct {
 	CreatedAt time.Time  `db:"created_at"`
 	UpdatedAt time.Time  `db:"updated_at"`
 	DeletedAt *time.Time `db:"deleted_at"`
+}
+
+type asset struct {
+	ID   int64  `db:"id"`
+	Path string `db:"path"`
 }
 
 type astAnalyzerRepository struct {
@@ -71,36 +77,57 @@ func (r *astAnalyzerRepository) createAnalysis(ctx context.Context, analysis *as
 	return nil
 }
 
-// func (r *astAnalyzerRepository) getAnalysisByAssetID(ctx context.Context, assetID int64) (*astAnalysis, error) {
-// 	query := `
-// 		SELECT id, asset_id, analyzer, results, created_at, updated_at, deleted_at
-// 		FROM ast_analysis
-// 		WHERE asset_id = ? AND deleted_at IS NULL
-// 	`
+func (r *astAnalyzerRepository) getAssetByPath(ctx context.Context, filePath string) (*asset, error) {
+	query := `
+		SELECT id, path
+		FROM assets
+		WHERE path = ? AND deleted_at IS NULL
+		LIMIT 1
+	`
 
-// 	var a astAnalysis
-// 	var deletedAt sql.NullTime
+	var a asset
+	err := r.db.GetContext(ctx, &a, query, filePath)
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, errutil.Wrap(err, "failed to get asset by path")
+	}
 
-// 	err := r.db.QueryRowContext(ctx, query, assetID).Scan(
-// 		&a.ID,
-// 		&a.AssetID,
-// 		&a.Analyzer,
-// 		&a.Results,
-// 		&a.CreatedAt,
-// 		&a.UpdatedAt,
-// 		&deletedAt,
-// 	)
+	return &a, nil
+}
 
-// 	if err == sql.ErrNoRows {
-// 		return nil, nil
-// 	}
-// 	if err != nil {
-// 		return nil, errutil.Wrap(err, "failed to get ast analysis by asset ID")
-// 	}
+func (r *astAnalyzerRepository) getAnalysisByAssetID(ctx context.Context, assetID int64) (*astAnalysis, error) {
+	query := `
+		SELECT id, asset_id, analyzer, results, created_at, updated_at, deleted_at
+		FROM ast_analysis
+		WHERE asset_id = ? AND deleted_at IS NULL
+		LIMIT 1
+	`
 
-// 	if deletedAt.Valid {
-// 		a.DeletedAt = &deletedAt.Time
-// 	}
+	var a astAnalysis
+	var deletedAt sql.NullTime
 
-// 	return &a, nil
-// }
+	err := r.db.QueryRowContext(ctx, query, assetID).Scan(
+		&a.ID,
+		&a.AssetID,
+		&a.Analyzer,
+		&a.Results,
+		&a.CreatedAt,
+		&a.UpdatedAt,
+		&deletedAt,
+	)
+
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, errutil.Wrap(err, "failed to get ast analysis by asset ID")
+	}
+
+	if deletedAt.Valid {
+		a.DeletedAt = &deletedAt.Time
+	}
+
+	return &a, nil
+}

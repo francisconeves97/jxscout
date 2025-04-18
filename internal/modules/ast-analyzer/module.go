@@ -27,12 +27,15 @@ type astAnalyzerModule struct {
 	repo                  *astAnalyzerRepository
 	astAnalyzerBinaryPath string
 	queue                 concurrentqueue.Queue[assetservice.Asset]
+	wsServer              *wsServer
 }
 
 func NewAstAnalyzerModule(concurrency int) *astAnalyzerModule {
-	return &astAnalyzerModule{
+	module := &astAnalyzerModule{
 		queue: concurrentqueue.NewQueue[assetservice.Asset](concurrency),
 	}
+	module.wsServer = newWSServer(module)
+	return module
 }
 
 func (m *astAnalyzerModule) Initialize(sdk *jxscouttypes.ModuleSDK) error {
@@ -60,6 +63,9 @@ func (m *astAnalyzerModule) Initialize(sdk *jxscouttypes.ModuleSDK) error {
 	}
 
 	m.astAnalyzerBinaryPath = binaryPath
+
+	// Setup WebSocket endpoint
+	m.sdk.Router.HandleFunc("/ast-analyzer/ws", m.wsServer.handleWebSocket)
 
 	go func() {
 		err := m.subscribeAssetSavedEvent()
