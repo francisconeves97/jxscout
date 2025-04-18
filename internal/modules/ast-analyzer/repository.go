@@ -81,7 +81,7 @@ func (r *astAnalyzerRepository) getAssetByPath(ctx context.Context, filePath str
 	query := `
 		SELECT id, fs_path
 		FROM assets
-		WHERE fs_path = ?
+		WHERE fs_path = ? AND content_type = 'JS'
 		LIMIT 1
 	`
 
