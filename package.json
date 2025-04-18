@@ -1,15 +1,17 @@
 {
   "type": "module",
   "devDependencies": {
-    "typescript": "^5.6.2",
-    "@types/node": "^22.7.4"
+    "@types/node": "^22.7.4",
+    "prettier": "^3.5.3",
+    "typescript": "^5.6.2"
   },
   "dependencies": {
     "acorn": "^8.12.1",
+    "acorn-walk": "^8.3.4",
+    "astring": "^1.9.0",
     "estree-toolkit": "^1.7.8",
     "sval": "^0.5.2",
     "tsx": "^4.19.1",
-    "vitest": "^2.1.2",
-    "astring": "^1.9.0"
+    "vitest": "^2.1.2"
   }
 }
