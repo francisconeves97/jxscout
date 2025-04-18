@@ -88,37 +88,3 @@ export function findUrlPaths(
 
   return foundPaths;
 }
-
-export function main() {
-  const args = process.argv.slice(2);
-
-  if (args.length === 0) {
-    console.error(
-      "Error: Please provide a JavaScript file path as an argument"
-    );
-    console.error(
-      "Usage: tsx pkg/ast-analyzers/paths.ts <javascript-file-path>"
-    );
-    process.exit(1);
-  }
-
-  const filePath = args[0];
-
-  if (!fs.existsSync(filePath)) {
-    console.error(`Error: File not found: ${filePath}`);
-    process.exit(1);
-  }
-
-  try {
-    const paths = findUrlPaths(filePath);
-
-    console.log(JSON.stringify(paths));
-  } catch (error) {
-    console.error("Error analyzing file:", error);
-    process.exit(1);
-  }
-}
-
-if (require.main === module) {
-  main();
-}
