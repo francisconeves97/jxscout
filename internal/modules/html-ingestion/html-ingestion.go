@@ -66,7 +66,7 @@ func (m *htmlIngestionModule) subscribeIngestionRequestTopic() error {
 func (m *htmlIngestionModule) handleIngestionRequest(req ingestion.IngestionRequest) error {
 	err := m.validateIngestionRequest(&req)
 	if err != nil {
-		m.sdk.Logger.Debug("request is not valid", "err", err)
+		m.sdk.Logger.Debug("request is not valid", "err", err, "req_url", req.Request.URL)
 		return nil // request is not valid, skip
 	}
 

@@ -77,7 +77,7 @@ func initJxscout(options jxscouttypes.Options) (*jxscout, error) {
 
 	scopeRegex := initializeScope(options.ScopePatterns)
 
-	scopeChecker := newScopeChecker(scopeRegex)
+	scopeChecker := newScopeChecker(scopeRegex, logger)
 
 	fileService := assetservice.NewFileService(path.Join(common.GetWorkingDirectory(), options.ProjectName), logger)
 
