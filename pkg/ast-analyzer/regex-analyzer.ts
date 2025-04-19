@@ -1,21 +1,17 @@
 import { Position, Program } from "acorn";
 import { simple as traverse } from "acorn-walk";
+import { Analyzer, AnalyzerMatch, AnalyzerParams } from "./types";
 
 export interface RegexAnalyzerConfig {
   regex: RegExp;
+  filter?: (match: AnalyzerMatch) => boolean;
 }
 
-export interface FoundMatch {
-  value: string;
-  start: Position;
-  end: Position;
-}
+export function createRegexAnalyzer(config: RegexAnalyzerConfig): Analyzer {
+  return (args: AnalyzerParams): AnalyzerMatch[] => {
+    const foundMatches: AnalyzerMatch[] = [];
 
-export function createRegexAnalyzer(config: RegexAnalyzerConfig) {
-  return (ast: Program, fileContent: string): FoundMatch[] => {
-    const foundMatches: FoundMatch[] = [];
-
-    traverse(ast, {
+    traverse(args.ast, {
       Literal(node) {
         const stringValue = node.value;
         if (typeof stringValue !== "string") {
@@ -30,15 +26,21 @@ export function createRegexAnalyzer(config: RegexAnalyzerConfig) {
           return;
         }
 
-        foundMatches.push({
+        const match = {
           value: stringValue,
           start: node.loc.start,
           end: node.loc.end,
-        });
+        };
+
+        if (config.filter && !config.filter(match)) {
+          return;
+        }
+
+        foundMatches.push(match);
       },
 
       TemplateLiteral(node) {
-        const templateValue = fileContent
+        const templateValue = args.source
           .slice(node.start, node.end)
           .replaceAll("`", "");
 
@@ -50,20 +52,20 @@ export function createRegexAnalyzer(config: RegexAnalyzerConfig) {
           return;
         }
 
-        foundMatches.push({
+        const match = {
           value: templateValue,
           start: node.loc.start,
           end: node.loc.end,
-        });
+        };
+
+        if (config.filter && !config.filter(match)) {
+          return;
+        }
+
+        foundMatches.push(match);
       },
     });
 
     return foundMatches;
   };
 }
-
-// Predefined regex patterns
-export const URL_PATH_REGEX =
-  /^[a-zA-Z0-9-_~/#?[\]!$&'()*+,;={}]*\/[a-zA-Z0-9-_~/#?[\]!$&'()*+,;={}]+$/;
-export const EMAIL_ADDRESS_REGEX =
-  /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;

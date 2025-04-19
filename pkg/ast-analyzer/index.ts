@@ -1,25 +1,10 @@
 import * as fs from "fs";
 import { parse, Program } from "acorn";
-import {
-  createRegexAnalyzer,
-  URL_PATH_REGEX,
-  EMAIL_ADDRESS_REGEX,
-} from "./regex-analyzer";
+import { AnalyzerParams, Analyzer } from "./types";
+import { pathsAnalyzer } from "./paths";
+import { emailsAnalyzer } from "./emails";
 
-// Cache for parsed ASTs to avoid re-parsing the same file
-const astCache = new Map<string, { ast: Program; content: string }>();
-
-interface Analyzer {
-  analyze: (filePath: string) => any;
-}
-
-// Function to parse a file and return its AST and content
-function parseFile(filePath: string): { ast: Program; content: string } {
-  // Check if we already have this file in the cache
-  if (astCache.has(filePath)) {
-    return astCache.get(filePath)!;
-  }
-
+export function parseFile(filePath: string): AnalyzerParams {
   const fileContent = fs.readFileSync(filePath, "utf-8");
   let ast: Program;
 
@@ -37,32 +22,13 @@ function parseFile(filePath: string): { ast: Program; content: string } {
     });
   }
 
-  const result = { ast, content: fileContent };
-  astCache.set(filePath, result);
-  return result;
+  return { ast, source: fileContent };
 }
 
 // Define all available analyzers
 const analyzers: Record<string, Analyzer> = {
-  // URL Paths analyzer
-  paths: {
-    analyze: (filePath: string) => {
-      const { ast, content } = parseFile(filePath);
-      return createRegexAnalyzer({ regex: URL_PATH_REGEX })(ast, content);
-    },
-  },
-
-  // Email Addresses analyzer
-  emails: {
-    analyze: (filePath: string) => {
-      const { ast, content } = parseFile(filePath);
-      return createRegexAnalyzer({
-        regex: EMAIL_ADDRESS_REGEX,
-      })(ast, content);
-    },
-  },
-
-  // Add more analyzers here as needed
+  paths: pathsAnalyzer,
+  emails: emailsAnalyzer,
 };
 
 function printUsage() {
@@ -102,7 +68,8 @@ function main() {
     }
 
     try {
-      results[analyzerName] = analyzer.analyze(filePath);
+      const args = parseFile(filePath);
+      results[analyzerName] = analyzer(args);
     } catch (error) {
       console.error(`Error running ${analyzerName} analyzer:`, error);
       process.exit(1);

@@ -21,8 +21,8 @@ import (
 )
 
 var enabledAnalyzers = map[string]string{
-	"paths":  "0.1.0",
-	"emails": "0.1.0",
+	"paths":  "0.2.1",
+	"emails": "0.2.0",
 }
 
 //go:embed ast-analyzer.js

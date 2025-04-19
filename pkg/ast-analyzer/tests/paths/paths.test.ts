@@ -1,11 +1,7 @@
-import fs from "fs";
 import path from "path";
 import { expect, test } from "vitest";
-import { findUrlPaths } from "../../paths.js";
-
-const readFile = (path: string): string => {
-  return fs.readFileSync(path, "utf-8");
-};
+import { pathsAnalyzer } from "../../paths";
+import { parseFile } from "../../index";
 
 interface PathsTestCase {
   jsFileName: string;
@@ -23,221 +19,212 @@ const testCases: PathsTestCase[] = [
       {
         value: "/users",
         start: {
-          line: 5,
-          column: 21,
-        },
-        end: {
-          line: 5,
-          column: 29,
-        },
-      },
-      {
-        value: "/products",
-        start: {
           line: 6,
-          column: 24,
+          column: 25,
         },
         end: {
           line: 6,
-          column: 35,
-        },
-      },
-      {
-        value: "/orders",
-        start: {
-          line: 7,
-          column: 22,
-        },
-        end: {
-          line: 7,
-          column: 31,
-        },
-      },
-      {
-        value: "/assets/images",
-        start: {
-          line: 15,
-          column: 19,
-        },
-        end: {
-          line: 15,
-          column: 35,
-        },
-      },
-      {
-        value: "/static/css",
-        start: {
-          line: 16,
-          column: 19,
-        },
-        end: {
-          line: 16,
-          column: 32,
-        },
-      },
-      {
-        value: "/media/videos",
-        start: {
-          line: 17,
-          column: 18,
-        },
-        end: {
-          line: 17,
           column: 33,
         },
       },
       {
-        value: "/users/{userId}/profile",
+        value: "api/products",
         start: {
-          line: 20,
-          column: 24,
+          line: 7,
+          column: 28,
         },
         end: {
-          line: 20,
-          column: 49,
+          line: 7,
+          column: 42,
         },
       },
       {
-        value: "/products/{productId}/details",
+        value: "/orders/123",
         start: {
-          line: 21,
-          column: 27,
+          line: 8,
+          column: 26,
         },
         end: {
-          line: 21,
-          column: 58,
+          line: 8,
+          column: 39,
+        },
+      },
+      {
+        value:
+          "/api/v1/users/123/orders/456/status/and/more/segments/of/users/in/users",
+        start: {
+          line: 10,
+          column: 2,
+        },
+        end: {
+          line: 10,
+          column: 75,
         },
       },
       {
         value: "/orders/{orderId}/status",
         start: {
-          line: 22,
-          column: 24,
+          line: 13,
+          column: 33,
         },
         end: {
-          line: 22,
-          column: 50,
+          line: 13,
+          column: 59,
+        },
+      },
+      {
+        value: "/orders/:orderId/status",
+        start: {
+          line: 14,
+          column: 32,
+        },
+        end: {
+          line: 14,
+          column: 57,
+        },
+      },
+      {
+        value: "orders/:orderId/status/456",
+        start: {
+          line: 15,
+          column: 33,
+        },
+        end: {
+          line: 15,
+          column: 61,
         },
       },
       {
         value: "/search?q={query}&page={page}",
         start: {
-          line: 25,
-          column: 19,
+          line: 18,
+          column: 34,
         },
         end: {
-          line: 25,
-          column: 50,
+          line: 18,
+          column: 65,
         },
       },
       {
         value: "/filter?category={category}&sort={sort}",
         start: {
-          line: 26,
-          column: 19,
+          line: 19,
+          column: 34,
         },
         end: {
-          line: 26,
-          column: 60,
+          line: 19,
+          column: 75,
         },
       },
       {
-        value: "${apiBaseUrl}${userEndpoint}/${userId}",
+        value:
+          "/api/v1/users/123/orders/456/status/and/more/segments/of/users/in/users?q={query}&page={page}",
         start: {
-          line: 30,
-          column: 15,
+          line: 21,
+          column: 2,
         },
         end: {
-          line: 30,
-          column: 55,
-        },
-      },
-      {
-        value: "${apiBaseUrl}${productEndpoint}/${productId}",
-        start: {
-          line: 34,
-          column: 15,
-        },
-        end: {
-          line: 34,
-          column: 61,
-        },
-      },
-      {
-        value: "${apiBaseUrl}${orderEndpoint}/${orderId}/status",
-        start: {
-          line: 38,
-          column: 15,
-        },
-        end: {
-          line: 38,
-          column: 64,
+          line: 21,
+          column: 97,
         },
       },
       {
         value: "/api/users",
         start: {
-          line: 43,
+          line: 31,
           column: 9,
         },
         end: {
-          line: 43,
+          line: 31,
           column: 21,
         },
       },
       {
         value: "/api/products",
         start: {
-          line: 44,
+          line: 32,
           column: 12,
         },
         end: {
-          line: 44,
+          line: 32,
           column: 27,
         },
       },
       {
         value: "/api/orders",
         start: {
-          line: 45,
+          line: 33,
           column: 10,
         },
         end: {
-          line: 45,
+          line: 33,
           column: 23,
         },
       },
       {
         value: "/api/v1",
         start: {
-          line: 53,
+          line: 41,
           column: 2,
         },
         end: {
-          line: 53,
+          line: 41,
           column: 11,
         },
       },
       {
         value: "/api/v2",
         start: {
-          line: 54,
+          line: 42,
           column: 2,
         },
         end: {
-          line: 54,
+          line: 42,
           column: 11,
         },
       },
       {
         value: "api/v3",
         start: {
-          line: 55,
+          line: 43,
           column: 2,
         },
         end: {
-          line: 55,
+          line: 43,
           column: 10,
+        },
+      },
+      {
+        value: "${apiBaseUrl}${userEndpointPath}/${userId}",
+        start: {
+          line: 48,
+          column: 15,
+        },
+        end: {
+          line: 48,
+          column: 59,
+        },
+      },
+      {
+        value: "${apiBaseUrl}/api/products/${productId}",
+        start: {
+          line: 52,
+          column: 15,
+        },
+        end: {
+          line: 52,
+          column: 56,
+        },
+      },
+      {
+        value: "${apiBaseUrl}${orderEndpointPath}/${orderId}/status",
+        start: {
+          line: 56,
+          column: 15,
+        },
+        end: {
+          line: 56,
+          column: 68,
         },
       },
     ],
@@ -246,9 +233,9 @@ const testCases: PathsTestCase[] = [
 
 test.each(testCases)("paths - $jsFileName", ({ jsFileName, expectedPaths }) => {
   const filePath = path.join(__dirname, "files", jsFileName);
-  const paths = findUrlPaths(filePath);
 
-  console.log(JSON.stringify(paths, null, 2));
+  const args = parseFile(filePath);
+  const paths = pathsAnalyzer(args);
 
   // Sort both arrays by value to ensure consistent comparison
   const sortedPaths = paths.sort((a, b) => a.value.localeCompare(b.value));

@@ -99,5 +99,10 @@ func (s *beautifierModule) beautify(filePath string, contentType common.ContentT
 		return errutil.Wrap(err, "error starting command")
 	}
 
+	err := cmd.Wait()
+	if err != nil {
+		return errutil.Wrap(err, "error waiting for command")
+	}
+
 	return nil
 }
