@@ -4,12 +4,44 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"time"
 
 	"github.com/francisconeves97/jxscout/internal/core/errutil"
 	"github.com/jmoiron/sqlx"
 )
+
+const (
+	statusProcessing = "processing"
+	statusCompleted  = "completed"
+	statusFailed     = "failed"
+	statusRetrying   = "retrying"
+)
+
+// RetriableError wraps an error that should be retried
+type RetriableError struct {
+	Err error
+}
+
+func (e *RetriableError) Error() string {
+	return e.Err.Error()
+}
+
+func (e *RetriableError) Unwrap() error {
+	return e.Err
+}
+
+// NewRetriableError creates a new retriable error
+func NewRetriableError(err error) error {
+	return &RetriableError{Err: err}
+}
+
+// IsRetriable checks if an error is retriable
+func IsRetriable(err error) bool {
+	var retriable *RetriableError
+	return err != nil && errors.As(err, &retriable)
+}
 
 type Options struct {
 	Concurrency  int
@@ -203,7 +235,7 @@ func (b *EventBus) processEvent(ctx context.Context, event Event, queueName stri
 		processing = EventProcessing{
 			EventID:     event.ID,
 			Subscriber:  queueName,
-			Status:      "processing",
+			Status:      statusProcessing,
 			LastAttempt: time.Now(),
 		}
 		_, err = tx.ExecContext(ctx,
@@ -215,7 +247,7 @@ func (b *EventBus) processEvent(ctx context.Context, event Event, queueName stri
 		}
 	} else if err != nil {
 		return errutil.Wrap(err, "failed to get event processing")
-	} else if processing.Status == "completed" {
+	} else if processing.Status == statusCompleted {
 		return nil
 	} else if processing.RetryCount >= opts.MaxRetries {
 		return nil
@@ -225,12 +257,18 @@ func (b *EventBus) processEvent(ctx context.Context, event Event, queueName stri
 	if err != nil {
 		retryCount := processing.RetryCount + 1
 		nextAttempt := time.Now().Add(opts.Backoff(retryCount))
+		status := statusFailed
+
+		// If the error is retriable and we haven't exceeded max retries, mark it for retry
+		if IsRetriable(err) && retryCount < opts.MaxRetries {
+			status = statusRetrying
+		}
 
 		_, err = tx.ExecContext(ctx,
 			`UPDATE event_processing 
              SET status = ?, retry_count = ?, error_message = ?, next_attempt = ? 
              WHERE event_id = ? AND subscriber = ?`,
-			"failed", retryCount, err.Error(), nextAttempt, event.ID, queueName)
+			status, retryCount, err.Error(), nextAttempt, event.ID, queueName)
 		if err != nil {
 			return errutil.Wrap(err, "failed to update event processing")
 		}
@@ -239,7 +277,7 @@ func (b *EventBus) processEvent(ctx context.Context, event Event, queueName stri
 
 	_, err = tx.ExecContext(ctx,
 		`UPDATE event_processing SET status = ? WHERE event_id = ? AND subscriber = ?`,
-		"completed", event.ID, queueName)
+		statusCompleted, event.ID, queueName)
 	if err != nil {
 		return errutil.Wrap(err, "failed to update event processing status")
 	}
