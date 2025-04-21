@@ -91,10 +91,10 @@ func (b *EventBus) initTables() error {
         )`,
 		`CREATE TABLE IF NOT EXISTS subscriber_offsets (
             subscriber TEXT NOT NULL,
-            topic TEXT NOT NULL,
+            name TEXT NOT NULL,
             last_consumed_id INTEGER NOT NULL,
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            PRIMARY KEY(subscriber, topic)
+            PRIMARY KEY(subscriber, name)
         )`,
 		`CREATE TABLE IF NOT EXISTS event_processing (
             event_id INTEGER NOT NULL,
@@ -123,7 +123,7 @@ func (b *EventBus) Publish(ctx context.Context, topic string, payload interface{
 		return errutil.Wrap(err, "failed to marshal payload")
 	}
 
-	query := `INSERT INTO events (topic, payload) VALUES (?, ?)`
+	query := `INSERT INTO events (name, payload) VALUES (?, ?)`
 	_, err = b.db.ExecContext(ctx, query, topic, string(payloadBytes))
 	if err != nil {
 		return errutil.Wrap(err, "failed to publish event")
@@ -174,7 +174,7 @@ func (b *EventBus) fetchAndDistributeEvents(ctx context.Context, topic, queueNam
 
 	var lastConsumedID int64
 	err = tx.GetContext(ctx, &lastConsumedID,
-		`SELECT last_consumed_id FROM subscriber_offsets WHERE subscriber = ? AND topic = ?`,
+		`SELECT last_consumed_id FROM subscriber_offsets WHERE subscriber = ? AND name = ?`,
 		queueName, topic)
 	if err == sql.ErrNoRows {
 		lastConsumedID = 0
@@ -366,9 +366,9 @@ func (b *EventBus) updateCompletedStatus(ctx context.Context, tx *sqlx.Tx, event
 	}
 
 	_, err = tx.ExecContext(ctx,
-		`INSERT INTO subscriber_offsets (subscriber, topic, last_consumed_id) 
+		`INSERT INTO subscriber_offsets (subscriber, name, last_consumed_id) 
          VALUES (?, ?, ?) 
-         ON CONFLICT(subscriber, topic) 
+         ON CONFLICT(subscriber, name) 
          DO UPDATE SET last_consumed_id = ?, updated_at = CURRENT_TIMESTAMP`,
 		queueName, event.Name, event.ID, event.ID)
 	if err != nil {
