@@ -5,7 +5,6 @@ import (
 	"log/slog"
 	"net/url"
 	"os"
-	"path"
 	"path/filepath"
 	"strings"
 
@@ -66,12 +65,23 @@ func (s *fileServiceImpl) save(ctx context.Context, filePath []string, req SaveF
 		return "", errutil.Wrap(err, "failed to parse url")
 	}
 
-	filePath = append(filePath, parsedURL.Host)
+	// Clean the hostname to be filesystem-safe
+	host := strings.ReplaceAll(parsedURL.Host, ".", "_")
+	filePath = append(filePath, host)
 
-	path := parsedURL.Path
+	// Clean the path and ensure it's filesystem-safe
+	path := strings.TrimPrefix(parsedURL.Path, "/")
 	pathParts := strings.Split(path, urlDelimiter)
+	
+	// Filter out empty path parts
+	var cleanPathParts []string
+	for _, part := range pathParts {
+		if part != "" {
+			cleanPathParts = append(cleanPathParts, part)
+		}
+	}
 
-	filePath = append(filePath, pathParts...)
+	filePath = append(filePath, cleanPathParts...)
 
 	targetPath := filepath.Join(filePath...)
 	err = s.writeToFile(targetPath, req.Content)
@@ -83,7 +93,7 @@ func (s *fileServiceImpl) save(ctx context.Context, filePath []string, req SaveF
 }
 
 func (s *fileServiceImpl) writeToFile(filePath string, content string) error {
-	dir := path.Dir(filePath)
+	dir := filepath.Dir(filePath)
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		return errutil.Wrap(err, "failed to create directory")
 	}
