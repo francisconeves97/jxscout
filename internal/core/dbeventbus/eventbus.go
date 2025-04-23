@@ -2,7 +2,6 @@ package eventbus
 
 import (
 	"context"
-	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -174,7 +173,7 @@ func (b *EventBus) fetchAndDistributeEvents(ctx context.Context, topic, queueNam
 	}
 	defer tx.Rollback()
 
-	// Get multiple events that are ready to be processed
+	// Get multiple events that are ready to be processed and lock them
 	var eventsToProcess []Event
 	err = tx.SelectContext(ctx, &eventsToProcess,
 		`SELECT e.id, e.name, e.payload, e.created_at 
@@ -192,6 +191,23 @@ func (b *EventBus) fetchAndDistributeEvents(ctx context.Context, topic, queueNam
 		return errutil.Wrap(err, "failed to fetch events")
 	}
 
+	// Mark events as processing in the same transaction
+	for _, event := range eventsToProcess {
+		_, err = tx.ExecContext(ctx,
+			`INSERT OR REPLACE INTO event_processing (event_id, subscriber, status, last_attempt, heartbeat, finished_at) 
+             VALUES (?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL)`,
+			event.ID, queueName, statusProcessing)
+		if err != nil {
+			return errutil.Wrap(err, "failed to mark event as processing")
+		}
+	}
+
+	// Commit the transaction before sending to workers
+	if err := tx.Commit(); err != nil {
+		return errutil.Wrap(err, "failed to commit transaction")
+	}
+
+	// Send events to workers after transaction is committed
 	for _, event := range eventsToProcess {
 		select {
 		case <-ctx.Done():
@@ -204,7 +220,7 @@ func (b *EventBus) fetchAndDistributeEvents(ctx context.Context, topic, queueNam
 		}
 	}
 
-	return tx.Commit()
+	return nil
 }
 
 func (b *EventBus) worker(ctx context.Context, queueName string, handler Handler, jobs <-chan Event, opts Options) {
@@ -222,14 +238,6 @@ func (b *EventBus) worker(ctx context.Context, queueName string, handler Handler
 }
 
 func (b *EventBus) processEvent(ctx context.Context, event Event, queueName string, handler Handler, opts Options) error {
-	processing, err := b.markEventAsProcessing(ctx, event, queueName, opts)
-	if err != nil {
-		return errutil.Wrap(err, "failed to process event")
-	}
-	if processing == nil {
-		return nil // Event was already completed or exceeded retries
-	}
-
 	// Create a context for the heartbeat goroutine
 	heartbeatCtx, cancelHeartbeat := context.WithCancel(ctx)
 	defer cancelHeartbeat()
@@ -238,10 +246,10 @@ func (b *EventBus) processEvent(ctx context.Context, event Event, queueName stri
 	b.startHeartbeat(heartbeatCtx, event.ID, queueName, opts.HeartbeatInterval)
 
 	// Execute handler outside of transaction
-	err = handler(ctx, []byte(event.Payload))
+	err := handler(ctx, []byte(event.Payload))
 
 	// Update final status
-	if err := b.updateEventStatus(ctx, event, queueName, err, processing, opts); err != nil {
+	if err := b.updateEventStatus(ctx, event, queueName, err, opts); err != nil {
 		return errutil.Wrap(err, "failed to update event status")
 	}
 	return nil
@@ -269,10 +277,10 @@ func (b *EventBus) startHeartbeat(ctx context.Context, eventID int64, queueName 
 	}()
 }
 
-func (b *EventBus) markEventAsProcessing(ctx context.Context, event Event, queueName string, opts Options) (*EventProcessing, error) {
+func (b *EventBus) updateEventStatus(ctx context.Context, event Event, queueName string, handlerErr error, opts Options) error {
 	tx, err := b.db.BeginTxx(ctx, nil)
 	if err != nil {
-		return nil, errutil.Wrap(err, "failed to begin transaction")
+		return errutil.Wrap(err, "failed to begin final status transaction")
 	}
 	defer tx.Rollback()
 
@@ -280,52 +288,9 @@ func (b *EventBus) markEventAsProcessing(ctx context.Context, event Event, queue
 	err = tx.GetContext(ctx, &processing,
 		`SELECT * FROM event_processing WHERE event_id = ? AND subscriber = ?`,
 		event.ID, queueName)
-
-	if err == sql.ErrNoRows {
-		processing = EventProcessing{
-			EventID:    event.ID,
-			Subscriber: queueName,
-			Status:     statusProcessing,
-		}
-		_, err = tx.ExecContext(ctx,
-			`INSERT INTO event_processing (event_id, subscriber, status) 
-             VALUES (?, ?, ?)`,
-			processing.EventID, processing.Subscriber, processing.Status, processing.LastAttempt)
-		if err != nil {
-			return nil, errutil.Wrap(err, "failed to insert event processing")
-		}
-
-		return &processing, nil
-	} else if err != nil {
-		return nil, errutil.Wrap(err, "failed to get event processing")
-	} else if processing.Status == statusCompleted {
-		return nil, nil
-	} else if processing.RetryCount >= opts.MaxRetries {
-		return nil, nil
-	}
-
-	// Update last attempt time
-	_, err = tx.ExecContext(ctx,
-		`UPDATE event_processing SET last_attempt = CURRENT_TIMESTAMP 
-         WHERE event_id = ? AND subscriber = ?`,
-		event.ID, queueName)
 	if err != nil {
-		return nil, errutil.Wrap(err, "failed to update last attempt time")
+		return errutil.Wrap(err, "failed to get event processing")
 	}
-
-	if err := tx.Commit(); err != nil {
-		return nil, errutil.Wrap(err, "failed to commit transaction")
-	}
-
-	return &processing, nil
-}
-
-func (b *EventBus) updateEventStatus(ctx context.Context, event Event, queueName string, handlerErr error, processing *EventProcessing, opts Options) error {
-	tx, err := b.db.BeginTxx(ctx, nil)
-	if err != nil {
-		return errutil.Wrap(err, "failed to begin final status transaction")
-	}
-	defer tx.Rollback()
 
 	if handlerErr != nil {
 		if err := b.updateFailedStatus(ctx, tx, handlerErr, processing, opts); err != nil {
@@ -340,7 +305,7 @@ func (b *EventBus) updateEventStatus(ctx context.Context, event Event, queueName
 	return nil
 }
 
-func (b *EventBus) updateFailedStatus(ctx context.Context, tx *sqlx.Tx, handlerErr error, processing *EventProcessing, opts Options) error {
+func (b *EventBus) updateFailedStatus(ctx context.Context, tx *sqlx.Tx, handlerErr error, processing EventProcessing, opts Options) error {
 	retryCount := processing.RetryCount + 1
 	nextAttempt := time.Now().Add(opts.Backoff(retryCount))
 	status := statusFailed
