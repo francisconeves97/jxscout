@@ -96,13 +96,6 @@ func (b *EventBus) initTables() error {
             payload TEXT NOT NULL,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )`,
-		`CREATE TABLE IF NOT EXISTS subscriber_offsets (
-            subscriber TEXT NOT NULL,
-            event_name TEXT NOT NULL,
-            last_consumed_id INTEGER NOT NULL,
-            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            PRIMARY KEY(subscriber, name)
-        )`,
 		`CREATE TABLE IF NOT EXISTS event_processing (
             event_id INTEGER NOT NULL,
             subscriber TEXT NOT NULL,
@@ -181,30 +174,20 @@ func (b *EventBus) fetchAndDistributeEvents(ctx context.Context, topic, queueNam
 	}
 	defer tx.Rollback()
 
-	var lastConsumedID int64
-	err = tx.GetContext(ctx, &lastConsumedID,
-		`SELECT last_consumed_id FROM subscriber_offsets WHERE subscriber = ? AND event_name = ?`,
-		queueName, topic)
-	if err == sql.ErrNoRows {
-		lastConsumedID = 0
-	} else if err != nil {
-		return errutil.Wrap(err, "failed to get last consumed ID")
-	}
-
-	// Get events that are ready to be processed
+	// Get multiple events that are ready to be processed
 	var eventsToProcess []Event
 	err = tx.SelectContext(ctx, &eventsToProcess,
 		`SELECT e.id, e.name, e.payload, e.created_at 
          FROM events e
          LEFT JOIN event_processing ep ON e.id = ep.event_id AND ep.subscriber = ?
-         WHERE e.id > ? AND e.name = ? 
+         WHERE e.name = ? 
          AND (
              ep.status IS NULL 
-			 OR ep.status = ?
+             OR ep.status = ?
              OR (ep.status = ? AND ep.retry_count < ? AND ep.finished_at IS NOT NULL)
          )
          ORDER BY e.id ASC LIMIT ?`,
-		queueName, lastConsumedID, topic, statusPending, statusRetry, opts.MaxRetries, opts.Concurrency)
+		queueName, topic, statusPending, statusRetry, opts.MaxRetries, opts.Concurrency)
 	if err != nil {
 		return errutil.Wrap(err, "failed to fetch events")
 	}
@@ -387,16 +370,6 @@ func (b *EventBus) updateCompletedStatus(ctx context.Context, tx *sqlx.Tx, event
 		statusCompleted, event.ID, queueName)
 	if err != nil {
 		return errutil.Wrap(err, "failed to update event processing status")
-	}
-
-	_, err = tx.ExecContext(ctx,
-		`INSERT INTO subscriber_offsets (subscriber, event_name, last_consumed_id) 
-         VALUES (?, ?, ?) 
-         ON CONFLICT(subscriber, event_name) 
-         DO UPDATE SET last_consumed_id = ?, updated_at = CURRENT_TIMESTAMP`,
-		queueName, event.Name, event.ID, event.ID)
-	if err != nil {
-		return errutil.Wrap(err, "failed to update subscriber offset")
 	}
 
 	if err := tx.Commit(); err != nil {
