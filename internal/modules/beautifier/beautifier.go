@@ -51,17 +51,22 @@ func (m *beautifierModule) subscribeAssetSavedEvent() error {
 			return errutil.Wrap(err, "failed to unmarshal payload")
 		}
 
-		if isValid, ok := validBeautifierContentTypes[event.Asset.ContentType]; !ok || !isValid {
+		asset, err := m.sdk.AssetService.GetAssetByID(ctx, event.AssetID)
+		if err != nil {
+			return dbeventbus.NewRetriableError(errutil.Wrap(err, "failed to get asset"))
+		}
+
+		if isValid, ok := validBeautifierContentTypes[asset.ContentType]; !ok || !isValid {
 			return nil
 		}
 
-		err = m.beautify(event.Asset.Path, event.Asset.ContentType)
+		err = m.beautify(asset.Path, asset.ContentType)
 		if err != nil {
 			return dbeventbus.NewRetriableError(errutil.Wrap(err, "failed to beautify asset"))
 		}
 
 		err = m.sdk.DBEventBus.Publish(ctx, m.sdk.Database, TopicBeautifierAssetSaved, EventBeautifierAssetSaved{
-			Asset: event.Asset,
+			AssetID: asset.ID,
 		})
 		if err != nil {
 			return errutil.Wrap(err, "failed to publish asset saved event")

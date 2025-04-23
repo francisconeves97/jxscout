@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"context"
 	_ "embed"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/url"
@@ -12,11 +13,12 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"time"
 
 	assetservice "github.com/francisconeves97/jxscout/internal/core/asset-service"
 	"github.com/francisconeves97/jxscout/internal/core/common"
+	"github.com/francisconeves97/jxscout/internal/core/dbeventbus"
 	"github.com/francisconeves97/jxscout/internal/core/errutil"
-	concurrentqueue "github.com/francisconeves97/jxscout/pkg/concurrent-queue"
 	jxscouttypes "github.com/francisconeves97/jxscout/pkg/types"
 )
 
@@ -25,13 +27,13 @@ var chunkDiscovererBinary []byte
 
 type chunkDiscovererModule struct {
 	sdk                       *jxscouttypes.ModuleSDK
-	queue                     concurrentqueue.Queue[assetservice.Asset]
+	concurrency               int
 	chunkDiscovererBinaryPath string
 }
 
 func NewChunkDiscovererModule(concurrency int, chunkBruteForceLimit int) *chunkDiscovererModule {
 	return &chunkDiscovererModule{
-		queue: concurrentqueue.NewQueue[assetservice.Asset](concurrency),
+		concurrency: concurrency,
 	}
 }
 
@@ -44,8 +46,6 @@ func (m *chunkDiscovererModule) Initialize(sdk *jxscouttypes.ModuleSDK) error {
 			m.sdk.Logger.Error("failed to subscribe to asset saved topic", "err", err)
 		}
 	}()
-
-	m.initializeQueueHandler()
 
 	saveDir := filepath.Join(common.GetPrivateDirectory(), "extracted")
 
@@ -69,45 +69,46 @@ var validChunkDiscovererContentTypes = map[common.ContentType]bool{
 	common.ContentTypeJS: true,
 }
 
-func (m *chunkDiscovererModule) initializeQueueHandler() {
-	m.queue.StartConsumers(func(ctx context.Context, asset assetservice.Asset) {
-		err := m.discoverPossibleChunks(asset)
-		if err != nil {
-			m.sdk.Logger.ErrorContext(ctx, "failed to discover chunks", "err", err, "asset_url", asset.URL)
-			return
-		}
-	})
-}
-
 func (m *chunkDiscovererModule) subscribeAssetSavedEvent() error {
-	messages, err := m.sdk.InMemoryEventBus.Subscribe(assetservice.TopicAssetSaved)
+	err := m.sdk.DBEventBus.Subscribe(m.sdk.Ctx, assetservice.TopicAssetSaved, "chunkdiscoverer", func(ctx context.Context, payload []byte) error {
+		// unmarshal payload
+		var event assetservice.EventAssetSaved
+		err := json.Unmarshal(payload, &event)
+		if err != nil {
+			return errutil.Wrap(err, "failed to unmarshal payload")
+		}
+
+		asset, err := m.sdk.AssetService.GetAssetByID(ctx, event.AssetID)
+		if err != nil {
+			return dbeventbus.NewRetriableError(errutil.Wrap(err, "failed to get asset"))
+		}
+
+		if asset.IsInlineJS {
+			return nil
+		}
+
+		if isValid, ok := validChunkDiscovererContentTypes[asset.ContentType]; !ok || !isValid {
+			return nil
+		}
+
+		return m.discoverPossibleChunks(ctx, asset)
+	}, dbeventbus.Options{
+		Concurrency: m.concurrency,
+		MaxRetries:  3,
+		Backoff: func(retry int) time.Duration {
+			return time.Duration(retry) * time.Second
+		},
+		PollInterval:      1 * time.Second,
+		HeartbeatInterval: 10 * time.Second,
+	})
 	if err != nil {
 		return errutil.Wrap(err, "failed to subscribe to ingestion request topic")
-	}
-
-	for msg := range messages {
-		event, ok := msg.Data.(assetservice.EventAssetSaved)
-		if !ok {
-			m.sdk.Logger.Error("expected event EventAssetSaved but event is other type")
-			continue
-		}
-
-		if isValid, ok := validChunkDiscovererContentTypes[event.Asset.ContentType]; !ok || !isValid {
-			continue
-		}
-
-		if !m.sdk.Scope.IsInScope(event.Asset.URL) {
-			m.sdk.Logger.Debug("skipping chunk processing because asset is not in scope", "asset_url", event.Asset.URL)
-			continue
-		}
-
-		m.queue.Produce(m.sdk.Ctx, event.Asset)
 	}
 
 	return nil
 }
 
-func (s *chunkDiscovererModule) discoverPossibleChunks(asset assetservice.Asset) error {
+func (s *chunkDiscovererModule) discoverPossibleChunks(ctx context.Context, asset assetservice.Asset) error {
 	chunksRaw, err := s.execChunkDiscoverer(asset)
 	if err != nil {
 		return errutil.Wrap(err, "failed to exec chunk discoverer")
@@ -173,7 +174,7 @@ func (s *chunkDiscovererModule) discoverPossibleChunks(asset assetservice.Asset)
 		go func() {
 			defer wg.Done()
 
-			content, found, err := s.sdk.AssetFetcher.RateLimitedGet(s.sdk.Ctx, chunk, asset.RequestHeaders)
+			content, found, err := s.sdk.AssetFetcher.RateLimitedGet(ctx, chunk, asset.RequestHeaders)
 			if err != nil {
 				s.sdk.Logger.Error("failed to perform get request", "err", err)
 				return
@@ -195,7 +196,7 @@ func (s *chunkDiscovererModule) discoverPossibleChunks(asset assetservice.Asset)
 				}
 			}
 
-			s.sdk.AssetService.AsyncSaveAsset(s.sdk.Ctx, asset)
+			s.sdk.AssetService.AsyncSaveAsset(ctx, asset)
 		}()
 	}
 

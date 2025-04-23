@@ -59,11 +59,16 @@ func (m *sourceMapsModule) subscribeAssetSavedEvent() error {
 			return errutil.Wrap(err, "failed to unmarshal payload")
 		}
 
-		if isValid, ok := validsourceMapsContentTypes[event.Asset.ContentType]; !ok || !isValid {
+		asset, err := m.sdk.AssetService.GetAssetByID(ctx, event.AssetID)
+		if err != nil {
+			return dbeventbus.NewRetriableError(errutil.Wrap(err, "failed to get asset"))
+		}
+
+		if isValid, ok := validsourceMapsContentTypes[asset.ContentType]; !ok || !isValid {
 			return nil
 		}
 
-		return m.sourceMapDiscover(ctx, event.Asset)
+		return m.sourceMapDiscover(ctx, asset)
 	}, dbeventbus.Options{
 		Concurrency: m.concurrency,
 		MaxRetries:  3,
@@ -93,6 +98,13 @@ func (s *sourceMapsModule) sourceMapDiscover(ctx context.Context, asset assetser
 	}
 	if !ok {
 		return nil // no source map found
+	}
+
+	// check if res is a valid json
+	var sourceMap map[string]interface{}
+	err = json.Unmarshal([]byte(res), &sourceMap)
+	if err != nil {
+		return errors.Wrapf(err, "failed to unmarshal source map for asset %s", asset.URL)
 	}
 
 	filePath, err := s.sdk.FileService.SaveInSubfolder(ctx, sourceMapsFolder, assetservice.SaveFileRequest{

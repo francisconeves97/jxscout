@@ -3,6 +3,7 @@ package assetservice
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"log/slog"
 	"time"
 
@@ -12,12 +13,14 @@ import (
 	"github.com/francisconeves97/jxscout/internal/core/dbeventbus"
 	"github.com/francisconeves97/jxscout/internal/core/errutil"
 	concurrentqueue "github.com/francisconeves97/jxscout/pkg/concurrent-queue"
+	"github.com/francisconeves97/jxscout/pkg/constants"
 )
 
 type AssetService interface {
 	AsyncSaveAsset(ctx context.Context, asset Asset)
 	UpdateWorkingDirectory(path string)
 	GetAssetByURL(ctx context.Context, url string) (Asset, bool, error)
+	GetAssetByID(ctx context.Context, id int64) (Asset, error)
 	GetAssets(ctx context.Context, params GetAssetsParams) ([]Asset, int, error)
 	GetAssetsThatLoad(ctx context.Context, url string, params GetAssetsParams) ([]Asset, int, error)
 	GetAssetsLoadedBy(ctx context.Context, url string, params GetAssetsParams) ([]Asset, int, error)
@@ -160,6 +163,10 @@ func (s *assetService) handleSaveAssetRequest(ctx context.Context, asset Asset) 
 		return errutil.Wrap(err, "failed to marshal headers")
 	}
 
+	if asset.Project == "" {
+		asset.Project = constants.DefaultProjectName
+	}
+
 	repoAsset := DBAsset{
 		URL:            asset.URL,
 		ContentHash:    common.Hash(asset.Content),
@@ -195,11 +202,13 @@ func (s *assetService) handleSaveAssetRequest(ctx context.Context, asset Asset) 
 		return errutil.Wrap(err, "failed to save asset to db")
 	}
 
-	asset.ID = assetID
-	asset.Path = path
+	if assetID == 0 {
+		s.log.ErrorContext(ctx, "asset id is 0", "asset_url", asset.URL)
+		return errutil.Wrap(errors.New("asset id is 0"), "failed to save asset to db")
+	}
 
 	err = s.eventBus.Publish(ctx, tx, TopicAssetSaved, EventAssetSaved{
-		Asset: asset,
+		AssetID: assetID,
 	})
 	if err != nil {
 		return errutil.Wrap(err, "failed to publish asset saved even")
@@ -207,7 +216,7 @@ func (s *assetService) handleSaveAssetRequest(ctx context.Context, asset Asset) 
 
 	s.log.InfoContext(ctx, "saved file successfully", "path", path, "asset_url", asset.URL)
 
-	return nil
+	return tx.Commit()
 }
 
 // this method is asynchronous so no error will be returned
@@ -297,4 +306,13 @@ func (s *assetService) GetAssetsLoadedBy(ctx context.Context, url string, params
 	}
 
 	return assets, total, nil
+}
+
+func (s *assetService) GetAssetByID(ctx context.Context, id int64) (Asset, error) {
+	repoAsset, err := GetAssetByID(ctx, s.db, id)
+	if err != nil {
+		return Asset{}, errutil.Wrap(err, "failed to get asset from repo")
+	}
+
+	return s.mapRepoAssetToAsset(repoAsset), nil
 }

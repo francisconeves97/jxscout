@@ -61,7 +61,7 @@ func Initialize(db *sqlx.DB) error {
 			project TEXT NOT NULL,
 			request_headers TEXT,
 			created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    	updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    		updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 		);
 
 		CREATE INDEX IF NOT EXISTS idx_assets_project ON assets(project);
@@ -80,6 +80,37 @@ func Initialize(db *sqlx.DB) error {
 	)
 	if err != nil {
 		return errutil.Wrap(err, "failed to create schema")
+	}
+
+	// Run migrations
+	if err := migrateAddIsInlineJS(db); err != nil {
+		return errutil.Wrap(err, "failed to run migrations")
+	}
+
+	return nil
+}
+
+// migrateAddIsInlineJS safely adds the is_inline_js column if it doesn't exist
+func migrateAddIsInlineJS(db *sqlx.DB) error {
+	// Check if column exists
+	var count int
+	err := db.Get(&count, `
+		SELECT COUNT(*) FROM pragma_table_info('assets') 
+		WHERE name = 'is_inline_js'
+	`)
+	if err != nil {
+		return errutil.Wrap(err, "failed to check if column exists")
+	}
+
+	// If column doesn't exist, add it
+	if count == 0 {
+		_, err := db.Exec(`
+			ALTER TABLE assets 
+			ADD COLUMN is_inline_js BOOLEAN DEFAULT FALSE
+		`)
+		if err != nil {
+			return errutil.Wrap(err, "failed to add is_inline_js column")
+		}
 	}
 
 	return nil
@@ -388,4 +419,18 @@ func OverrideExists(ctx context.Context, db queryer, assetID int64) (bool, error
 	}
 
 	return count > 0, nil
+}
+
+func GetAssetByID(ctx context.Context, db queryer, id int64) (DBAsset, error) {
+	query := `
+		SELECT * FROM assets WHERE id = ?
+	`
+
+	var asset DBAsset
+	err := sqlx.GetContext(ctx, db, &asset, query, id)
+	if err != nil {
+		return DBAsset{}, errutil.Wrap(err, "failed to get asset by ID")
+	}
+
+	return asset, nil
 }

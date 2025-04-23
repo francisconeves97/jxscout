@@ -89,11 +89,16 @@ func (m *astAnalyzerModule) subscribeAssetBeautified() error {
 			return errutil.Wrap(err, "failed to unmarshal payload")
 		}
 
-		if !isJavaScriptAsset(event.Asset) {
+		asset, err := m.sdk.AssetService.GetAssetByID(ctx, event.AssetID)
+		if err != nil {
+			return dbeventbus.NewRetriableError(errutil.Wrap(err, "failed to get asset"))
+		}
+
+		if !isJavaScriptAsset(asset) {
 			return nil
 		}
 
-		return m.analyzeAsset(event.Asset)
+		return m.analyzeAsset(asset)
 	}, dbeventbus.Options{
 		Concurrency: m.concurrency,
 		MaxRetries:  3,
@@ -103,29 +108,6 @@ func (m *astAnalyzerModule) subscribeAssetBeautified() error {
 		PollInterval:      1 * time.Second,
 		HeartbeatInterval: 10 * time.Second,
 	})
-
-	messages, err := m.sdk.InMemoryEventBus.Subscribe(beautifier.TopicBeautifierAssetSaved)
-	if err != nil {
-		return errutil.Wrap(err, "failed to subscribe to asset saved topic")
-	}
-
-	for msg := range messages {
-		event, ok := msg.Data.(beautifier.EventBeautifierAssetSaved)
-		if !ok {
-			m.sdk.Logger.Error("expected event EventBeautifierAssetSaved but event is other type")
-			continue
-		}
-
-		// Check if the asset is a JavaScript file or contains inline JavaScript
-		if !isJavaScriptAsset(event.Asset) {
-			continue
-		}
-
-		if !m.sdk.Scope.IsInScope(event.Asset.URL) {
-			m.sdk.Logger.Debug("skipping ast analysis because asset is not in scope", "asset_url", event.Asset.URL)
-			continue
-		}
-	}
 
 	return nil
 }
