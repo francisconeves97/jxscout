@@ -146,6 +146,9 @@ func (b *EventBus) Subscribe(ctx context.Context, topic, queueName string, handl
 	// Start the poller
 	go b.pollEvents(ctx, topic, queueName, jobs, opts)
 
+	// Start the cleanup goroutine
+	go b.cleanupStaleEvents(ctx, queueName, opts.HeartbeatInterval)
+
 	return nil
 }
 
@@ -183,7 +186,7 @@ func (b *EventBus) fetchAndDistributeEvents(ctx context.Context, topic, queueNam
          AND (
              ep.status IS NULL 
              OR ep.status = ?
-             OR (ep.status = ? AND ep.retry_count < ? AND ep.finished_at IS NOT NULL)
+             OR (ep.status = ? AND ep.retry_count < ? AND ep.next_attempt < CURRENT_TIMESTAMP AND ep.finished_at IS NOT NULL)
          )
          ORDER BY e.id ASC LIMIT ?`,
 		queueName, topic, statusPending, statusRetry, opts.MaxRetries, opts.Concurrency)
@@ -340,5 +343,52 @@ func (b *EventBus) updateCompletedStatus(ctx context.Context, tx *sqlx.Tx, event
 	if err := tx.Commit(); err != nil {
 		return errutil.Wrap(err, "failed to commit completed status transaction")
 	}
+	return nil
+}
+
+// cleanupStaleEvents periodically checks for events that have missed too many heartbeats
+// and resets them to pending status
+func (b *EventBus) cleanupStaleEvents(ctx context.Context, queueName string, heartbeatInterval time.Duration) {
+	ticker := time.NewTicker(heartbeatInterval)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			if err := b.resetStaleEvents(ctx, queueName, heartbeatInterval); err != nil {
+				b.log.ErrorContext(ctx, "Error cleaning up stale events", "error", err)
+			}
+		}
+	}
+}
+
+// resetStaleEvents finds and resets events that have missed too many heartbeats
+func (b *EventBus) resetStaleEvents(ctx context.Context, queueName string, heartbeatInterval time.Duration) error {
+	tx, err := b.db.BeginTxx(ctx, nil)
+	if err != nil {
+		return errutil.Wrap(err, "failed to begin transaction")
+	}
+	defer tx.Rollback()
+
+	// Calculate the cutoff time for stale events (10 missed heartbeats)
+	staleCutoff := time.Now().Add(-10 * heartbeatInterval)
+
+	_, err = tx.ExecContext(ctx,
+		`UPDATE event_processing 
+         SET status = ?, heartbeat = CURRENT_TIMESTAMP, finished_at = NULL, next_attempt = NULL
+         WHERE subscriber = ? 
+         AND status = ? 
+         AND heartbeat < ?`,
+		statusPending, queueName, statusProcessing, staleCutoff)
+	if err != nil {
+		return errutil.Wrap(err, "failed to reset stale events")
+	}
+
+	if err := tx.Commit(); err != nil {
+		return errutil.Wrap(err, "failed to commit transaction")
+	}
+
 	return nil
 }
