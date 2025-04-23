@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
 	"time"
 
 	"github.com/francisconeves97/jxscout/internal/core/errutil"
@@ -16,7 +17,8 @@ const (
 	statusProcessing = "processing"
 	statusCompleted  = "completed"
 	statusFailed     = "failed"
-	statusRetrying   = "retrying"
+	statusRetry      = "retry"
+	statusPending    = "pending"
 )
 
 // RetriableError wraps an error that should be retried
@@ -44,15 +46,17 @@ func IsRetriable(err error) bool {
 }
 
 type Options struct {
-	Concurrency  int
-	MaxRetries   int
-	Backoff      func(retry int) time.Duration
-	PollInterval time.Duration
-	StaleTimeout time.Duration
+	Concurrency       int
+	MaxRetries        int
+	Backoff           func(retry int) time.Duration
+	PollInterval      time.Duration
+	StaleTimeout      time.Duration
+	HeartbeatInterval time.Duration
 }
 
 type EventBus struct {
-	db *sqlx.DB
+	db  *sqlx.DB
+	log *slog.Logger
 }
 
 type Event struct {
@@ -63,18 +67,21 @@ type Event struct {
 }
 
 type EventProcessing struct {
-	EventID      int64      `db:"event_id"`
-	Subscriber   string     `db:"subscriber"`
-	Status       string     `db:"status"`
-	RetryCount   int        `db:"retry_count"`
-	CreatedAt    time.Time  `db:"created_at"`
+	EventID     int64     `db:"event_id"`
+	Subscriber  string    `db:"subscriber"`
+	Status      string    `db:"status"`
+	RetryCount  int       `db:"retry_count"`
+	CreatedAt   time.Time `db:"created_at"`
+	Heartbeat   time.Time `db:"heartbeat"`
+	LastAttempt time.Time `db:"last_attempt"`
+
 	ErrorMessage *string    `db:"error_message"`
-	LastAttempt  time.Time  `db:"last_attempt"`
+	FinishedAt   *time.Time `db:"finished_at"`
 	NextAttempt  *time.Time `db:"next_attempt"`
 }
 
-func New(db *sqlx.DB) (*EventBus, error) {
-	bus := &EventBus{db: db}
+func New(db *sqlx.DB, log *slog.Logger) (*EventBus, error) {
+	bus := &EventBus{db: db, log: log}
 	if err := bus.initTables(); err != nil {
 		return nil, errutil.Wrap(err, "failed to initialize tables")
 	}
@@ -91,7 +98,7 @@ func (b *EventBus) initTables() error {
         )`,
 		`CREATE TABLE IF NOT EXISTS subscriber_offsets (
             subscriber TEXT NOT NULL,
-            name TEXT NOT NULL,
+            event_name TEXT NOT NULL,
             last_consumed_id INTEGER NOT NULL,
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             PRIMARY KEY(subscriber, name)
@@ -103,7 +110,9 @@ func (b *EventBus) initTables() error {
             retry_count INTEGER DEFAULT 0,
             error_message TEXT,
 			created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+			heartbeat DATETIME DEFAULT CURRENT_TIMESTAMP,
             last_attempt DATETIME DEFAULT CURRENT_TIMESTAMP,
+			finished_at DATETIME,
             next_attempt DATETIME,
             PRIMARY KEY(event_id, subscriber)
         )`,
@@ -138,7 +147,7 @@ func (b *EventBus) Subscribe(ctx context.Context, topic, queueName string, handl
 	jobs := make(chan Event, opts.Concurrency)
 
 	// Start worker pool
-	for i := 0; i < opts.Concurrency; i++ {
+	for range opts.Concurrency {
 		go b.worker(ctx, queueName, handler, jobs, opts)
 	}
 
@@ -174,28 +183,12 @@ func (b *EventBus) fetchAndDistributeEvents(ctx context.Context, topic, queueNam
 
 	var lastConsumedID int64
 	err = tx.GetContext(ctx, &lastConsumedID,
-		`SELECT last_consumed_id FROM subscriber_offsets WHERE subscriber = ? AND name = ?`,
+		`SELECT last_consumed_id FROM subscriber_offsets WHERE subscriber = ? AND event_name = ?`,
 		queueName, topic)
 	if err == sql.ErrNoRows {
 		lastConsumedID = 0
 	} else if err != nil {
 		return errutil.Wrap(err, "failed to get last consumed ID")
-	}
-
-	// First, handle any stale processing events (events that were being processed but never completed)
-	// and retrying events that are due for a retry
-	_, err = tx.ExecContext(ctx,
-		`UPDATE event_processing 
-         SET status = ?, last_attempt = CURRENT_TIMESTAMP 
-         WHERE subscriber = ? 
-         AND (
-             (status = ? AND last_attempt < datetime('now', ?))
-             OR 
-             (status = ? AND next_attempt <= CURRENT_TIMESTAMP)
-         )`,
-		statusProcessing, queueName, statusProcessing, fmt.Sprintf("-%d seconds", int(opts.StaleTimeout.Seconds())), statusRetrying)
-	if err != nil {
-		return errutil.Wrap(err, "failed to update stale processing events")
 	}
 
 	// Get events that are ready to be processed
@@ -207,11 +200,11 @@ func (b *EventBus) fetchAndDistributeEvents(ctx context.Context, topic, queueNam
          WHERE e.id > ? AND e.name = ? 
          AND (
              ep.status IS NULL 
-             OR ep.status = ? 
-             OR (ep.status = ? AND ep.retry_count < ?)
+			 OR ep.status = ?
+             OR (ep.status = ? AND ep.retry_count < ? AND ep.finished_at IS NOT NULL)
          )
          ORDER BY e.id ASC LIMIT ?`,
-		queueName, lastConsumedID, topic, statusProcessing, statusRetrying, opts.MaxRetries, opts.Concurrency)
+		queueName, lastConsumedID, topic, statusPending, statusRetry, opts.MaxRetries, opts.Concurrency)
 	if err != nil {
 		return errutil.Wrap(err, "failed to fetch events")
 	}
@@ -241,6 +234,7 @@ func (b *EventBus) worker(ctx context.Context, queueName string, handler Handler
 				fmt.Printf("Error processing event %d: %v\n", event.ID, err)
 			}
 		}
+
 	}
 }
 
@@ -253,14 +247,43 @@ func (b *EventBus) processEvent(ctx context.Context, event Event, queueName stri
 		return nil // Event was already completed or exceeded retries
 	}
 
+	// Create a context for the heartbeat goroutine
+	heartbeatCtx, cancelHeartbeat := context.WithCancel(ctx)
+	defer cancelHeartbeat()
+
+	// Start heartbeat goroutine
+	b.startHeartbeat(heartbeatCtx, event.ID, queueName, opts.HeartbeatInterval)
+
 	// Execute handler outside of transaction
 	err = handler(ctx, []byte(event.Payload))
 
 	// Update final status
-	if err := b.updateEventStatus(ctx, event, queueName, err, processing.RetryCount, opts); err != nil {
+	if err := b.updateEventStatus(ctx, event, queueName, err, processing, opts); err != nil {
 		return errutil.Wrap(err, "failed to update event status")
 	}
 	return nil
+}
+
+func (b *EventBus) startHeartbeat(ctx context.Context, eventID int64, queueName string, interval time.Duration) {
+	go func() {
+		ticker := time.NewTicker(interval)
+		defer ticker.Stop()
+
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-ticker.C:
+				_, err := b.db.ExecContext(ctx,
+					`UPDATE event_processing SET heartbeat = CURRENT_TIMESTAMP 
+					 WHERE event_id = ? AND subscriber = ?`,
+					eventID, queueName)
+				if err != nil {
+					b.log.ErrorContext(ctx, "Error updating heartbeat for event", "event_id", eventID, "error", err)
+				}
+			}
+		}
+	}()
 }
 
 func (b *EventBus) markEventAsProcessing(ctx context.Context, event Event, queueName string, opts Options) (*EventProcessing, error) {
@@ -277,18 +300,19 @@ func (b *EventBus) markEventAsProcessing(ctx context.Context, event Event, queue
 
 	if err == sql.ErrNoRows {
 		processing = EventProcessing{
-			EventID:     event.ID,
-			Subscriber:  queueName,
-			Status:      statusProcessing,
-			LastAttempt: time.Now(),
+			EventID:    event.ID,
+			Subscriber: queueName,
+			Status:     statusProcessing,
 		}
 		_, err = tx.ExecContext(ctx,
-			`INSERT INTO event_processing (event_id, subscriber, status, last_attempt) 
-             VALUES (?, ?, ?, ?)`,
+			`INSERT INTO event_processing (event_id, subscriber, status) 
+             VALUES (?, ?, ?)`,
 			processing.EventID, processing.Subscriber, processing.Status, processing.LastAttempt)
 		if err != nil {
 			return nil, errutil.Wrap(err, "failed to insert event processing")
 		}
+
+		return &processing, nil
 	} else if err != nil {
 		return nil, errutil.Wrap(err, "failed to get event processing")
 	} else if processing.Status == statusCompleted {
@@ -313,7 +337,7 @@ func (b *EventBus) markEventAsProcessing(ctx context.Context, event Event, queue
 	return &processing, nil
 }
 
-func (b *EventBus) updateEventStatus(ctx context.Context, event Event, queueName string, handlerErr error, currentRetryCount int, opts Options) error {
+func (b *EventBus) updateEventStatus(ctx context.Context, event Event, queueName string, handlerErr error, processing *EventProcessing, opts Options) error {
 	tx, err := b.db.BeginTxx(ctx, nil)
 	if err != nil {
 		return errutil.Wrap(err, "failed to begin final status transaction")
@@ -321,7 +345,7 @@ func (b *EventBus) updateEventStatus(ctx context.Context, event Event, queueName
 	defer tx.Rollback()
 
 	if handlerErr != nil {
-		if err := b.updateFailedStatus(ctx, tx, event, queueName, handlerErr, currentRetryCount, opts); err != nil {
+		if err := b.updateFailedStatus(ctx, tx, handlerErr, processing, opts); err != nil {
 			return errutil.Wrap(err, "failed to update failed status")
 		}
 		return nil
@@ -333,20 +357,20 @@ func (b *EventBus) updateEventStatus(ctx context.Context, event Event, queueName
 	return nil
 }
 
-func (b *EventBus) updateFailedStatus(ctx context.Context, tx *sqlx.Tx, event Event, queueName string, handlerErr error, currentRetryCount int, opts Options) error {
-	retryCount := currentRetryCount + 1
+func (b *EventBus) updateFailedStatus(ctx context.Context, tx *sqlx.Tx, handlerErr error, processing *EventProcessing, opts Options) error {
+	retryCount := processing.RetryCount + 1
 	nextAttempt := time.Now().Add(opts.Backoff(retryCount))
 	status := statusFailed
 
 	if IsRetriable(handlerErr) && retryCount < opts.MaxRetries {
-		status = statusRetrying
+		status = statusRetry
 	}
 
 	_, err := tx.ExecContext(ctx,
 		`UPDATE event_processing 
-         SET status = ?, retry_count = ?, error_message = ?, next_attempt = ? 
+         SET status = ?, retry_count = ?, error_message = ?, next_attempt = ?, finished_at = CURRENT_TIMESTAMP
          WHERE event_id = ? AND subscriber = ?`,
-		status, retryCount, handlerErr.Error(), nextAttempt, event.ID, queueName)
+		status, retryCount, handlerErr.Error(), nextAttempt, processing.EventID, processing.Subscriber)
 	if err != nil {
 		return errutil.Wrap(err, "failed to update event processing")
 	}
@@ -359,16 +383,16 @@ func (b *EventBus) updateFailedStatus(ctx context.Context, tx *sqlx.Tx, event Ev
 
 func (b *EventBus) updateCompletedStatus(ctx context.Context, tx *sqlx.Tx, event Event, queueName string) error {
 	_, err := tx.ExecContext(ctx,
-		`UPDATE event_processing SET status = ? WHERE event_id = ? AND subscriber = ?`,
+		`UPDATE event_processing SET status = ?, finished_at = CURRENT_TIMESTAMP WHERE event_id = ? AND subscriber = ?`,
 		statusCompleted, event.ID, queueName)
 	if err != nil {
 		return errutil.Wrap(err, "failed to update event processing status")
 	}
 
 	_, err = tx.ExecContext(ctx,
-		`INSERT INTO subscriber_offsets (subscriber, name, last_consumed_id) 
+		`INSERT INTO subscriber_offsets (subscriber, event_name, last_consumed_id) 
          VALUES (?, ?, ?) 
-         ON CONFLICT(subscriber, name) 
+         ON CONFLICT(subscriber, event_name) 
          DO UPDATE SET last_consumed_id = ?, updated_at = CURRENT_TIMESTAMP`,
 		queueName, event.Name, event.ID, event.ID)
 	if err != nil {
