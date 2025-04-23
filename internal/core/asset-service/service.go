@@ -8,48 +8,46 @@ import (
 
 	"github.com/jmoiron/sqlx"
 
-	assetrepository "github.com/francisconeves97/jxscout/internal/core/asset-repository"
 	"github.com/francisconeves97/jxscout/internal/core/common"
+	"github.com/francisconeves97/jxscout/internal/core/dbeventbus"
 	"github.com/francisconeves97/jxscout/internal/core/errutil"
-	"github.com/francisconeves97/jxscout/internal/core/eventbus"
 	concurrentqueue "github.com/francisconeves97/jxscout/pkg/concurrent-queue"
 )
 
 type AssetService interface {
 	AsyncSaveAsset(ctx context.Context, asset Asset)
 	UpdateWorkingDirectory(path string)
-	GetProjectAssets(projectName string) ([]Asset, error)
 	GetAssetByURL(ctx context.Context, url string) (Asset, bool, error)
-	GetAssets(ctx context.Context, params assetrepository.GetAssetsParams) ([]Asset, int, error)
-	GetAssetsThatLoad(ctx context.Context, url string, params assetrepository.GetAssetsParams) ([]Asset, int, error)
-	GetAssetsLoadedBy(ctx context.Context, url string, params assetrepository.GetAssetsParams) ([]Asset, int, error)
+	GetAssets(ctx context.Context, params GetAssetsParams) ([]Asset, int, error)
+	GetAssetsThatLoad(ctx context.Context, url string, params GetAssetsParams) ([]Asset, int, error)
+	GetAssetsLoadedBy(ctx context.Context, url string, params GetAssetsParams) ([]Asset, int, error)
 }
 
 type Asset struct {
 	// ID is the id of the asset on the database
-	ID int64
+	ID int64 `json:"id"`
 	// URL is the url where this asset was found
-	URL string
-	// Content is the text content of the asset
-	Content string
+	URL string `json:"url"`
+	// Content is the original content of the asset
+	Content string `json:"content"`
 	// ContentType is the type of the content of this file
-	ContentType string
+	ContentType string `json:"content_type"`
 	// Project is the project name for this asset
-	Project string
+	Project string `json:"project"`
 	// RequestHeaders are the headers that were used to make this request
-	RequestHeaders map[string]string
+	RequestHeaders map[string]string `json:"request_headers"`
 	// IsInlineJS is true if the asset is an inline js
-	IsInlineJS bool
+	IsInlineJS bool `json:"is_inline_js"`
 	// Parent is the asset that loaded the current asset, nil if it doesn't exist. (e.g. html page loading a js script)
-	Parent *Asset
+	Parent *Asset `json:"parent"`
 
 	// POPULATED AFTER SAVE
 
 	// Path is the path where this asset was stored
-	Path string
+	Path string `json:"path"`
 
 	// POPULATED WHEN GETTING FROM THE DATABASE
-	Children []Asset
+	Children []Asset `json:"children"`
 }
 
 func (a Asset) GetParentURL() *string {
@@ -61,17 +59,17 @@ func (a Asset) GetParentURL() *string {
 }
 
 type assetService struct {
-	eventBus       eventbus.EventBus
+	db             *sqlx.DB
+	eventBus       *dbeventbus.EventBus
 	assetSaveQueue concurrentqueue.Queue[Asset]
 	log            *slog.Logger
 	fileService    FileService
-	repository     assetrepository.Repository
 	htmlCacheTTL   time.Duration
 	jsCacheTTL     time.Duration
 }
 
 type AssetServiceConfig struct {
-	EventBus                   eventbus.EventBus
+	EventBus                   *dbeventbus.EventBus
 	SaveConcurrency            int
 	FetchConcurrency           int
 	Logger                     *slog.Logger
@@ -82,17 +80,12 @@ type AssetServiceConfig struct {
 }
 
 func NewAssetService(cfg AssetServiceConfig) (AssetService, error) {
-	repository, err := assetrepository.NewAssetRepository(cfg.Database)
-	if err != nil {
-		return nil, errutil.Wrap(err, "failed to initialize asset repository")
-	}
-
 	s := &assetService{
+		db:             cfg.Database,
 		eventBus:       cfg.EventBus,
 		assetSaveQueue: concurrentqueue.NewQueue[Asset](cfg.SaveConcurrency),
 		log:            cfg.Logger,
 		fileService:    cfg.FileService,
-		repository:     repository,
 		htmlCacheTTL:   cfg.HTMLRequestsCacheTTL,
 		jsCacheTTL:     cfg.JavascriptRequestsCacheTTL,
 	}
@@ -115,7 +108,7 @@ func (s *assetService) initializeQueueHandlers() {
 func (s *assetService) handleSaveAssetRequest(ctx context.Context, asset Asset) error {
 	s.log.DebugContext(ctx, "processing request to save asset", "asset_url", asset.URL)
 
-	dbAsset, exists, err := s.repository.GetAssetByURL(ctx, asset.URL)
+	dbAsset, exists, err := GetAssetByURL(ctx, s.db, asset.URL)
 	if err != nil {
 		return errutil.Wrap(err, "failed to get asset from repo")
 	}
@@ -123,18 +116,18 @@ func (s *assetService) handleSaveAssetRequest(ctx context.Context, asset Asset) 
 		s.log.DebugContext(ctx, "asset already exists", "asset_url", asset.URL)
 
 		if asset.Parent != nil {
-			dbAsset.Parent = &assetrepository.Asset{
+			dbAsset.Parent = &DBAsset{
 				URL: asset.Parent.URL,
 			}
 
-			err = s.repository.SaveAssetRelationship(ctx, dbAsset)
+			err = SaveAssetRelationship(ctx, s.db, dbAsset)
 			if err != nil {
 				return errutil.Wrap(err, "failed to save asset relationship")
 			}
 		}
 
 		if asset.ContentType == common.ContentTypeJS && dbAsset.ContentHash != common.Hash(asset.Content) {
-			overrideExists, err := s.repository.OverrideExists(ctx, dbAsset.ID)
+			overrideExists, err := OverrideExists(ctx, s.db, dbAsset.ID)
 			if err != nil {
 				return errutil.Wrap(err, "failed to check if override exists")
 			}
@@ -149,16 +142,7 @@ func (s *assetService) handleSaveAssetRequest(ctx context.Context, asset Asset) 
 
 		if dbAsset.ContentHash == common.Hash(asset.Content) {
 			s.log.DebugContext(ctx, "asset content has not changed, skipping", "asset_url", asset.URL)
-			return nil
-		}
 
-		if asset.ContentType == common.ContentTypeHTML && dbAsset.UpdatedAt.After(time.Now().Add(-s.htmlCacheTTL)) {
-			s.log.DebugContext(ctx, "HTML file is still fresh, skipping", "asset_url", asset.URL)
-			return nil
-		}
-
-		if asset.ContentType == common.ContentTypeJS && dbAsset.UpdatedAt.After(time.Now().Add(-s.jsCacheTTL)) {
-			s.log.DebugContext(ctx, "JS file is still fresh, skipping", "asset_url", asset.URL)
 			return nil
 		}
 	}
@@ -176,7 +160,7 @@ func (s *assetService) handleSaveAssetRequest(ctx context.Context, asset Asset) 
 		return errutil.Wrap(err, "failed to marshal headers")
 	}
 
-	repoAsset := assetrepository.Asset{
+	repoAsset := DBAsset{
 		URL:            asset.URL,
 		ContentHash:    common.Hash(asset.Content),
 		ContentType:    asset.ContentType,
@@ -191,7 +175,7 @@ func (s *assetService) handleSaveAssetRequest(ctx context.Context, asset Asset) 
 			return errutil.Wrap(err, "failed to marshal headers")
 		}
 
-		repoAsset.Parent = &assetrepository.Asset{
+		repoAsset.Parent = &DBAsset{
 			URL:            asset.Parent.URL,
 			ContentHash:    common.Hash(asset.Parent.Content),
 			ContentType:    asset.Parent.ContentType,
@@ -200,7 +184,13 @@ func (s *assetService) handleSaveAssetRequest(ctx context.Context, asset Asset) 
 		}
 	}
 
-	assetID, err := s.repository.SaveAsset(ctx, repoAsset)
+	tx, err := s.db.BeginTxx(ctx, nil)
+	if err != nil {
+		return errutil.Wrap(err, "failed to begin transaction")
+	}
+	defer tx.Rollback()
+
+	assetID, err := SaveAsset(ctx, tx, repoAsset)
 	if err != nil {
 		return errutil.Wrap(err, "failed to save asset to db")
 	}
@@ -208,10 +198,8 @@ func (s *assetService) handleSaveAssetRequest(ctx context.Context, asset Asset) 
 	asset.ID = assetID
 	asset.Path = path
 
-	err = s.eventBus.Publish(TopicAssetSaved, eventbus.Message{
-		Data: EventAssetSaved{
-			Asset: asset,
-		},
+	err = s.eventBus.Publish(ctx, tx, TopicAssetSaved, EventAssetSaved{
+		Asset: asset,
 	})
 	if err != nil {
 		return errutil.Wrap(err, "failed to publish asset saved even")
@@ -231,7 +219,7 @@ func (s *assetService) UpdateWorkingDirectory(path string) {
 	s.fileService.UpdateWorkingDirectory(path)
 }
 
-func (s *assetService) mapRepoAssetToAsset(repoAsset assetrepository.Asset) Asset {
+func (s *assetService) mapRepoAssetToAsset(repoAsset DBAsset) Asset {
 	asset := Asset{
 		ID:          repoAsset.ID,
 		URL:         repoAsset.URL,
@@ -250,25 +238,10 @@ func (s *assetService) mapRepoAssetToAsset(repoAsset assetrepository.Asset) Asse
 	return asset
 }
 
-func (s *assetService) GetProjectAssets(projectName string) ([]Asset, error) {
-	repoAssets, err := s.repository.GetAssetsByProjectName(projectName)
-	if err != nil {
-		return nil, errutil.Wrap(err, "failed to get assets from repo")
-	}
-
-	assets := []Asset{}
-
-	for _, repoAsset := range repoAssets {
-		assets = append(assets, s.mapRepoAssetToAsset(repoAsset))
-	}
-
-	return assets, nil
-}
-
 func (s *assetService) GetAssetByURL(ctx context.Context, url string) (Asset, bool, error) {
 	cleanURL := common.NormalizeURL(url)
 
-	repoAsset, exists, err := s.repository.GetAssetByURL(ctx, cleanURL)
+	repoAsset, exists, err := GetAssetByURL(ctx, s.db, cleanURL)
 	if err != nil {
 		return Asset{}, false, errutil.Wrap(err, "failed to get asset from repo")
 	}
@@ -280,8 +253,8 @@ func (s *assetService) GetAssetByURL(ctx context.Context, url string) (Asset, bo
 	return s.mapRepoAssetToAsset(repoAsset), true, nil
 }
 
-func (s *assetService) GetAssets(ctx context.Context, params assetrepository.GetAssetsParams) ([]Asset, int, error) {
-	repoAssets, total, err := s.repository.GetAssets(ctx, params)
+func (s *assetService) GetAssets(ctx context.Context, params GetAssetsParams) ([]Asset, int, error) {
+	repoAssets, total, err := GetAssets(ctx, s.db, params)
 	if err != nil {
 		return nil, 0, errutil.Wrap(err, "failed to get assets from repo")
 	}
@@ -294,10 +267,10 @@ func (s *assetService) GetAssets(ctx context.Context, params assetrepository.Get
 	return assets, total, nil
 }
 
-func (s *assetService) GetAssetsThatLoad(ctx context.Context, url string, params assetrepository.GetAssetsParams) ([]Asset, int, error) {
+func (s *assetService) GetAssetsThatLoad(ctx context.Context, url string, params GetAssetsParams) ([]Asset, int, error) {
 	cleanURL := common.NormalizeURL(url)
 
-	repoAssets, total, err := s.repository.GetAssetsThatLoad(ctx, cleanURL, params)
+	repoAssets, total, err := GetAssetsThatLoad(ctx, s.db, cleanURL, params)
 	if err != nil {
 		return nil, 0, errutil.Wrap(err, "failed to get assets that load from repo")
 	}
@@ -310,10 +283,10 @@ func (s *assetService) GetAssetsThatLoad(ctx context.Context, url string, params
 	return assets, total, nil
 }
 
-func (s *assetService) GetAssetsLoadedBy(ctx context.Context, url string, params assetrepository.GetAssetsParams) ([]Asset, int, error) {
+func (s *assetService) GetAssetsLoadedBy(ctx context.Context, url string, params GetAssetsParams) ([]Asset, int, error) {
 	cleanURL := common.NormalizeURL(url)
 
-	repoAssets, total, err := s.repository.GetAssetsLoadedBy(ctx, cleanURL, params)
+	repoAssets, total, err := GetAssetsLoadedBy(ctx, s.db, cleanURL, params)
 	if err != nil {
 		return nil, 0, errutil.Wrap(err, "failed to get assets loaded by from repo")
 	}

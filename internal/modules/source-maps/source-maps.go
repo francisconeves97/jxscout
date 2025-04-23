@@ -2,14 +2,16 @@ package sourcemaps
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"os/exec"
-	"path"
+	"path/filepath"
+	"time"
 
 	assetservice "github.com/francisconeves97/jxscout/internal/core/asset-service"
 	"github.com/francisconeves97/jxscout/internal/core/common"
+	"github.com/francisconeves97/jxscout/internal/core/dbeventbus"
 	"github.com/francisconeves97/jxscout/internal/core/errutil"
-	concurrentqueue "github.com/francisconeves97/jxscout/pkg/concurrent-queue"
 	jxscouttypes "github.com/francisconeves97/jxscout/pkg/types"
 	"github.com/pkg/errors"
 )
@@ -20,13 +22,13 @@ const (
 )
 
 type sourceMapsModule struct {
-	sdk   *jxscouttypes.ModuleSDK
-	queue concurrentqueue.Queue[assetservice.Asset]
+	sdk         *jxscouttypes.ModuleSDK
+	concurrency int
 }
 
 func NewSourceMaps(concurrency int) *sourceMapsModule {
 	return &sourceMapsModule{
-		queue: concurrentqueue.NewQueue[assetservice.Asset](concurrency),
+		concurrency: concurrency,
 	}
 }
 
@@ -40,8 +42,6 @@ func (m *sourceMapsModule) Initialize(sdk *jxscouttypes.ModuleSDK) error {
 		}
 	}()
 
-	m.initializeQueueHandler()
-
 	return nil
 }
 
@@ -50,34 +50,31 @@ var validsourceMapsContentTypes = map[common.ContentType]bool{
 	common.ContentTypeJS:   true,
 }
 
-func (m *sourceMapsModule) initializeQueueHandler() {
-	m.queue.StartConsumers(func(ctx context.Context, asset assetservice.Asset) {
-		err := m.sourceMapDiscover(ctx, asset)
-		if err != nil {
-			m.sdk.Logger.ErrorContext(ctx, "failed to save asset", "err", err)
-			return
-		}
-	})
-}
-
 func (m *sourceMapsModule) subscribeAssetSavedEvent() error {
-	messages, err := m.sdk.EventBus.Subscribe(assetservice.TopicAssetSaved)
-	if err != nil {
-		return errutil.Wrap(err, "failed to subscribe to ingestion request topic")
-	}
-
-	for msg := range messages {
-		event, ok := msg.Data.(assetservice.EventAssetSaved)
-		if !ok {
-			m.sdk.Logger.Error("expected event EventAssetSaved but event is other type")
-			continue
+	err := m.sdk.DBEventBus.Subscribe(m.sdk.Ctx, assetservice.TopicAssetSaved, "sourcemaps", func(ctx context.Context, payload []byte) error {
+		// unmarshal payload
+		var event assetservice.EventAssetSaved
+		err := json.Unmarshal(payload, &event)
+		if err != nil {
+			return errutil.Wrap(err, "failed to unmarshal payload")
 		}
 
 		if isValid, ok := validsourceMapsContentTypes[event.Asset.ContentType]; !ok || !isValid {
-			continue
+			return nil
 		}
 
-		m.queue.Produce(m.sdk.Ctx, event.Asset)
+		return m.sourceMapDiscover(ctx, event.Asset)
+	}, dbeventbus.Options{
+		Concurrency: m.concurrency,
+		MaxRetries:  3,
+		Backoff: func(retry int) time.Duration {
+			return time.Duration(retry) * time.Second
+		},
+		PollInterval:      1 * time.Second,
+		HeartbeatInterval: 10 * time.Second,
+	})
+	if err != nil {
+		return errutil.Wrap(err, "failed to subscribe to ingestion request topic")
 	}
 
 	return nil
@@ -92,7 +89,7 @@ func (s *sourceMapsModule) sourceMapDiscover(ctx context.Context, asset assetser
 
 	res, ok, err := s.sdk.AssetFetcher.RateLimitedGet(ctx, sourceMapPath, nil)
 	if err != nil {
-		return errors.Wrapf(err, "failed to fetch source map for asset %s", asset.URL)
+		return dbeventbus.NewRetriableError(errors.Wrapf(err, "failed to fetch source map for asset %s", asset.URL))
 	}
 	if !ok {
 		return nil // no source map found
@@ -103,14 +100,18 @@ func (s *sourceMapsModule) sourceMapDiscover(ctx context.Context, asset assetser
 		Content: res,
 	})
 	if err != nil {
-		return errors.Wrapf(err, "failed to save source map for asset %s", asset.URL)
+		return dbeventbus.NewRetriableError(errors.Wrapf(err, "failed to save source map for asset %s", asset.URL))
 	}
 
 	s.sdk.Logger.Info("discovered source map 💼", "path", filePath, "asset_url", sourceMapPath)
 
-	cmd := exec.Command("reverse-sourcemap", filePath, "--output-dir", path.Join(common.GetWorkingDirectory(), s.sdk.Options.ProjectName, sourceMapsFolder, sourceMapsReversed), "--recursive")
+	cmd := exec.Command("reverse-sourcemap", filePath, "--output-dir", filepath.Join(common.GetWorkingDirectory(), s.sdk.Options.ProjectName, sourceMapsFolder, sourceMapsReversed), "--recursive")
 	if err := cmd.Start(); err != nil {
-		return errutil.Wrap(err, "error starting command")
+		return dbeventbus.NewRetriableError(errutil.Wrap(err, "error starting command"))
+	}
+
+	if err := cmd.Wait(); err != nil {
+		return dbeventbus.NewRetriableError(errors.Wrapf(err, "error waiting for command to finish"))
 	}
 
 	return nil

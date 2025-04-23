@@ -7,5 +7,5 @@ const (
 )
 
 type EventBeautifierAssetSaved struct {
-	Asset assetservice.Asset
+	Asset assetservice.Asset `json:"asset"`
 }

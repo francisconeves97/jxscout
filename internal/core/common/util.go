@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"path"
+	"path/filepath"
 	"regexp"
 	"strings"
 
@@ -112,13 +112,13 @@ func Hash(content string) string {
 func GetWorkingDirectory() string {
 	home := os.Getenv("HOME")
 
-	return path.Join(home, "jxscout")
+	return filepath.Join(home, "jxscout")
 }
 
 func GetPrivateDirectory() string {
 	home := os.Getenv("HOME")
 
-	return path.Join(home, ".jxscout")
+	return filepath.Join(home, ".jxscout")
 }
 
 func FileExists(filePath string) (bool, error) {

@@ -9,7 +9,6 @@ import (
 	"net/url"
 	"os"
 	"os/exec"
-	"path"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -48,7 +47,7 @@ func (m *chunkDiscovererModule) Initialize(sdk *jxscouttypes.ModuleSDK) error {
 
 	m.initializeQueueHandler()
 
-	saveDir := path.Join(common.GetPrivateDirectory(), "extracted")
+	saveDir := filepath.Join(common.GetPrivateDirectory(), "extracted")
 
 	// Create the directory if it doesn't exist
 	if err := os.MkdirAll(saveDir, 0755); err != nil {
@@ -81,7 +80,7 @@ func (m *chunkDiscovererModule) initializeQueueHandler() {
 }
 
 func (m *chunkDiscovererModule) subscribeAssetSavedEvent() error {
-	messages, err := m.sdk.EventBus.Subscribe(assetservice.TopicAssetSaved)
+	messages, err := m.sdk.InMemoryEventBus.Subscribe(assetservice.TopicAssetSaved)
 	if err != nil {
 		return errutil.Wrap(err, "failed to subscribe to ingestion request topic")
 	}

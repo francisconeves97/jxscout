@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"path"
+	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
@@ -14,7 +14,7 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	assetrepository "github.com/francisconeves97/jxscout/internal/core/asset-repository"
+	assetservice "github.com/francisconeves97/jxscout/internal/core/asset-service"
 	"github.com/francisconeves97/jxscout/internal/core/common"
 	"github.com/francisconeves97/jxscout/internal/modules/overrides"
 	"github.com/francisconeves97/jxscout/pkg/constants"
@@ -361,7 +361,7 @@ func (t *TUI) RegisterDefaultCommands() {
 			}
 
 			// Persist the current options to a YAML file
-			configFileLocation := path.Join(common.GetPrivateDirectory(), constants.ConfigFileName)
+			configFileLocation := filepath.Join(common.GetPrivateDirectory(), constants.ConfigFileName)
 			file, err := os.Create(configFileLocation)
 			if err != nil {
 				return nil, fmt.Errorf("failed to create configuration file: %w", err)
@@ -423,7 +423,7 @@ func (t *TUI) RegisterDefaultCommands() {
 			}
 
 			// Persist the default options to a YAML file
-			configFileLocation := path.Join(common.GetPrivateDirectory(), constants.ConfigFileName)
+			configFileLocation := filepath.Join(common.GetPrivateDirectory(), constants.ConfigFileName)
 			file, err := os.Create(configFileLocation)
 			if err != nil {
 				return nil, fmt.Errorf("failed to create configuration file: %w", err)
@@ -586,7 +586,7 @@ func (t *TUI) RegisterDefaultCommands() {
 		Description: "List assets for the current project with pagination and search",
 		Usage:       "assets [page=<page_number>] [page-size=<page_size>] [search=<search_term>]",
 		Execute: func(args []string) (tea.Cmd, error) {
-			params := assetrepository.GetAssetsParams{
+			params := assetservice.GetAssetsParams{
 				ProjectName: t.jxscout.GetOptions().ProjectName,
 				Page:        1,
 				PageSize:    15,
@@ -669,7 +669,7 @@ func (t *TUI) RegisterDefaultCommands() {
 			}
 
 			url := args[0]
-			params := assetrepository.GetAssetsParams{
+			params := assetservice.GetAssetsParams{
 				Page:     1,
 				PageSize: 15,
 			}
@@ -758,7 +758,7 @@ func (t *TUI) RegisterDefaultCommands() {
 			}
 
 			url := args[0]
-			params := assetrepository.GetAssetsParams{
+			params := assetservice.GetAssetsParams{
 				Page:     1,
 				PageSize: 15,
 			}
@@ -1166,7 +1166,7 @@ func (t *TUI) printCurrentConfig() {
 		descStyle.Render(
 			fmt.Sprintf(
 				"%s | %s",
-				path.Join(common.GetWorkingDirectory(), currentOptions.ProjectName),
+				filepath.Join(common.GetWorkingDirectory(), currentOptions.ProjectName),
 				constants.DescriptionProjectName))))
 
 	scopeValue := strings.Join(currentOptions.ScopePatterns, ",")

@@ -41,7 +41,7 @@ func (m *htmlIngestionModule) Initialize(sdk *jxscouttypes.ModuleSDK) error {
 }
 
 func (m *htmlIngestionModule) subscribeIngestionRequestTopic() error {
-	messages, err := m.sdk.EventBus.Subscribe(ingestion.TopicIngestionRequestReceived)
+	messages, err := m.sdk.InMemoryEventBus.Subscribe(ingestion.TopicIngestionRequestReceived)
 	if err != nil {
 		return errutil.Wrap(err, "failed to subscribe to ingestion request topic")
 	}

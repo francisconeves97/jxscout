@@ -1,4 +1,4 @@
-package eventbus
+package dbeventbus
 
 import (
 	"context"
@@ -77,7 +77,7 @@ type EventProcessing struct {
 	NextAttempt  *time.Time `db:"next_attempt"`
 }
 
-func New(db *sqlx.DB, log *slog.Logger) (*EventBus, error) {
+func NewEventBus(db *sqlx.DB, log *slog.Logger) (*EventBus, error) {
 	bus := &EventBus{db: db, log: log}
 	if err := bus.initTables(); err != nil {
 		return nil, errutil.Wrap(err, "failed to initialize tables")
@@ -121,14 +121,14 @@ func (b *EventBus) initTables() error {
 	return nil
 }
 
-func (b *EventBus) Publish(ctx context.Context, topic string, payload interface{}) error {
+func (b *EventBus) Publish(ctx context.Context, tx sqlx.ExecerContext, topic string, payload interface{}) error {
 	payloadBytes, err := json.Marshal(payload)
 	if err != nil {
 		return errutil.Wrap(err, "failed to marshal payload")
 	}
 
 	query := `INSERT INTO events (name, payload) VALUES (?, ?)`
-	_, err = b.db.ExecContext(ctx, query, topic, string(payloadBytes))
+	_, err = tx.ExecContext(ctx, query, topic, string(payloadBytes))
 	if err != nil {
 		return errutil.Wrap(err, "failed to publish event")
 	}
@@ -252,6 +252,9 @@ func (b *EventBus) processEvent(ctx context.Context, event Event, queueName stri
 
 	// Execute handler outside of transaction
 	err := handler(ctx, []byte(event.Payload))
+	if err != nil {
+		b.log.ErrorContext(ctx, "Error processing event", "event_id", event.ID, "queue_name", queueName, "error", err)
+	}
 
 	// Update final status
 	if err := b.updateEventStatus(ctx, event, queueName, err, opts); err != nil {

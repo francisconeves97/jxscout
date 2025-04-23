@@ -6,13 +6,14 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
-	"path"
+	"path/filepath"
 	"sync"
 
 	assetfetcher "github.com/francisconeves97/jxscout/internal/core/asset-fetcher"
 	assetservice "github.com/francisconeves97/jxscout/internal/core/asset-service"
 	"github.com/francisconeves97/jxscout/internal/core/common"
 	"github.com/francisconeves97/jxscout/internal/core/database"
+	dbeventbus "github.com/francisconeves97/jxscout/internal/core/dbeventbus"
 	"github.com/francisconeves97/jxscout/internal/core/errutil"
 	"github.com/francisconeves97/jxscout/internal/core/eventbus"
 	astanalyzer "github.com/francisconeves97/jxscout/internal/modules/ast-analyzer"
@@ -36,6 +37,7 @@ type jxscout struct {
 	cancel          context.CancelFunc
 	logBuffer       *logBuffer
 	log             *slog.Logger
+	dbEventBus      jxscouttypes.DBEventBus
 	eventBus        jxscouttypes.EventBus
 	options         jxscouttypes.Options
 	assetService    jxscouttypes.AssetService
@@ -80,7 +82,7 @@ func initJxscout(options jxscouttypes.Options) (*jxscout, error) {
 
 	scopeChecker := newScopeChecker(scopeRegex, logger)
 
-	fileService := assetservice.NewFileService(path.Join(common.GetWorkingDirectory(), options.ProjectName), logger)
+	fileService := assetservice.NewFileService(filepath.Join(common.GetWorkingDirectory(), options.ProjectName), logger)
 
 	eventBus := eventbus.NewInMemoryEventBus()
 
@@ -89,8 +91,13 @@ func initJxscout(options jxscouttypes.Options) (*jxscout, error) {
 		return nil, errutil.Wrap(err, "failed to initialize database")
 	}
 
+	dbEventBus, err := dbeventbus.NewEventBus(db, logger)
+	if err != nil {
+		return nil, errutil.Wrap(err, "failed to initialize db event bus")
+	}
+
 	assetService, err := assetservice.NewAssetService(assetservice.AssetServiceConfig{
-		EventBus:                   eventBus,
+		EventBus:                   dbEventBus,
 		SaveConcurrency:            options.AssetSaveConcurrency,
 		FetchConcurrency:           options.AssetFetchConcurrency,
 		Logger:                     logger,
@@ -116,6 +123,7 @@ func initJxscout(options jxscouttypes.Options) (*jxscout, error) {
 		options:      options,
 		logBuffer:    logBuffer,
 		log:          logger,
+		dbEventBus:   dbEventBus,
 		eventBus:     eventBus,
 		assetService: assetService,
 		modules:      []jxscouttypes.Module{},
@@ -216,17 +224,18 @@ func (s *jxscout) initializeModules(r jxscouttypes.Router) error {
 	s.started = true
 
 	s.modulesSDK = &jxscouttypes.ModuleSDK{
-		EventBus:     s.eventBus,
-		Router:       r,
-		AssetService: s.assetService,
-		Options:      s.options,
-		HTTPServer:   s.httpServer,
-		Logger:       s.log,
-		Scope:        s.scopeChecker,
-		AssetFetcher: s.assetFetcher,
-		FileService:  s.fileService,
-		Database:     s.db,
-		Ctx:          s.ctx,
+		DBEventBus:       s.dbEventBus,
+		InMemoryEventBus: s.eventBus,
+		Router:           r,
+		AssetService:     s.assetService,
+		Options:          s.options,
+		HTTPServer:       s.httpServer,
+		Logger:           s.log,
+		Scope:            s.scopeChecker,
+		AssetFetcher:     s.assetFetcher,
+		FileService:      s.fileService,
+		Database:         s.db,
+		Ctx:              s.ctx,
 	}
 
 	for _, module := range s.modules {

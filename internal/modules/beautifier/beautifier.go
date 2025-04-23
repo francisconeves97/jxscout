@@ -2,25 +2,26 @@ package beautifier
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"os/exec"
+	"time"
 
 	assetservice "github.com/francisconeves97/jxscout/internal/core/asset-service"
 	"github.com/francisconeves97/jxscout/internal/core/common"
+	"github.com/francisconeves97/jxscout/internal/core/dbeventbus"
 	"github.com/francisconeves97/jxscout/internal/core/errutil"
-	"github.com/francisconeves97/jxscout/internal/core/eventbus"
-	concurrentqueue "github.com/francisconeves97/jxscout/pkg/concurrent-queue"
 	jxscouttypes "github.com/francisconeves97/jxscout/pkg/types"
 )
 
 type beautifierModule struct {
-	sdk   *jxscouttypes.ModuleSDK
-	queue concurrentqueue.Queue[assetservice.Asset]
+	sdk         *jxscouttypes.ModuleSDK
+	concurrency int
 }
 
 func NewBeautifier(concurrency int) *beautifierModule {
 	return &beautifierModule{
-		queue: concurrentqueue.NewQueue[assetservice.Asset](concurrency),
+		concurrency: concurrency,
 	}
 }
 
@@ -34,8 +35,6 @@ func (m *beautifierModule) Initialize(sdk *jxscouttypes.ModuleSDK) error {
 		}
 	}()
 
-	m.initializeQueueHandler()
-
 	return nil
 }
 
@@ -44,44 +43,42 @@ var validBeautifierContentTypes = map[common.ContentType]bool{
 	common.ContentTypeJS:   true,
 }
 
-func (m *beautifierModule) initializeQueueHandler() {
-	m.queue.StartConsumers(func(ctx context.Context, asset assetservice.Asset) {
-		err := m.beautify(asset.Path, asset.ContentType)
-		if err != nil {
-			m.sdk.Logger.ErrorContext(ctx, "failed to save asset", "err", err)
-			return
-		}
-
-		err = m.sdk.EventBus.Publish(TopicBeautifierAssetSaved, eventbus.Message{
-			Data: EventBeautifierAssetSaved{
-				Asset: asset,
-			},
-		})
-		if err != nil {
-			m.sdk.Logger.ErrorContext(ctx, "failed to publish asset saved event", "err", err)
-			return
-		}
-	})
-}
-
 func (m *beautifierModule) subscribeAssetSavedEvent() error {
-	messages, err := m.sdk.EventBus.Subscribe(assetservice.TopicAssetSaved)
-	if err != nil {
-		return errutil.Wrap(err, "failed to subscribe to ingestion request topic")
-	}
-
-	for msg := range messages {
-		event, ok := msg.Data.(assetservice.EventAssetSaved)
-		if !ok {
-			m.sdk.Logger.Error("expected event EventAssetSaved but event is other type")
-			continue
+	err := m.sdk.DBEventBus.Subscribe(m.sdk.Ctx, assetservice.TopicAssetSaved, "beautifier", func(ctx context.Context, payload []byte) error {
+		var event assetservice.EventAssetSaved
+		err := json.Unmarshal(payload, &event)
+		if err != nil {
+			return errutil.Wrap(err, "failed to unmarshal payload")
 		}
 
 		if isValid, ok := validBeautifierContentTypes[event.Asset.ContentType]; !ok || !isValid {
-			continue
+			return nil
 		}
 
-		m.queue.Produce(m.sdk.Ctx, event.Asset)
+		err = m.beautify(event.Asset.Path, event.Asset.ContentType)
+		if err != nil {
+			return dbeventbus.NewRetriableError(errutil.Wrap(err, "failed to beautify asset"))
+		}
+
+		err = m.sdk.DBEventBus.Publish(ctx, m.sdk.Database, TopicBeautifierAssetSaved, EventBeautifierAssetSaved{
+			Asset: event.Asset,
+		})
+		if err != nil {
+			return errutil.Wrap(err, "failed to publish asset saved event")
+		}
+
+		return nil
+	}, dbeventbus.Options{
+		Concurrency: m.concurrency,
+		MaxRetries:  3,
+		Backoff: func(retry int) time.Duration {
+			return time.Duration(retry) * time.Second
+		},
+		PollInterval:      1 * time.Second,
+		HeartbeatInterval: 10 * time.Second,
+	})
+	if err != nil {
+		return errutil.Wrap(err, "failed to subscribe to asset saved topic")
 	}
 
 	return nil

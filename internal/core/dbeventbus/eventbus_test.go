@@ -1,4 +1,4 @@
-package eventbus
+package dbeventbus
 
 import (
 	"context"
@@ -29,7 +29,7 @@ func setupTestDB(t *testing.T) *sqlx.DB {
 
 func TestEventBus_BasicOperations(t *testing.T) {
 	db := setupTestDB(t)
-	bus, err := New(db, slog.Default())
+	bus, err := NewEventBus(db, slog.Default())
 	require.NoError(t, err)
 
 	ctx := context.Background()
@@ -53,7 +53,7 @@ func TestEventBus_BasicOperations(t *testing.T) {
 		require.NoError(t, err)
 
 		// Publish
-		err = bus.Publish(ctx, "test_topic", map[string]string{"test": "data"})
+		err = bus.Publish(ctx, db, "test_topic", map[string]string{"test": "data"})
 		require.NoError(t, err)
 
 		// Wait for event to be processed
@@ -79,7 +79,7 @@ func TestEventBus_BasicOperations(t *testing.T) {
 
 		// Publish multiple events
 		for i := 0; i < 5; i++ {
-			err = bus.Publish(ctx, "multi_topic", map[string]int{"count": i})
+			err = bus.Publish(ctx, db, "multi_topic", map[string]int{"count": i})
 			require.NoError(t, err)
 		}
 
@@ -91,7 +91,7 @@ func TestEventBus_BasicOperations(t *testing.T) {
 
 func TestEventBus_ErrorHandling(t *testing.T) {
 	db := setupTestDB(t)
-	bus, err := New(db, slog.Default())
+	bus, err := NewEventBus(db, slog.Default())
 	require.NoError(t, err)
 
 	ctx := context.Background()
@@ -115,7 +115,7 @@ func TestEventBus_ErrorHandling(t *testing.T) {
 		})
 		require.NoError(t, err)
 
-		err = bus.Publish(ctx, "retry_topic", map[string]string{"test": "data"})
+		err = bus.Publish(ctx, db, "retry_topic", map[string]string{"test": "data"})
 		require.NoError(t, err)
 
 		// Wait for retries
@@ -139,7 +139,7 @@ func TestEventBus_ErrorHandling(t *testing.T) {
 		})
 		require.NoError(t, err)
 
-		err = bus.Publish(ctx, "fail_topic", map[string]string{"test": "data"})
+		err = bus.Publish(ctx, db, "fail_topic", map[string]string{"test": "data"})
 		require.NoError(t, err)
 
 		// Wait for processing
@@ -150,7 +150,7 @@ func TestEventBus_ErrorHandling(t *testing.T) {
 
 func TestEventBus_Concurrency(t *testing.T) {
 	db := setupTestDB(t)
-	bus, err := New(db, slog.Default())
+	bus, err := NewEventBus(db, slog.Default())
 	require.NoError(t, err)
 
 	ctx := context.Background()
@@ -199,7 +199,7 @@ func TestEventBus_Concurrency(t *testing.T) {
 
 		// Publish multiple events
 		for i := range 10 {
-			err = bus.Publish(ctx, "concurrent_topic", map[string]int{"count": i})
+			err = bus.Publish(ctx, db, "concurrent_topic", map[string]int{"count": i})
 			require.NoError(t, err)
 		}
 
@@ -235,7 +235,7 @@ func TestEventBus_Concurrency(t *testing.T) {
 
 		// Publish many events
 		for i := 0; i < 50; i++ {
-			err = bus.Publish(ctx, "high_concurrency_topic", map[string]int{"count": i})
+			err = bus.Publish(ctx, db, "high_concurrency_topic", map[string]int{"count": i})
 			require.NoError(t, err)
 		}
 

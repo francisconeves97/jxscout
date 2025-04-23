@@ -2,7 +2,7 @@ package main
 
 import (
 	"log"
-	"path"
+	"path/filepath"
 
 	"github.com/francisconeves97/jxscout/internal/core/common"
 	"github.com/francisconeves97/jxscout/pkg/constants"
@@ -73,7 +73,7 @@ func main() {
 		flagSet.DurationVar(&options.OverrideContentCheckInterval, constants.FlagOverrideContentCheckInterval, constants.DefaultOverrideContentCheckInterval, constants.DescriptionOverrideContentCheckInterval),
 	)
 
-	configFileLocation := path.Join(common.GetPrivateDirectory(), constants.ConfigFileName)
+	configFileLocation := filepath.Join(common.GetPrivateDirectory(), constants.ConfigFileName)
 	flagSet.SetConfigFilePath(configFileLocation)
 
 	if err := flagSet.Parse(); err != nil {

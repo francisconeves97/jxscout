@@ -8,6 +8,7 @@ import (
 
 	assetfetcher "github.com/francisconeves97/jxscout/internal/core/asset-fetcher"
 	assetservice "github.com/francisconeves97/jxscout/internal/core/asset-service"
+	dbeventbus "github.com/francisconeves97/jxscout/internal/core/dbeventbus"
 	"github.com/francisconeves97/jxscout/internal/core/eventbus"
 
 	"github.com/go-chi/chi"
@@ -23,6 +24,7 @@ type HTTPServer interface {
 
 // EventBus interface
 type EventBus = eventbus.EventBus
+type DBEventBus = *dbeventbus.EventBus
 type EventBusMessage = eventbus.Message
 
 // Router interface
@@ -72,17 +74,18 @@ type FileService = assetservice.FileService
 
 // ModuleSDK are the exposed dependencies that modules can use
 type ModuleSDK struct {
-	Ctx          context.Context
-	EventBus     EventBus
-	Router       Router
-	AssetService AssetService
-	AssetFetcher AssetFetcher
-	Options      Options
-	HTTPServer   HTTPServer
-	Logger       *slog.Logger
-	Scope        Scope
-	FileService  FileService
-	Database     *sqlx.DB
+	Ctx              context.Context
+	InMemoryEventBus EventBus
+	DBEventBus       DBEventBus
+	Router           Router
+	AssetService     AssetService
+	AssetFetcher     AssetFetcher
+	Options          Options
+	HTTPServer       HTTPServer
+	Logger           *slog.Logger
+	Scope            Scope
+	FileService      FileService
+	Database         *sqlx.DB
 }
 
 type Module interface {

@@ -5,5 +5,5 @@ const (
 )
 
 type EventAssetSaved struct {
-	Asset Asset
+	Asset Asset `json:"asset"`
 }

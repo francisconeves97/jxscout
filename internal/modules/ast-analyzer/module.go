@@ -8,15 +8,15 @@ import (
 	"io"
 	"os"
 	"os/exec"
-	"path"
 	"path/filepath"
 	"strings"
+	"time"
 
 	assetservice "github.com/francisconeves97/jxscout/internal/core/asset-service"
 	"github.com/francisconeves97/jxscout/internal/core/common"
+	"github.com/francisconeves97/jxscout/internal/core/dbeventbus"
 	"github.com/francisconeves97/jxscout/internal/core/errutil"
 	"github.com/francisconeves97/jxscout/internal/modules/beautifier"
-	concurrentqueue "github.com/francisconeves97/jxscout/pkg/concurrent-queue"
 	jxscouttypes "github.com/francisconeves97/jxscout/pkg/types"
 )
 
@@ -32,13 +32,13 @@ type astAnalyzerModule struct {
 	sdk                   *jxscouttypes.ModuleSDK
 	repo                  *astAnalyzerRepository
 	astAnalyzerBinaryPath string
-	queue                 concurrentqueue.Queue[assetservice.Asset]
+	concurrency           int
 	wsServer              *wsServer
 }
 
 func NewAstAnalyzerModule(concurrency int) *astAnalyzerModule {
 	module := &astAnalyzerModule{
-		queue: concurrentqueue.NewQueue[assetservice.Asset](concurrency),
+		concurrency: concurrency,
 	}
 	module.wsServer = newWSServer(module)
 	return module
@@ -53,7 +53,7 @@ func (m *astAnalyzerModule) Initialize(sdk *jxscouttypes.ModuleSDK) error {
 	}
 	m.repo = repo
 
-	saveDir := path.Join(common.GetPrivateDirectory(), "extracted")
+	saveDir := filepath.Join(common.GetPrivateDirectory(), "extracted")
 
 	// Create the directory if it doesn't exist
 	if err := os.MkdirAll(saveDir, 0755); err != nil {
@@ -78,23 +78,33 @@ func (m *astAnalyzerModule) Initialize(sdk *jxscouttypes.ModuleSDK) error {
 		}
 	}()
 
-	m.initializeQueueHandler()
-
 	return nil
 }
 
-func (m *astAnalyzerModule) initializeQueueHandler() {
-	m.queue.StartConsumers(func(ctx context.Context, asset assetservice.Asset) {
-		err := m.analyzeAsset(asset)
-		if err != nil {
-			m.sdk.Logger.ErrorContext(ctx, "failed to analyze asset", "err", err, "asset_url", asset.URL)
-			return
-		}
-	})
-}
-
 func (m *astAnalyzerModule) subscribeAssetBeautified() error {
-	messages, err := m.sdk.EventBus.Subscribe(beautifier.TopicBeautifierAssetSaved)
+	m.sdk.DBEventBus.Subscribe(m.sdk.Ctx, beautifier.TopicBeautifierAssetSaved, "ast-analyzer", func(ctx context.Context, payload []byte) error {
+		var event beautifier.EventBeautifierAssetSaved
+		err := json.Unmarshal(payload, &event)
+		if err != nil {
+			return errutil.Wrap(err, "failed to unmarshal payload")
+		}
+
+		if !isJavaScriptAsset(event.Asset) {
+			return nil
+		}
+
+		return m.analyzeAsset(event.Asset)
+	}, dbeventbus.Options{
+		Concurrency: m.concurrency,
+		MaxRetries:  3,
+		Backoff: func(retry int) time.Duration {
+			return time.Duration(retry) * time.Second
+		},
+		PollInterval:      1 * time.Second,
+		HeartbeatInterval: 10 * time.Second,
+	})
+
+	messages, err := m.sdk.InMemoryEventBus.Subscribe(beautifier.TopicBeautifierAssetSaved)
 	if err != nil {
 		return errutil.Wrap(err, "failed to subscribe to asset saved topic")
 	}
@@ -115,8 +125,6 @@ func (m *astAnalyzerModule) subscribeAssetBeautified() error {
 			m.sdk.Logger.Debug("skipping ast analysis because asset is not in scope", "asset_url", event.Asset.URL)
 			continue
 		}
-
-		m.queue.Produce(m.sdk.Ctx, event.Asset)
 	}
 
 	return nil
@@ -138,7 +146,7 @@ func (m *astAnalyzerModule) analyzeAsset(asset assetservice.Asset) error {
 	// Get existing analyses for this asset
 	existingAnalyses, err := m.repo.getAnalysesByAssetID(m.sdk.Ctx, asset.ID)
 	if err != nil {
-		return errutil.Wrap(err, "failed to get existing analyses")
+		return dbeventbus.NewRetriableError(errutil.Wrap(err, "failed to get existing analyses"))
 	}
 
 	// Determine which analyzers need to run
@@ -184,8 +192,7 @@ func (m *astAnalyzerModule) analyzeAsset(asset assetservice.Asset) error {
 
 		// Store the results in the database
 		if err := m.repo.createAnalysis(m.sdk.Ctx, analysis); err != nil {
-			m.sdk.Logger.Error("failed to store ast analysis results", "err", err, "asset_id", asset.ID, "analyzer", analyzerName)
-			continue
+			return dbeventbus.NewRetriableError(errutil.Wrap(err, "failed to store ast analysis results"))
 		}
 	}
 

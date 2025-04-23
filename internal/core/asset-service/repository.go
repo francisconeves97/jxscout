@@ -1,4 +1,4 @@
-package assetrepository
+package assetservice
 
 import (
 	"context"
@@ -14,15 +14,10 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-type Repository interface {
-	SaveAsset(ctx context.Context, asset Asset) (int64, error)
-	GetAssetsByProjectName(projectName string) ([]Asset, error)
-	GetAssetByURL(ctx context.Context, url string) (Asset, bool, error)
-	GetAssets(ctx context.Context, params GetAssetsParams) ([]Asset, int, error)
-	GetAssetsThatLoad(ctx context.Context, url string, params GetAssetsParams) ([]Asset, int, error)
-	GetAssetsLoadedBy(ctx context.Context, url string, params GetAssetsParams) ([]Asset, int, error)
-	OverrideExists(ctx context.Context, assetID int64) (bool, error)
-	SaveAssetRelationship(ctx context.Context, asset Asset) error
+type queryer interface {
+	sqlx.PreparerContext
+	sqlx.ExecerContext
+	sqlx.QueryerContext
 }
 
 type GetAssetsParams struct {
@@ -32,22 +27,29 @@ type GetAssetsParams struct {
 	PageSize    int
 }
 
-type assetRepository struct {
-	db *sqlx.DB
+type DBAsset struct {
+	ID             int64     `db:"id"`
+	URL            string    `db:"url"`
+	ContentHash    string    `db:"content_hash"`
+	ContentType    string    `db:"content_type"`
+	FileSystemPath string    `db:"fs_path"`
+	Project        string    `db:"project"`
+	RequestHeaders string    `db:"request_headers"`
+	CreatedAt      time.Time `db:"created_at"`
+	UpdatedAt      time.Time `db:"updated_at"`
+
+	Parent *DBAsset
+
+	Children []DBAsset
 }
 
-func NewAssetRepository(db *sqlx.DB) (Repository, error) {
-	db, err := initialize(db)
-	if err != nil {
-		return nil, errutil.Wrap(err, "failed to initialize db")
-	}
-
-	return &assetRepository{
-		db: db,
-	}, nil
+type AssetRelationship struct {
+	ID       int64 `db:"id"`
+	ParentID int64 `db:"parent_id"`
+	ChildID  int64 `db:"child_id"`
 }
 
-func initialize(db *sqlx.DB) (*sqlx.DB, error) {
+func Initialize(db *sqlx.DB) error {
 	_, err := db.Exec(
 		`
 		CREATE TABLE IF NOT EXISTS assets (
@@ -77,36 +79,14 @@ func initialize(db *sqlx.DB) (*sqlx.DB, error) {
 		`,
 	)
 	if err != nil {
-		return nil, errutil.Wrap(err, "failed to create schema")
+		return errutil.Wrap(err, "failed to create schema")
 	}
 
-	return db, nil
+	return nil
 }
 
-type Asset struct {
-	ID             int64     `db:"id"`
-	URL            string    `db:"url"`
-	ContentHash    string    `db:"content_hash"`
-	ContentType    string    `db:"content_type"`
-	FileSystemPath string    `db:"fs_path"`
-	Project        string    `db:"project"`
-	RequestHeaders string    `db:"request_headers"`
-	CreatedAt      time.Time `db:"created_at"`
-	UpdatedAt      time.Time `db:"updated_at"`
-
-	Parent *Asset
-
-	Children []Asset
-}
-
-type AssetRelationship struct {
-	ID       int64 `db:"id"`
-	ParentID int64 `db:"parent_id"`
-	ChildID  int64 `db:"child_id"`
-}
-
-func (r *assetRepository) SaveAsset(ctx context.Context, asset Asset) (int64, error) {
-	_, err := r.db.ExecContext(ctx, `
+func SaveAsset(ctx context.Context, db queryer, asset DBAsset) (int64, error) {
+	_, err := db.ExecContext(ctx, `
 	INSERT INTO assets (url, content_hash, content_type, fs_path, project, request_headers, created_at, updated_at)
 	VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
 	ON CONFLICT(url) DO UPDATE SET content_hash = ?, content_type = ?, fs_path = ?, project = ?, request_headers = ?, updated_at = CURRENT_TIMESTAMP
@@ -117,25 +97,25 @@ func (r *assetRepository) SaveAsset(ctx context.Context, asset Asset) (int64, er
 	}
 
 	var assetID int64
-	err = r.db.GetContext(ctx, &assetID, `SELECT id FROM assets WHERE url = ?`, asset.URL)
+	err = sqlx.GetContext(ctx, db, &assetID, `SELECT id FROM assets WHERE url = ?`, asset.URL)
 	if err != nil {
 		return 0, errutil.Wrap(err, "failed to get inserted asset")
 	}
 
 	if asset.Parent != nil && strings.TrimSpace(asset.Parent.URL) != "" {
 		var parentID int64
-		err = r.db.GetContext(ctx, &parentID, `SELECT id FROM assets WHERE url = ?`, asset.Parent.URL)
+		err = sqlx.GetContext(ctx, db, &parentID, `SELECT id FROM assets WHERE url = ?`, asset.Parent.URL)
 		if err != nil {
 			if errors.Is(err, sql.ErrNoRows) {
-				parentID, err = r.SaveAsset(ctx, *asset.Parent)
+				parentID, err = SaveAsset(ctx, db, *asset.Parent)
 				if err != nil {
-					return 0, errutil.Wrap(err, "failed to save parent aset")
+					return 0, errutil.Wrap(err, "failed to save parent asset")
 				}
 			}
 			return 0, errutil.Wrap(err, "parent asset not found")
 		}
 
-		_, err = r.db.ExecContext(ctx, `
+		_, err = db.ExecContext(ctx, `
 		INSERT INTO asset_relationships (parent_id, child_id, created_at, updated_at)
 		VALUES (?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
 		ON CONFLICT(parent_id, child_id) DO UPDATE SET updated_at = CURRENT_TIMESTAMP
@@ -148,24 +128,24 @@ func (r *assetRepository) SaveAsset(ctx context.Context, asset Asset) (int64, er
 	return assetID, nil
 }
 
-func (r *assetRepository) SaveAssetRelationship(ctx context.Context, asset Asset) error {
+func SaveAssetRelationship(ctx context.Context, db queryer, asset DBAsset) error {
 	if asset.Parent == nil || strings.TrimSpace(asset.Parent.URL) == "" {
 		return nil
 	}
 
 	var parentID int64
-	err := r.db.GetContext(ctx, &parentID, `SELECT id FROM assets WHERE url = ?`, asset.Parent.URL)
+	err := sqlx.GetContext(ctx, db, &parentID, `SELECT id FROM assets WHERE url = ?`, asset.Parent.URL)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			parentID, err = r.SaveAsset(ctx, *asset.Parent)
+			parentID, err = SaveAsset(ctx, db, *asset.Parent)
 			if err != nil {
-				return errutil.Wrap(err, "failed to save parent aset")
+				return errutil.Wrap(err, "failed to save parent asset")
 			}
 		}
 		return errutil.Wrap(err, "parent asset not found")
 	}
 
-	_, err = r.db.ExecContext(ctx, `
+	_, err = db.ExecContext(ctx, `
 		INSERT INTO asset_relationships (parent_id, child_id, created_at, updated_at)
 		VALUES (?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
 		ON CONFLICT(parent_id, child_id) DO UPDATE SET updated_at = CURRENT_TIMESTAMP
@@ -177,7 +157,7 @@ func (r *assetRepository) SaveAssetRelationship(ctx context.Context, asset Asset
 	return nil
 }
 
-func (r *assetRepository) GetAssetsByProjectName(projectName string) ([]Asset, error) {
+func GetAssetsByProjectName(ctx context.Context, db queryer, projectName string) ([]DBAsset, error) {
 	query := `
 	WITH RECURSIVE asset_tree AS (
 		SELECT 
@@ -196,17 +176,17 @@ func (r *assetRepository) GetAssetsByProjectName(projectName string) ([]Asset, e
 	SELECT * FROM asset_tree ORDER BY parent_id, id;
 	`
 
-	rows, err := r.db.Queryx(query, projectName)
+	rows, err := db.QueryxContext(ctx, query, projectName)
 	if err != nil {
 		return nil, errutil.Wrap(err, "failed to query asset tree")
 	}
 	defer rows.Close()
 
-	assetMap := make(map[int64]*Asset)
-	var rootAssets []*Asset
+	assetMap := make(map[int64]*DBAsset)
+	var rootAssets []*DBAsset
 
 	for rows.Next() {
-		var asset Asset
+		var asset DBAsset
 		var parentID sql.NullInt64
 
 		if err := rows.Scan(&asset.ID, &asset.URL, &asset.ContentHash, &asset.ContentType, &asset.FileSystemPath, &asset.Project, &parentID); err != nil {
@@ -214,7 +194,7 @@ func (r *assetRepository) GetAssetsByProjectName(projectName string) ([]Asset, e
 		}
 
 		// Add asset to the map
-		asset.Children = []Asset{}
+		asset.Children = []DBAsset{}
 		assetMap[asset.ID] = &asset
 
 		// Add to tree structure
@@ -234,7 +214,7 @@ func (r *assetRepository) GetAssetsByProjectName(projectName string) ([]Asset, e
 		return nil, errutil.Wrap(err, "error iterating rows")
 	}
 
-	assetsReturn := []Asset{}
+	assetsReturn := []DBAsset{}
 
 	for _, asset := range rootAssets {
 		if len(asset.Children) != 0 {
@@ -245,26 +225,26 @@ func (r *assetRepository) GetAssetsByProjectName(projectName string) ([]Asset, e
 	return assetsReturn, nil
 }
 
-func (r *assetRepository) GetAssetByURL(ctx context.Context, url string) (Asset, bool, error) {
+func GetAssetByURL(ctx context.Context, db queryer, url string) (DBAsset, bool, error) {
 	query := `
 		SELECT *
 		FROM assets
 		WHERE url = ?
 		`
 
-	var asset Asset
-	err := r.db.GetContext(ctx, &asset, query, url)
+	var asset DBAsset
+	err := sqlx.GetContext(ctx, db, &asset, query, url)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return Asset{}, false, nil
+			return DBAsset{}, false, nil
 		}
-		return Asset{}, false, errutil.Wrap(err, "failed to query asset by URL")
+		return DBAsset{}, false, errutil.Wrap(err, "failed to query asset by URL")
 	}
 
 	return asset, true, nil
 }
 
-func (r *assetRepository) GetAssets(ctx context.Context, params GetAssetsParams) ([]Asset, int, error) {
+func GetAssets(ctx context.Context, db queryer, params GetAssetsParams) ([]DBAsset, int, error) {
 	// Build the base query
 	baseQuery := "FROM assets WHERE (project = ?"
 	args := []interface{}{params.ProjectName}
@@ -286,7 +266,7 @@ func (r *assetRepository) GetAssets(ctx context.Context, params GetAssetsParams)
 	// Get total count
 	var total int
 	countQuery := "SELECT COUNT(*) " + baseQuery
-	err := r.db.GetContext(ctx, &total, countQuery, args...)
+	err := sqlx.GetContext(ctx, db, &total, countQuery, args...)
 	if err != nil {
 		return nil, 0, errutil.Wrap(err, "failed to get total count")
 	}
@@ -303,8 +283,8 @@ func (r *assetRepository) GetAssets(ctx context.Context, params GetAssetsParams)
 	`
 	args = append(args, params.PageSize, offset)
 
-	var assets []Asset
-	err = r.db.SelectContext(ctx, &assets, query, args...)
+	var assets []DBAsset
+	err = sqlx.SelectContext(ctx, db, &assets, query, args...)
 	if err != nil {
 		return nil, 0, errutil.Wrap(err, "failed to get assets")
 	}
@@ -312,9 +292,9 @@ func (r *assetRepository) GetAssets(ctx context.Context, params GetAssetsParams)
 	return assets, total, nil
 }
 
-func (r *assetRepository) GetAssetsThatLoad(ctx context.Context, url string, params GetAssetsParams) ([]Asset, int, error) {
+func GetAssetsThatLoad(ctx context.Context, db queryer, url string, params GetAssetsParams) ([]DBAsset, int, error) {
 	// First get the target asset
-	targetAsset, exists, err := r.GetAssetByURL(ctx, url)
+	targetAsset, exists, err := GetAssetByURL(ctx, db, url)
 	if err != nil {
 		return nil, 0, errutil.Wrap(err, "failed to get target asset")
 	}
@@ -329,7 +309,7 @@ func (r *assetRepository) GetAssetsThatLoad(ctx context.Context, url string, par
 		JOIN asset_relationships ar ON a.id = ar.parent_id
 		WHERE ar.child_id = ?
 	`
-	err = r.db.GetContext(ctx, &total, countQuery, targetAsset.ID)
+	err = sqlx.GetContext(ctx, db, &total, countQuery, targetAsset.ID)
 	if err != nil {
 		return nil, 0, errutil.Wrap(err, "failed to get total count")
 	}
@@ -338,8 +318,8 @@ func (r *assetRepository) GetAssetsThatLoad(ctx context.Context, url string, par
 	offset := (params.Page - 1) * params.PageSize
 
 	// Get paginated assets
-	var assets []Asset
-	err = r.db.SelectContext(ctx, &assets, `
+	var assets []DBAsset
+	err = sqlx.SelectContext(ctx, db, &assets, `
 		SELECT a.* FROM assets a
 		JOIN asset_relationships ar ON a.id = ar.parent_id
 		WHERE ar.child_id = ?
@@ -353,9 +333,9 @@ func (r *assetRepository) GetAssetsThatLoad(ctx context.Context, url string, par
 	return assets, total, nil
 }
 
-func (r *assetRepository) GetAssetsLoadedBy(ctx context.Context, url string, params GetAssetsParams) ([]Asset, int, error) {
+func GetAssetsLoadedBy(ctx context.Context, db queryer, url string, params GetAssetsParams) ([]DBAsset, int, error) {
 	// First get the target asset
-	targetAsset, exists, err := r.GetAssetByURL(ctx, url)
+	targetAsset, exists, err := GetAssetByURL(ctx, db, url)
 	if err != nil {
 		return nil, 0, errutil.Wrap(err, "failed to get target asset")
 	}
@@ -370,7 +350,7 @@ func (r *assetRepository) GetAssetsLoadedBy(ctx context.Context, url string, par
 		JOIN asset_relationships ar ON a.id = ar.child_id
 		WHERE ar.parent_id = ?
 	`
-	err = r.db.GetContext(ctx, &total, countQuery, targetAsset.ID)
+	err = sqlx.GetContext(ctx, db, &total, countQuery, targetAsset.ID)
 	if err != nil {
 		return nil, 0, errutil.Wrap(err, "failed to get total count")
 	}
@@ -379,8 +359,8 @@ func (r *assetRepository) GetAssetsLoadedBy(ctx context.Context, url string, par
 	offset := (params.Page - 1) * params.PageSize
 
 	// Get paginated assets
-	var assets []Asset
-	err = r.db.SelectContext(ctx, &assets, `
+	var assets []DBAsset
+	err = sqlx.SelectContext(ctx, db, &assets, `
 		SELECT a.* FROM assets a
 		JOIN asset_relationships ar ON a.id = ar.child_id
 		WHERE ar.parent_id = ?
@@ -394,8 +374,7 @@ func (r *assetRepository) GetAssetsLoadedBy(ctx context.Context, url string, par
 	return assets, total, nil
 }
 
-// Meh, I'll need to refactor the overrides module and probably put everything into the same repository
-func (r *assetRepository) OverrideExists(ctx context.Context, assetID int64) (bool, error) {
+func OverrideExists(ctx context.Context, db queryer, assetID int64) (bool, error) {
 	query := `
 		SELECT COUNT(*) 
 		FROM overrides
@@ -403,7 +382,7 @@ func (r *assetRepository) OverrideExists(ctx context.Context, assetID int64) (bo
 	`
 
 	var count int
-	err := r.db.GetContext(ctx, &count, query, assetID)
+	err := sqlx.GetContext(ctx, db, &count, query, assetID)
 	if err != nil {
 		return false, errutil.Wrap(err, "failed to check if override exists")
 	}
