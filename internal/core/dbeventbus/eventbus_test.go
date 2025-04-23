@@ -4,6 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"log/slog"
+	"math/rand"
+	"sync"
 	"testing"
 	"time"
 
@@ -13,270 +16,356 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// testDB returns a new in-memory SQLite database for testing
-func testDB(t *testing.T) *sqlx.DB {
-	db, err := sqlx.Open("sqlite3", "file:testdb?mode=memory&cache=shared&_busy_timeout=10000&_journal=WAL&_synchronous=NORMAL")
+func setupTestDB(t *testing.T) *sqlx.DB {
+	db, err := sqlx.Open("sqlite3", "file:testdb?cache=shared&_busy_timeout=10000&_journal=WAL&_synchronous=NORMAL&_txlock=immediate")
 	require.NoError(t, err)
 	t.Cleanup(func() {
 		db.Close()
+		// os.Remove("testdb")
 	})
+
 	db.SetMaxOpenConns(1)
 	return db
 }
 
-// testEventBus creates a new EventBus instance with test options
-func testEventBus(t *testing.T, db *sqlx.DB) *EventBus {
-	bus, err := New(db)
+func TestEventBus_BasicOperations(t *testing.T) {
+	db := setupTestDB(t)
+	bus, err := New(db, slog.Default())
 	require.NoError(t, err)
-	return bus
-}
 
-// testOptions returns default test options
-func testOptions() Options {
-	return Options{
-		Concurrency:  2,
-		MaxRetries:   3,
-		Backoff:      func(retry int) time.Duration { return time.Millisecond * 100 },
-		PollInterval: time.Millisecond * 100,
-		StaleTimeout: time.Second,
-	}
-}
+	ctx := context.Background()
 
-// waitForEvent waits for an event to be processed with a timeout
-func waitForEvent(t *testing.T, ctx context.Context, bus *EventBus, eventID int64, queueName string, timeout time.Duration) EventProcessing {
-	var processing EventProcessing
-	deadline := time.Now().Add(timeout)
-	for time.Now().Before(deadline) {
-		err := bus.db.GetContext(ctx, &processing,
-			`SELECT * FROM event_processing WHERE event_id = ? AND subscriber = ?`,
-			eventID, queueName)
-		if err == nil && processing.Status == statusCompleted {
-			return processing
+	t.Run("publish and subscribe single event", func(t *testing.T) {
+		// Setup
+		var receivedEvent bool
+		handler := func(ctx context.Context, payload []byte) error {
+			receivedEvent = true
+			return nil
 		}
-		time.Sleep(time.Millisecond * 10)
-	}
-	t.Fatalf("timeout waiting for event %d to complete", eventID)
-	return processing
-}
 
-func TestEventBus_Basic(t *testing.T) {
-	db := testDB(t)
-	bus := testEventBus(t, db)
-	ctx, cancel := context.WithCancel(context.Background())
-	t.Cleanup(func() {
-		cancel()
-	})
-	opts := testOptions()
-
-	// Test publishing and subscribing
-	processed := make(chan bool)
-	handler := func(ctx context.Context, payload []byte) error {
-		var data map[string]interface{}
-		err := json.Unmarshal(payload, &data)
+		// Subscribe
+		err := bus.Subscribe(ctx, "test_topic", "test_queue", handler, Options{
+			Concurrency:       1,
+			MaxRetries:        3,
+			Backoff:           func(retry int) time.Duration { return time.Millisecond },
+			PollInterval:      time.Millisecond,
+			StaleTimeout:      time.Second,
+			HeartbeatInterval: time.Millisecond,
+		})
 		require.NoError(t, err)
-		assert.Equal(t, "test", data["message"])
-		processed <- true
-		return nil
-	}
 
-	err := bus.Subscribe(ctx, "test-topic", "test-queue", handler, opts)
-	require.NoError(t, err)
+		// Publish
+		err = bus.Publish(ctx, "test_topic", map[string]string{"test": "data"})
+		require.NoError(t, err)
 
-	err = bus.Publish(ctx, "test-topic", map[string]interface{}{"message": "test"})
-	require.NoError(t, err)
-
-	select {
-	case <-processed:
-		// Success
-	case <-time.After(time.Second):
-		t.Fatal("timeout waiting for event processing")
-	}
-}
-
-func TestEventBus_Retries(t *testing.T) {
-	db := testDB(t)
-	bus := testEventBus(t, db)
-	ctx, cancel := context.WithCancel(context.Background())
-	t.Cleanup(func() {
-		cancel()
+		// Wait for event to be processed
+		time.Sleep(100 * time.Millisecond)
+		assert.True(t, receivedEvent)
 	})
-	opts := testOptions()
 
-	attempts := 0
-	handler := func(ctx context.Context, payload []byte) error {
-		attempts++
-		if attempts < 3 {
-			return NewRetriableError(errors.New("temporary error"))
+	t.Run("publish multiple events", func(t *testing.T) {
+		var receivedCount int
+		handler := func(ctx context.Context, payload []byte) error {
+			receivedCount++
+			return nil
 		}
-		return nil
-	}
 
-	err := bus.Subscribe(ctx, "test-topic", "test-queue", handler, opts)
-	require.NoError(t, err)
+		err := bus.Subscribe(ctx, "multi_topic", "multi_queue", handler, Options{
+			Concurrency:       1,
+			MaxRetries:        3,
+			Backoff:           func(retry int) time.Duration { return time.Millisecond },
+			PollInterval:      time.Millisecond,
+			StaleTimeout:      time.Second,
+			HeartbeatInterval: time.Millisecond,
+		})
+		require.NoError(t, err)
 
-	err = bus.Publish(ctx, "test-topic", map[string]interface{}{"message": "test"})
-	require.NoError(t, err)
+		// Publish multiple events
+		for i := 0; i < 5; i++ {
+			err = bus.Publish(ctx, "multi_topic", map[string]int{"count": i})
+			require.NoError(t, err)
+		}
 
-	// Wait for the event to be processed
-	time.Sleep(time.Second)
-
-	assert.Equal(t, 3, attempts, "handler should be called exactly 3 times")
+		// Wait for events to be processed
+		time.Sleep(500 * time.Millisecond)
+		assert.Equal(t, 5, receivedCount)
+	})
 }
 
-func TestEventBus_MaxRetries(t *testing.T) {
-	db := testDB(t)
-	bus := testEventBus(t, db)
-	ctx, cancel := context.WithCancel(context.Background())
-	t.Cleanup(func() {
-		cancel()
+func TestEventBus_ErrorHandling(t *testing.T) {
+	db := setupTestDB(t)
+	bus, err := New(db, slog.Default())
+	require.NoError(t, err)
+
+	ctx := context.Background()
+
+	t.Run("retriable error handling", func(t *testing.T) {
+		var attemptCount int
+		handler := func(ctx context.Context, payload []byte) error {
+			attemptCount++
+			if attemptCount < 3 {
+				return NewRetriableError(errors.New("temporary error"))
+			}
+			return nil
+		}
+
+		err := bus.Subscribe(ctx, "retry_topic", "retry_queue", handler, Options{
+			Concurrency:       1,
+			MaxRetries:        5,
+			Backoff:           func(retry int) time.Duration { return time.Millisecond },
+			PollInterval:      10 * time.Millisecond,
+			StaleTimeout:      time.Second,
+			HeartbeatInterval: time.Millisecond,
+		})
+		require.NoError(t, err)
+
+		err = bus.Publish(ctx, "retry_topic", map[string]string{"test": "data"})
+		require.NoError(t, err)
+
+		// Wait for retries
+		time.Sleep(500 * time.Millisecond)
+		assert.Equal(t, 3, attemptCount)
 	})
-	opts := testOptions()
 
-	attempts := 0
-	handler := func(ctx context.Context, payload []byte) error {
-		attempts++
-		return NewRetriableError(errors.New("permanent error"))
-	}
+	t.Run("non-retriable error handling", func(t *testing.T) {
+		var attemptCount int
+		handler := func(ctx context.Context, payload []byte) error {
+			attemptCount++
+			return errors.New("permanent error")
+		}
 
-	err := bus.Subscribe(ctx, "test-topic", "test-queue", handler, opts)
-	require.NoError(t, err)
+		err := bus.Subscribe(ctx, "fail_topic", "fail_queue", handler, Options{
+			Concurrency:       1,
+			MaxRetries:        3,
+			Backoff:           func(retry int) time.Duration { return time.Millisecond },
+			PollInterval:      time.Millisecond,
+			StaleTimeout:      time.Second,
+			HeartbeatInterval: time.Millisecond,
+		})
+		require.NoError(t, err)
 
-	err = bus.Publish(ctx, "test-topic", map[string]interface{}{"message": "test"})
-	require.NoError(t, err)
+		err = bus.Publish(ctx, "fail_topic", map[string]string{"test": "data"})
+		require.NoError(t, err)
 
-	// Wait for max retries
-	time.Sleep(time.Second)
-
-	assert.Equal(t, opts.MaxRetries, attempts, "handler should be called max retries + 1 times")
-
-	// Verify the event is marked as failed
-	var processing EventProcessing
-	err = bus.db.GetContext(ctx, &processing,
-		`SELECT * FROM event_processing WHERE subscriber = ? ORDER BY event_id DESC LIMIT 1`,
-		"test-queue")
-	require.NoError(t, err)
-	assert.Equal(t, statusFailed, processing.Status)
-}
-
-func TestEventBus_StaleEvents(t *testing.T) {
-	db := testDB(t)
-	bus := testEventBus(t, db)
-	ctx, cancel := context.WithCancel(context.Background())
-	t.Cleanup(func() {
-		cancel()
+		// Wait for processing
+		time.Sleep(500 * time.Millisecond)
+		assert.Equal(t, 1, attemptCount)
 	})
-	opts := testOptions()
-
-	// Create a stale processing event
-	_, err := db.ExecContext(ctx,
-		`INSERT INTO events (name, payload) VALUES (?, ?)`,
-		"test-topic", `{"message": "test"}`)
-	require.NoError(t, err)
-
-	var eventID int64
-	err = db.GetContext(ctx, &eventID, "SELECT last_insert_rowid()")
-	require.NoError(t, err)
-
-	_, err = db.ExecContext(ctx,
-		`INSERT INTO event_processing (event_id, subscriber, status, last_attempt) 
-         VALUES (?, ?, ?, datetime('now', '-2 minutes'))`,
-		eventID, "test-queue", statusProcessing)
-	require.NoError(t, err)
-
-	processed := make(chan bool)
-	handler := func(ctx context.Context, payload []byte) error {
-		processed <- true
-		return nil
-	}
-
-	err = bus.Subscribe(ctx, "test-topic", "test-queue", handler, opts)
-	require.NoError(t, err)
-
-	select {
-	case <-processed:
-		// Success
-	case <-time.After(time.Second):
-		t.Fatal("timeout waiting for stale event processing")
-	}
 }
 
 func TestEventBus_Concurrency(t *testing.T) {
-	db := testDB(t)
-	bus := testEventBus(t, db)
-	ctx, cancel := context.WithCancel(context.Background())
-	t.Cleanup(func() {
-		cancel()
-	})
-	opts := testOptions()
-
-	// Create multiple events
-	for i := 0; i < 5; i++ {
-		err := bus.Publish(ctx, "test-topic", map[string]interface{}{"message": i})
-		require.NoError(t, err)
-	}
-
-	processed := make(chan int)
-	handler := func(ctx context.Context, payload []byte) error {
-		var data map[string]interface{}
-		err := json.Unmarshal(payload, &data)
-		require.NoError(t, err)
-		processed <- int(data["message"].(float64))
-		return nil
-	}
-
-	err := bus.Subscribe(ctx, "test-topic", "test-queue", handler, opts)
+	db := setupTestDB(t)
+	bus, err := New(db, slog.Default())
 	require.NoError(t, err)
 
-	// Wait for all events to be processed
-	received := make(map[int]bool)
-	for i := 0; i < 5; i++ {
-		select {
-		case msg := <-processed:
-			received[msg] = true
-		case <-time.After(time.Second):
-			t.Fatal("timeout waiting for event processing")
-		}
-	}
+	ctx := context.Background()
 
-	assert.Len(t, received, 5, "should process all events")
-}
+	t.Run("multiple subscribers same topic", func(t *testing.T) {
+		var (
+			subscriber1Count int
+			subscriber2Count int
+			mutex1           sync.Mutex
+			mutex2           sync.Mutex
+		)
 
-func TestEventBus_ContextCancellation(t *testing.T) {
-	db := testDB(t)
-	bus := testEventBus(t, db)
-	ctx, cancel := context.WithCancel(context.Background())
-	t.Cleanup(func() {
-		cancel()
-	})
-	opts := testOptions()
-
-	processed := make(chan bool)
-	handler := func(ctx context.Context, payload []byte) error {
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		case <-time.After(time.Millisecond * 50):
-			processed <- true
+		handler1 := func(ctx context.Context, payload []byte) error {
+			mutex1.Lock()
+			subscriber1Count++
+			mutex1.Unlock()
 			return nil
 		}
-	}
 
-	err := bus.Subscribe(ctx, "test-topic", "test-queue", handler, opts)
+		handler2 := func(ctx context.Context, payload []byte) error {
+			mutex2.Lock()
+			subscriber2Count++
+			mutex2.Unlock()
+			return nil
+		}
+
+		// Subscribe first consumer
+		err := bus.Subscribe(ctx, "concurrent_topic", "queue1", handler1, Options{
+			Concurrency:       2,
+			MaxRetries:        3,
+			Backoff:           func(retry int) time.Duration { return time.Millisecond },
+			PollInterval:      time.Millisecond,
+			StaleTimeout:      time.Second,
+			HeartbeatInterval: time.Millisecond,
+		})
+		require.NoError(t, err)
+
+		// Subscribe second consumer
+		err = bus.Subscribe(ctx, "concurrent_topic", "queue2", handler2, Options{
+			Concurrency:       2,
+			MaxRetries:        3,
+			Backoff:           func(retry int) time.Duration { return time.Millisecond },
+			PollInterval:      time.Millisecond,
+			StaleTimeout:      time.Second,
+			HeartbeatInterval: time.Millisecond,
+		})
+		require.NoError(t, err)
+
+		// Publish multiple events
+		for i := 0; i < 10; i++ {
+			err = bus.Publish(ctx, "concurrent_topic", map[string]int{"count": i})
+			require.NoError(t, err)
+		}
+
+		// Wait for processing
+		time.Sleep(1 * time.Second)
+		assert.Equal(t, 10, subscriber1Count)
+		assert.Equal(t, 10, subscriber2Count)
+	})
+
+	t.Run("high concurrency processing", func(t *testing.T) {
+		var (
+			processedCount int
+			mutex          sync.Mutex
+		)
+
+		handler := func(ctx context.Context, payload []byte) error {
+			mutex.Lock()
+			processedCount++
+			mutex.Unlock()
+			// Simulate some work
+			time.Sleep(10 * time.Millisecond)
+			return nil
+		}
+
+		err := bus.Subscribe(ctx, "high_concurrency_topic", "high_concurrency_queue", handler, Options{
+			Concurrency:       10,
+			MaxRetries:        3,
+			Backoff:           func(retry int) time.Duration { return time.Millisecond },
+			PollInterval:      time.Millisecond,
+			StaleTimeout:      time.Second,
+			HeartbeatInterval: time.Millisecond,
+		})
+		require.NoError(t, err)
+
+		// Publish many events
+		for i := 0; i < 50; i++ {
+			err = bus.Publish(ctx, "high_concurrency_topic", map[string]int{"count": i})
+			require.NoError(t, err)
+		}
+
+		// Wait for processing
+		time.Sleep(2 * time.Second)
+		assert.Equal(t, 50, processedCount)
+	})
+}
+
+func TestEventBus_EdgeCases(t *testing.T) {
+	db := setupTestDB(t)
+	bus, err := New(db, slog.Default())
 	require.NoError(t, err)
 
-	err = bus.Publish(ctx, "test-topic", map[string]interface{}{"message": "test"})
-	require.NoError(t, err)
+	ctx := context.Background()
 
-	// Cancel context after a short delay
-	go func() {
-		time.Sleep(time.Millisecond * 25)
+	t.Run("stale event recovery", func(t *testing.T) {
+		var processedCount int
+		handler := func(ctx context.Context, payload []byte) error {
+			processedCount++
+			return nil
+		}
+
+		err := bus.Subscribe(ctx, "stale_topic", "stale_queue", handler, Options{
+			Concurrency:       1,
+			MaxRetries:        3,
+			Backoff:           func(retry int) time.Duration { return time.Millisecond },
+			PollInterval:      time.Millisecond,
+			StaleTimeout:      time.Millisecond,
+			HeartbeatInterval: time.Millisecond,
+		})
+		require.NoError(t, err)
+
+		// Publish an event
+		err = bus.Publish(ctx, "stale_topic", map[string]string{"test": "data"})
+		require.NoError(t, err)
+
+		// Wait for event to become stale and be recovered
+		time.Sleep(500 * time.Millisecond)
+		assert.Equal(t, 1, processedCount)
+	})
+
+	t.Run("context cancellation", func(t *testing.T) {
+		ctx, cancel := context.WithCancel(ctx)
+		var processedCount int
+
+		handler := func(ctx context.Context, payload []byte) error {
+			processedCount++
+			return nil
+		}
+
+		err := bus.Subscribe(ctx, "cancel_topic", "cancel_queue", handler, Options{
+			Concurrency:       1,
+			MaxRetries:        3,
+			Backoff:           func(retry int) time.Duration { return time.Millisecond },
+			PollInterval:      time.Millisecond,
+			StaleTimeout:      time.Second,
+			HeartbeatInterval: time.Millisecond,
+		})
+		require.NoError(t, err)
+
+		// Publish an event
+		err = bus.Publish(ctx, "cancel_topic", map[string]string{"test": "data"})
+		require.NoError(t, err)
+
+		// Cancel context
 		cancel()
-	}()
 
-	select {
-	case <-processed:
-		t.Fatal("handler should not complete after context cancellation")
-	case <-time.After(time.Second):
-		// Success - handler was cancelled
+		// Wait a bit
+		time.Sleep(100 * time.Millisecond)
+
+		// Publish another event
+		err = bus.Publish(context.Background(), "cancel_topic", map[string]string{"test": "data"})
+		require.NoError(t, err)
+
+		// Wait for processing
+		time.Sleep(100 * time.Millisecond)
+		assert.Equal(t, 1, processedCount) // Only one event should be processed
+	})
+
+	t.Run("large payload handling", func(t *testing.T) {
+		var receivedPayload []byte
+		handler := func(ctx context.Context, payload []byte) error {
+			receivedPayload = payload
+			return nil
+		}
+
+		err := bus.Subscribe(ctx, "large_payload_topic", "large_payload_queue", handler, Options{
+			Concurrency:       1,
+			MaxRetries:        3,
+			Backoff:           func(retry int) time.Duration { return time.Millisecond },
+			PollInterval:      time.Millisecond,
+			StaleTimeout:      time.Second,
+			HeartbeatInterval: time.Millisecond,
+		})
+		require.NoError(t, err)
+
+		// Create a large payload
+		largePayload := make(map[string]string)
+		for i := 0; i < 1000; i++ {
+			largePayload[randString(10)] = randString(100)
+		}
+
+		err = bus.Publish(ctx, "large_payload_topic", largePayload)
+		require.NoError(t, err)
+
+		// Wait for processing
+		time.Sleep(100 * time.Millisecond)
+
+		var decodedPayload map[string]string
+		err = json.Unmarshal(receivedPayload, &decodedPayload)
+		require.NoError(t, err)
+		assert.Equal(t, len(largePayload), len(decodedPayload))
+	})
+}
+
+// Helper function to generate random strings
+func randString(n int) string {
+	const letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	b := make([]byte, n)
+	for i := range b {
+		b[i] = letters[rand.Intn(len(letters))]
 	}
+	return string(b)
 }

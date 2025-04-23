@@ -108,9 +108,9 @@ func (b *EventBus) initTables() error {
             PRIMARY KEY(event_id, subscriber)
         )`,
 		`
-		CREATE INDEX idx_events_name ON events(name);
-		CREATE INDEX idx_event_processing_status ON event_processing(status);
-		CREATE INDEX idx_event_processing_subscriber_status ON event_processing(subscriber, status);
+		CREATE INDEX IF NOT EXISTS idx_events_name ON events(name);
+		CREATE INDEX IF NOT EXISTS idx_event_processing_status ON event_processing(status);
+		CREATE INDEX IF NOT EXISTS idx_event_processing_subscriber_status ON event_processing(subscriber, status);
 		`,
 	}
 
@@ -186,11 +186,11 @@ func (b *EventBus) fetchAndDistributeEvents(ctx context.Context, topic, queueNam
 		`SELECT e.id, e.name, e.payload, e.created_at 
          FROM events e
          LEFT JOIN event_processing ep ON e.id = ep.event_id AND ep.subscriber = ?
-         WHERE e.name = ? 
+         WHERE e.name = ?
          AND (
              ep.status IS NULL 
              OR ep.status = ?
-             OR (ep.status = ? AND ep.retry_count < ? AND ep.next_attempt < CURRENT_TIMESTAMP AND ep.finished_at IS NOT NULL)
+             OR (ep.status = ? AND ep.retry_count < ? AND ep.next_attempt < CURRENT_TIMESTAMP)
          )
          ORDER BY e.id ASC LIMIT ?`,
 		queueName, topic, statusPending, statusRetry, opts.MaxRetries, opts.Concurrency)
@@ -208,7 +208,7 @@ func (b *EventBus) fetchAndDistributeEvents(ctx context.Context, topic, queueNam
 				`INSERT INTO event_processing (event_id, subscriber, status, last_attempt, heartbeat, finished_at) 
 				 VALUES (?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL)
 				 ON CONFLICT(event_id, subscriber) DO UPDATE SET status = ?, last_attempt = CURRENT_TIMESTAMP, heartbeat = CURRENT_TIMESTAMP, finished_at = NULL`,
-				event.ID, queueName, statusProcessing)
+				event.ID, queueName, statusProcessing, statusProcessing)
 			if err != nil {
 				return errutil.Wrap(err, "failed to mark event as processing")
 			}
@@ -314,7 +314,7 @@ func (b *EventBus) updateEventStatus(ctx context.Context, event Event, queueName
 
 func (b *EventBus) updateFailedStatus(ctx context.Context, tx *sqlx.Tx, handlerErr error, processing EventProcessing, opts Options) error {
 	retryCount := processing.RetryCount + 1
-	nextAttempt := time.Now().Add(opts.Backoff(retryCount))
+	nextAttempt := time.Now().UTC().Add(opts.Backoff(retryCount))
 	status := statusFailed
 
 	if IsRetriable(handlerErr) && retryCount < opts.MaxRetries {
@@ -377,7 +377,7 @@ func (b *EventBus) resetStaleEvents(ctx context.Context, queueName string, heart
 	defer tx.Rollback()
 
 	// Calculate the cutoff time for stale events (10 missed heartbeats)
-	staleCutoff := time.Now().Add(-10 * heartbeatInterval)
+	staleCutoff := time.Now().UTC().Add(-10 * heartbeatInterval)
 
 	_, err = tx.ExecContext(ctx,
 		`UPDATE event_processing 
