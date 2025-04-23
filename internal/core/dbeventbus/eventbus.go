@@ -48,7 +48,6 @@ type Options struct {
 	MaxRetries        int
 	Backoff           func(retry int) time.Duration
 	PollInterval      time.Duration
-	StaleTimeout      time.Duration
 	HeartbeatInterval time.Duration
 }
 
@@ -353,7 +352,7 @@ func (b *EventBus) updateCompletedStatus(ctx context.Context, tx *sqlx.Tx, event
 // cleanupStaleEvents periodically checks for events that have missed too many heartbeats
 // and resets them to pending status
 func (b *EventBus) cleanupStaleEvents(ctx context.Context, queueName string, heartbeatInterval time.Duration) {
-	ticker := time.NewTicker(heartbeatInterval)
+	ticker := time.NewTicker(10 * heartbeatInterval)
 	defer ticker.Stop()
 
 	for {

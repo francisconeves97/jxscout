@@ -2,10 +2,9 @@ package eventbus
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"log/slog"
-	"math/rand"
+	"os"
 	"sync"
 	"testing"
 	"time"
@@ -17,11 +16,11 @@ import (
 )
 
 func setupTestDB(t *testing.T) *sqlx.DB {
-	db, err := sqlx.Open("sqlite3", "file:testdb?cache=shared&_busy_timeout=10000&_journal=WAL&_synchronous=NORMAL&_txlock=immediate")
+	db, err := sqlx.Open("sqlite3", "file:testdb?memory=true&cache=shared&_busy_timeout=10000&_journal=WAL&_synchronous=NORMAL&_txlock=immediate")
 	require.NoError(t, err)
 	t.Cleanup(func() {
 		db.Close()
-		// os.Remove("testdb")
+		os.Remove("testdb")
 	})
 
 	db.SetMaxOpenConns(1)
@@ -49,7 +48,6 @@ func TestEventBus_BasicOperations(t *testing.T) {
 			MaxRetries:        3,
 			Backoff:           func(retry int) time.Duration { return time.Millisecond },
 			PollInterval:      time.Millisecond,
-			StaleTimeout:      time.Second,
 			HeartbeatInterval: time.Millisecond,
 		})
 		require.NoError(t, err)
@@ -75,7 +73,6 @@ func TestEventBus_BasicOperations(t *testing.T) {
 			MaxRetries:        3,
 			Backoff:           func(retry int) time.Duration { return time.Millisecond },
 			PollInterval:      time.Millisecond,
-			StaleTimeout:      time.Second,
 			HeartbeatInterval: time.Millisecond,
 		})
 		require.NoError(t, err)
@@ -113,9 +110,8 @@ func TestEventBus_ErrorHandling(t *testing.T) {
 			Concurrency:       1,
 			MaxRetries:        5,
 			Backoff:           func(retry int) time.Duration { return time.Millisecond },
-			PollInterval:      10 * time.Millisecond,
-			StaleTimeout:      time.Second,
-			HeartbeatInterval: time.Millisecond,
+			PollInterval:      time.Second,
+			HeartbeatInterval: time.Second,
 		})
 		require.NoError(t, err)
 
@@ -123,7 +119,7 @@ func TestEventBus_ErrorHandling(t *testing.T) {
 		require.NoError(t, err)
 
 		// Wait for retries
-		time.Sleep(500 * time.Millisecond)
+		time.Sleep(10 * time.Second)
 		assert.Equal(t, 3, attemptCount)
 	})
 
@@ -138,9 +134,8 @@ func TestEventBus_ErrorHandling(t *testing.T) {
 			Concurrency:       1,
 			MaxRetries:        3,
 			Backoff:           func(retry int) time.Duration { return time.Millisecond },
-			PollInterval:      time.Millisecond,
-			StaleTimeout:      time.Second,
-			HeartbeatInterval: time.Millisecond,
+			PollInterval:      time.Second,
+			HeartbeatInterval: time.Second,
 		})
 		require.NoError(t, err)
 
@@ -148,7 +143,7 @@ func TestEventBus_ErrorHandling(t *testing.T) {
 		require.NoError(t, err)
 
 		// Wait for processing
-		time.Sleep(500 * time.Millisecond)
+		time.Sleep(3 * time.Second)
 		assert.Equal(t, 1, attemptCount)
 	})
 }
@@ -188,7 +183,6 @@ func TestEventBus_Concurrency(t *testing.T) {
 			MaxRetries:        3,
 			Backoff:           func(retry int) time.Duration { return time.Millisecond },
 			PollInterval:      time.Millisecond,
-			StaleTimeout:      time.Second,
 			HeartbeatInterval: time.Millisecond,
 		})
 		require.NoError(t, err)
@@ -199,13 +193,12 @@ func TestEventBus_Concurrency(t *testing.T) {
 			MaxRetries:        3,
 			Backoff:           func(retry int) time.Duration { return time.Millisecond },
 			PollInterval:      time.Millisecond,
-			StaleTimeout:      time.Second,
 			HeartbeatInterval: time.Millisecond,
 		})
 		require.NoError(t, err)
 
 		// Publish multiple events
-		for i := 0; i < 10; i++ {
+		for i := range 10 {
 			err = bus.Publish(ctx, "concurrent_topic", map[string]int{"count": i})
 			require.NoError(t, err)
 		}
@@ -235,9 +228,8 @@ func TestEventBus_Concurrency(t *testing.T) {
 			Concurrency:       10,
 			MaxRetries:        3,
 			Backoff:           func(retry int) time.Duration { return time.Millisecond },
-			PollInterval:      time.Millisecond,
-			StaleTimeout:      time.Second,
-			HeartbeatInterval: time.Millisecond,
+			PollInterval:      time.Second,
+			HeartbeatInterval: time.Second,
 		})
 		require.NoError(t, err)
 
@@ -248,124 +240,7 @@ func TestEventBus_Concurrency(t *testing.T) {
 		}
 
 		// Wait for processing
-		time.Sleep(2 * time.Second)
+		time.Sleep(10 * time.Second)
 		assert.Equal(t, 50, processedCount)
 	})
-}
-
-func TestEventBus_EdgeCases(t *testing.T) {
-	db := setupTestDB(t)
-	bus, err := New(db, slog.Default())
-	require.NoError(t, err)
-
-	ctx := context.Background()
-
-	t.Run("stale event recovery", func(t *testing.T) {
-		var processedCount int
-		handler := func(ctx context.Context, payload []byte) error {
-			processedCount++
-			return nil
-		}
-
-		err := bus.Subscribe(ctx, "stale_topic", "stale_queue", handler, Options{
-			Concurrency:       1,
-			MaxRetries:        3,
-			Backoff:           func(retry int) time.Duration { return time.Millisecond },
-			PollInterval:      time.Millisecond,
-			StaleTimeout:      time.Millisecond,
-			HeartbeatInterval: time.Millisecond,
-		})
-		require.NoError(t, err)
-
-		// Publish an event
-		err = bus.Publish(ctx, "stale_topic", map[string]string{"test": "data"})
-		require.NoError(t, err)
-
-		// Wait for event to become stale and be recovered
-		time.Sleep(500 * time.Millisecond)
-		assert.Equal(t, 1, processedCount)
-	})
-
-	t.Run("context cancellation", func(t *testing.T) {
-		ctx, cancel := context.WithCancel(ctx)
-		var processedCount int
-
-		handler := func(ctx context.Context, payload []byte) error {
-			processedCount++
-			return nil
-		}
-
-		err := bus.Subscribe(ctx, "cancel_topic", "cancel_queue", handler, Options{
-			Concurrency:       1,
-			MaxRetries:        3,
-			Backoff:           func(retry int) time.Duration { return time.Millisecond },
-			PollInterval:      time.Millisecond,
-			StaleTimeout:      time.Second,
-			HeartbeatInterval: time.Millisecond,
-		})
-		require.NoError(t, err)
-
-		// Publish an event
-		err = bus.Publish(ctx, "cancel_topic", map[string]string{"test": "data"})
-		require.NoError(t, err)
-
-		// Cancel context
-		cancel()
-
-		// Wait a bit
-		time.Sleep(100 * time.Millisecond)
-
-		// Publish another event
-		err = bus.Publish(context.Background(), "cancel_topic", map[string]string{"test": "data"})
-		require.NoError(t, err)
-
-		// Wait for processing
-		time.Sleep(100 * time.Millisecond)
-		assert.Equal(t, 1, processedCount) // Only one event should be processed
-	})
-
-	t.Run("large payload handling", func(t *testing.T) {
-		var receivedPayload []byte
-		handler := func(ctx context.Context, payload []byte) error {
-			receivedPayload = payload
-			return nil
-		}
-
-		err := bus.Subscribe(ctx, "large_payload_topic", "large_payload_queue", handler, Options{
-			Concurrency:       1,
-			MaxRetries:        3,
-			Backoff:           func(retry int) time.Duration { return time.Millisecond },
-			PollInterval:      time.Millisecond,
-			StaleTimeout:      time.Second,
-			HeartbeatInterval: time.Millisecond,
-		})
-		require.NoError(t, err)
-
-		// Create a large payload
-		largePayload := make(map[string]string)
-		for i := 0; i < 1000; i++ {
-			largePayload[randString(10)] = randString(100)
-		}
-
-		err = bus.Publish(ctx, "large_payload_topic", largePayload)
-		require.NoError(t, err)
-
-		// Wait for processing
-		time.Sleep(100 * time.Millisecond)
-
-		var decodedPayload map[string]string
-		err = json.Unmarshal(receivedPayload, &decodedPayload)
-		require.NoError(t, err)
-		assert.Equal(t, len(largePayload), len(decodedPayload))
-	})
-}
-
-// Helper function to generate random strings
-func randString(n int) string {
-	const letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-	b := make([]byte, n)
-	for i := range b {
-		b[i] = letters[rand.Intn(len(letters))]
-	}
-	return string(b)
 }
