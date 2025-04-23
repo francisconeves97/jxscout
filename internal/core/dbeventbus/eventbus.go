@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"log/slog"
 	"time"
 
@@ -108,6 +107,11 @@ func (b *EventBus) initTables() error {
             next_attempt DATETIME,
             PRIMARY KEY(event_id, subscriber)
         )`,
+		`
+		CREATE INDEX idx_events_name ON events(name);
+		CREATE INDEX idx_event_processing_status ON event_processing(status);
+		CREATE INDEX idx_event_processing_subscriber_status ON event_processing(subscriber, status);
+		`,
 	}
 
 	for _, query := range queries {
@@ -163,7 +167,7 @@ func (b *EventBus) pollEvents(ctx context.Context, topic, queueName string, jobs
 			return
 		case <-ticker.C:
 			if err := b.fetchAndDistributeEvents(ctx, topic, queueName, jobs, opts); err != nil {
-				fmt.Printf("Error fetching events: %v\n", err)
+				b.log.ErrorContext(ctx, "Error fetching events", "error", err)
 			}
 		}
 	}
@@ -194,33 +198,32 @@ func (b *EventBus) fetchAndDistributeEvents(ctx context.Context, topic, queueNam
 		return errutil.Wrap(err, "failed to fetch events")
 	}
 
-	// Mark events as processing in the same transaction
-	for _, event := range eventsToProcess {
-		_, err = tx.ExecContext(ctx,
-			`INSERT OR REPLACE INTO event_processing (event_id, subscriber, status, last_attempt, heartbeat, finished_at) 
-             VALUES (?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL)`,
-			event.ID, queueName, statusProcessing)
-		if err != nil {
-			return errutil.Wrap(err, "failed to mark event as processing")
-		}
-	}
-
-	// Commit the transaction before sending to workers
-	if err := tx.Commit(); err != nil {
-		return errutil.Wrap(err, "failed to commit transaction")
-	}
-
 	// Send events to workers after transaction is committed
 	for _, event := range eventsToProcess {
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
 		case jobs <- event:
-			// Event sent to worker
+			_, err = tx.ExecContext(ctx,
+				`INSERT INTO event_processing (event_id, subscriber, status, last_attempt, heartbeat, finished_at) 
+				 VALUES (?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL)
+				 ON CONFLICT(event_id, subscriber) DO UPDATE SET status = ?, last_attempt = CURRENT_TIMESTAMP, heartbeat = CURRENT_TIMESTAMP, finished_at = NULL`,
+				event.ID, queueName, statusProcessing)
+			if err != nil {
+				return errutil.Wrap(err, "failed to mark event as processing")
+			}
 		default:
-			// Channel is full, wait for next poll
+			// Commit the transaction before sending to workers
+			if err := tx.Commit(); err != nil {
+				return errutil.Wrap(err, "failed to commit transaction")
+			}
 			return nil
 		}
+	}
+
+	// Commit the transaction before sending to workers
+	if err := tx.Commit(); err != nil {
+		return errutil.Wrap(err, "failed to commit transaction")
 	}
 
 	return nil
@@ -233,7 +236,7 @@ func (b *EventBus) worker(ctx context.Context, queueName string, handler Handler
 			return
 		default:
 			if err := b.processEvent(ctx, event, queueName, handler, opts); err != nil {
-				fmt.Printf("Error processing event %d: %v\n", event.ID, err)
+				b.log.ErrorContext(ctx, "Error processing event", "event_id", event.ID, "error", err)
 			}
 		}
 
@@ -255,6 +258,7 @@ func (b *EventBus) processEvent(ctx context.Context, event Event, queueName stri
 	if err := b.updateEventStatus(ctx, event, queueName, err, opts); err != nil {
 		return errutil.Wrap(err, "failed to update event status")
 	}
+
 	return nil
 }
 
