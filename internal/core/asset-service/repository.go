@@ -37,8 +37,8 @@ type DBAsset struct {
 	RequestHeaders string    `db:"request_headers"`
 	CreatedAt      time.Time `db:"created_at"`
 	UpdatedAt      time.Time `db:"updated_at"`
-
-	Parent *DBAsset
+	IsInlineJS     bool      `db:"is_inline_js"`
+	Parent         *DBAsset
 
 	Children []DBAsset
 }
@@ -49,7 +49,7 @@ type AssetRelationship struct {
 	ChildID  int64 `db:"child_id"`
 }
 
-func Initialize(db *sqlx.DB) error {
+func initializeRepo(db *sqlx.DB) error {
 	_, err := db.Exec(
 		`
 		CREATE TABLE IF NOT EXISTS assets (
@@ -117,20 +117,37 @@ func migrateAddIsInlineJS(db *sqlx.DB) error {
 }
 
 func SaveAsset(ctx context.Context, db queryer, asset DBAsset) (int64, error) {
-	_, err := db.ExecContext(ctx, `
-	INSERT INTO assets (url, content_hash, content_type, fs_path, project, request_headers, created_at, updated_at)
-	VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-	ON CONFLICT(url) DO UPDATE SET content_hash = ?, content_type = ?, fs_path = ?, project = ?, request_headers = ?, updated_at = CURRENT_TIMESTAMP
-	`, asset.URL, asset.ContentHash, asset.ContentType, asset.FileSystemPath, asset.Project, asset.RequestHeaders,
-		asset.ContentHash, asset.ContentType, asset.FileSystemPath, asset.Project, asset.RequestHeaders)
+	var assetID int64
+	err := sqlx.GetContext(ctx, db, &assetID, `
+	INSERT INTO assets (url, content_hash, content_type, fs_path, project, request_headers, is_inline_js, created_at, updated_at)
+	VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+	ON CONFLICT(url) DO UPDATE SET content_hash = ?, content_type = ?, fs_path = ?, project = ?, request_headers = ?, is_inline_js = ?, updated_at = CURRENT_TIMESTAMP
+	RETURNING id
+	`, asset.URL, asset.ContentHash, asset.ContentType, asset.FileSystemPath, asset.Project, asset.RequestHeaders, asset.IsInlineJS,
+		asset.ContentHash, asset.ContentType, asset.FileSystemPath, asset.Project, asset.RequestHeaders, asset.IsInlineJS)
 	if err != nil {
 		return 0, errutil.Wrap(err, "failed to insert the asset")
 	}
 
-	var assetID int64
-	err = sqlx.GetContext(ctx, db, &assetID, `SELECT id FROM assets WHERE url = ?`, asset.URL)
-	if err != nil {
-		return 0, errutil.Wrap(err, "failed to get inserted asset")
+	// Check if we got a valid ID
+	if assetID == 0 {
+		// Try to get the ID directly to see if the row exists
+		var existingID int64
+		err = sqlx.GetContext(ctx, db, &existingID, `SELECT id FROM assets WHERE url = ?`, asset.URL)
+		if err != nil {
+			return 0, errutil.Wrapf(err, "failed to get asset ID after insert (url: %s)", asset.URL)
+		}
+
+		if existingID == 0 {
+			return 0, errutil.Wrapf(errors.New("no ID returned from INSERT and no row found for URL"), "url: %s", asset.URL)
+		}
+
+		// If we found an ID, use it
+		assetID = existingID
+	}
+
+	if assetID == 0 {
+		return 0, errutil.Wrapf(errors.New("asset id is 0 for asset url even after trying to get it: "+asset.URL), "failed to get inserted asset")
 	}
 
 	if asset.Parent != nil && strings.TrimSpace(asset.Parent.URL) != "" {
@@ -142,8 +159,9 @@ func SaveAsset(ctx context.Context, db queryer, asset DBAsset) (int64, error) {
 				if err != nil {
 					return 0, errutil.Wrap(err, "failed to save parent asset")
 				}
+			} else {
+				return 0, errutil.Wrap(err, "parent asset not found")
 			}
-			return 0, errutil.Wrap(err, "parent asset not found")
 		}
 
 		_, err = db.ExecContext(ctx, `

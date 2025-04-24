@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/francisconeves97/jxscout/internal/core/errutil"
 )
@@ -130,4 +131,20 @@ func FileExists(filePath string) (bool, error) {
 		return false, errutil.Wrap(err, "failed to check if file exists")
 	}
 	return !info.IsDir(), nil
+}
+
+func ExponentialBackoff(retry int) time.Duration {
+	// Base delay of 1 second
+	baseDelay := time.Second
+
+	// Calculate exponential delay: base * 2^retry
+	// Cap at 1 hour to prevent excessive delays
+	maxDelay := time.Hour
+
+	delay := baseDelay * time.Duration(1<<uint(retry))
+	if delay > maxDelay {
+		return maxDelay
+	}
+
+	return delay
 }

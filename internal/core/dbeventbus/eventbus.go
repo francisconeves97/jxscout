@@ -127,6 +127,8 @@ func (b *EventBus) Publish(ctx context.Context, tx sqlx.ExecerContext, topic str
 		return errutil.Wrap(err, "failed to marshal payload")
 	}
 
+	b.log.DebugContext(ctx, "Publishing event", "topic", topic, "payload_size", len(payloadBytes))
+
 	query := `INSERT INTO events (name, payload) VALUES (?, ?)`
 	_, err = tx.ExecContext(ctx, query, topic, string(payloadBytes))
 	if err != nil {
@@ -179,6 +181,8 @@ func (b *EventBus) fetchAndDistributeEvents(ctx context.Context, topic, queueNam
 	}
 	defer tx.Rollback()
 
+	b.log.DebugContext(ctx, "Fetching events for processing", "topic", topic, "queue", queueName, "concurrency", opts.Concurrency)
+
 	// Get multiple events that are ready to be processed and lock them
 	var eventsToProcess []Event
 	err = tx.SelectContext(ctx, &eventsToProcess,
@@ -197,12 +201,15 @@ func (b *EventBus) fetchAndDistributeEvents(ctx context.Context, topic, queueNam
 		return errutil.Wrap(err, "failed to fetch events")
 	}
 
+	b.log.DebugContext(ctx, "Found events to process", "count", len(eventsToProcess), "topic", topic, "queue", queueName)
+
 	// Send events to workers after transaction is committed
 	for _, event := range eventsToProcess {
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
 		case jobs <- event:
+			b.log.DebugContext(ctx, "Distributing event to worker", "event_id", event.ID, "topic", event.Name)
 			_, err = tx.ExecContext(ctx,
 				`INSERT INTO event_processing (event_id, subscriber, status, last_attempt, heartbeat, finished_at) 
 				 VALUES (?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL)
@@ -243,6 +250,8 @@ func (b *EventBus) worker(ctx context.Context, queueName string, handler Handler
 }
 
 func (b *EventBus) processEvent(ctx context.Context, event Event, queueName string, handler Handler, opts Options) error {
+	b.log.DebugContext(ctx, "Starting event processing", "event_id", event.ID, "topic", event.Name, "queue", queueName)
+
 	// Create a context for the heartbeat goroutine
 	heartbeatCtx, cancelHeartbeat := context.WithCancel(ctx)
 	defer cancelHeartbeat()
@@ -254,6 +263,8 @@ func (b *EventBus) processEvent(ctx context.Context, event Event, queueName stri
 	err := handler(ctx, []byte(event.Payload))
 	if err != nil {
 		b.log.ErrorContext(ctx, "Error processing event", "event_id", event.ID, "queue_name", queueName, "error", err)
+	} else {
+		b.log.DebugContext(ctx, "Event processed successfully", "event_id", event.ID, "topic", event.Name, "queue", queueName)
 	}
 
 	// Update final status
@@ -321,6 +332,16 @@ func (b *EventBus) updateFailedStatus(ctx context.Context, tx *sqlx.Tx, handlerE
 
 	if IsRetriable(handlerErr) && retryCount < opts.MaxRetries {
 		status = statusRetry
+		b.log.DebugContext(ctx, "Event will be retried",
+			"event_id", processing.EventID,
+			"retry_count", retryCount,
+			"next_attempt", nextAttempt,
+			"error", handlerErr)
+	} else {
+		b.log.DebugContext(ctx, "Event failed permanently",
+			"event_id", processing.EventID,
+			"retry_count", retryCount,
+			"error", handlerErr)
 	}
 
 	_, err := tx.ExecContext(ctx,
@@ -380,6 +401,11 @@ func (b *EventBus) resetStaleEvents(ctx context.Context, queueName string, heart
 
 	// Calculate the cutoff time for stale events (10 missed heartbeats)
 	staleCutoff := time.Now().UTC().Add(-10 * heartbeatInterval)
+
+	b.log.DebugContext(ctx, "Checking for stale events",
+		"queue", queueName,
+		"stale_cutoff", staleCutoff,
+		"heartbeat_interval", heartbeatInterval)
 
 	_, err = tx.ExecContext(ctx,
 		`UPDATE event_processing 

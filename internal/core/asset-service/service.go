@@ -85,6 +85,11 @@ type AssetServiceConfig struct {
 }
 
 func NewAssetService(cfg AssetServiceConfig) (AssetService, error) {
+	err := initializeRepo(cfg.Database)
+	if err != nil {
+		return nil, errutil.Wrap(err, "failed to initialize repo")
+	}
+
 	s := &assetService{
 		db:             cfg.Database,
 		eventBus:       cfg.EventBus,
@@ -177,6 +182,7 @@ func (s *assetService) handleSaveAssetRequest(ctx context.Context, asset Asset) 
 		FileSystemPath: path,
 		Project:        asset.Project,
 		RequestHeaders: string(headers),
+		IsInlineJS:     asset.IsInlineJS,
 	}
 
 	if asset.Parent != nil {
@@ -191,6 +197,7 @@ func (s *assetService) handleSaveAssetRequest(ctx context.Context, asset Asset) 
 			ContentType:    asset.Parent.ContentType,
 			Project:        asset.Parent.Project,
 			RequestHeaders: string(headers),
+			IsInlineJS:     asset.Parent.IsInlineJS,
 		}
 	}
 
@@ -206,7 +213,7 @@ func (s *assetService) handleSaveAssetRequest(ctx context.Context, asset Asset) 
 	}
 
 	if assetID == 0 {
-		s.log.ErrorContext(ctx, "asset id is 0", "asset_url", asset.URL)
+		s.log.ErrorContext(ctx, "asset id is 0. this is a bug, report it please", "asset_url", asset.URL)
 		return errutil.Wrap(errors.New("asset id is 0"), "failed to save asset to db")
 	}
 

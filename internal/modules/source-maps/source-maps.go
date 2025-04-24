@@ -72,11 +72,9 @@ func (m *sourceMapsModule) subscribeAssetSavedEvent() error {
 
 		return nil
 	}, dbeventbus.Options{
-		Concurrency: m.concurrency,
-		MaxRetries:  3,
-		Backoff: func(retry int) time.Duration {
-			return time.Duration(retry) * time.Second
-		},
+		Concurrency:       m.concurrency,
+		MaxRetries:        3,
+		Backoff:           common.ExponentialBackoff,
 		PollInterval:      1 * time.Second,
 		HeartbeatInterval: 10 * time.Second,
 	})
@@ -118,7 +116,8 @@ func (s *sourceMapsModule) sourceMapDiscover(ctx context.Context, asset assetser
 	var sourceMap map[string]interface{}
 	err = json.Unmarshal([]byte(res), &sourceMap)
 	if err != nil {
-		return errors.Wrapf(err, "failed to unmarshal source map for asset %s", asset.URL)
+		s.sdk.Logger.DebugContext(ctx, "failed to unmarshal source map for asset. should not be a valid source map", "asset_url", asset.URL, "err", err)
+		return nil
 	}
 
 	filePath, err := s.sdk.FileService.SaveInSubfolder(ctx, sourceMapsFolder, assetservice.SaveFileRequest{

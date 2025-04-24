@@ -100,11 +100,9 @@ func (m *astAnalyzerModule) subscribeAssetBeautified() error {
 
 		return m.analyzeAsset(asset)
 	}, dbeventbus.Options{
-		Concurrency: m.concurrency,
-		MaxRetries:  3,
-		Backoff: func(retry int) time.Duration {
-			return time.Duration(retry) * time.Second
-		},
+		Concurrency:       m.concurrency,
+		MaxRetries:        3,
+		Backoff:           common.ExponentialBackoff,
 		PollInterval:      1 * time.Second,
 		HeartbeatInterval: 10 * time.Second,
 	})
