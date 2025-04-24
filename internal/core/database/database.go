@@ -21,7 +21,7 @@ func GetDatabase() (*sqlx.DB, error) {
 		return nil, errutil.Wrap(err, "failed to create database save dir")
 	}
 
-	db, err := sqlx.Open("sqlite3", fmt.Sprintf("file:%s?cache=shared&_busy_timeout=10000&_journal=WAL&_synchronous=NORMAL&_txlock=immediate", dbPath))
+	db, err := sqlx.Open("sqlite3", fmt.Sprintf("file:%s?cache=shared&_busy_timeout=5000&_journal=WAL&_synchronous=NORMAL&_txlock=immediate", dbPath))
 	if err != nil {
 		return nil, errutil.Wrap(err, "failed to open sqlite db")
 	}

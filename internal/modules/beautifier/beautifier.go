@@ -1,6 +1,7 @@
 package beautifier
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -56,20 +57,9 @@ func (m *beautifierModule) subscribeAssetSavedEvent() error {
 			return dbeventbus.NewRetriableError(errutil.Wrap(err, "failed to get asset"))
 		}
 
-		if isValid, ok := validBeautifierContentTypes[asset.ContentType]; !ok || !isValid {
-			return nil
-		}
-
-		err = m.beautify(asset.Path, asset.ContentType)
+		err = m.handleAssetSavedEvent(ctx, asset)
 		if err != nil {
-			return dbeventbus.NewRetriableError(errutil.Wrap(err, "failed to beautify asset"))
-		}
-
-		err = m.sdk.DBEventBus.Publish(ctx, m.sdk.Database, TopicBeautifierAssetSaved, EventBeautifierAssetSaved{
-			AssetID: asset.ID,
-		})
-		if err != nil {
-			return errutil.Wrap(err, "failed to publish asset saved event")
+			return errutil.Wrapf(err, "failed to handle asset saved event for asset (%s)", asset.URL)
 		}
 
 		return nil
@@ -89,7 +79,27 @@ func (m *beautifierModule) subscribeAssetSavedEvent() error {
 	return nil
 }
 
-func (s *beautifierModule) beautify(filePath string, contentType common.ContentType) error {
+func (m *beautifierModule) handleAssetSavedEvent(ctx context.Context, asset assetservice.Asset) error {
+	if isValid, ok := validBeautifierContentTypes[asset.ContentType]; !ok || !isValid {
+		return nil
+	}
+
+	err := m.beautify(asset.Path, asset.ContentType)
+	if err != nil {
+		return errutil.Wrap(err, "failed to beautify asset")
+	}
+
+	err = m.sdk.DBEventBus.Publish(ctx, m.sdk.Database, TopicBeautifierAssetSaved, EventBeautifierAssetSaved{
+		AssetID: asset.ID,
+	})
+	if err != nil {
+		return errutil.Wrap(err, "failed to publish asset saved event")
+	}
+
+	return nil
+}
+
+func (m *beautifierModule) beautify(filePath string, contentType common.ContentType) error {
 	parser := "babel"
 	if contentType == common.ContentTypeHTML {
 		parser = "html"
@@ -97,13 +107,16 @@ func (s *beautifierModule) beautify(filePath string, contentType common.ContentT
 
 	cmd := exec.Command("prettier", filePath, "--write", fmt.Sprintf("--parser=%s", parser))
 
+	var stderr bytes.Buffer
+	cmd.Stderr = &stderr
+
 	if err := cmd.Start(); err != nil {
 		return errutil.Wrap(err, "error starting command")
 	}
 
 	err := cmd.Wait()
 	if err != nil {
-		return errutil.Wrap(err, "error waiting for command")
+		return errutil.Wrapf(err, "error waiting for command: %s", stderr.String())
 	}
 
 	return nil

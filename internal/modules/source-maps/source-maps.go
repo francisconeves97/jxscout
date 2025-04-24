@@ -1,6 +1,7 @@
 package sourcemaps
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -64,11 +65,12 @@ func (m *sourceMapsModule) subscribeAssetSavedEvent() error {
 			return dbeventbus.NewRetriableError(errutil.Wrap(err, "failed to get asset"))
 		}
 
-		if isValid, ok := validsourceMapsContentTypes[asset.ContentType]; !ok || !isValid {
-			return nil
+		err = m.handleAssetSavedEvent(ctx, asset)
+		if err != nil {
+			return errutil.Wrapf(err, "failed to handle asset saved event for asset (%s)", asset.URL)
 		}
 
-		return m.sourceMapDiscover(ctx, asset)
+		return nil
 	}, dbeventbus.Options{
 		Concurrency: m.concurrency,
 		MaxRetries:  3,
@@ -83,6 +85,18 @@ func (m *sourceMapsModule) subscribeAssetSavedEvent() error {
 	}
 
 	return nil
+}
+
+func (m *sourceMapsModule) handleAssetSavedEvent(ctx context.Context, asset assetservice.Asset) error {
+	if asset.IsInlineJS {
+		return nil
+	}
+
+	if isValid, ok := validsourceMapsContentTypes[asset.ContentType]; !ok || !isValid {
+		return nil
+	}
+
+	return m.sourceMapDiscover(ctx, asset)
 }
 
 func (s *sourceMapsModule) sourceMapDiscover(ctx context.Context, asset assetservice.Asset) error {
@@ -118,12 +132,16 @@ func (s *sourceMapsModule) sourceMapDiscover(ctx context.Context, asset assetser
 	s.sdk.Logger.Info("discovered source map 💼", "path", filePath, "asset_url", sourceMapPath)
 
 	cmd := exec.Command("reverse-sourcemap", filePath, "--output-dir", filepath.Join(common.GetWorkingDirectory(), s.sdk.Options.ProjectName, sourceMapsFolder, sourceMapsReversed), "--recursive")
+
+	var stderr bytes.Buffer
+	cmd.Stderr = &stderr
+
 	if err := cmd.Start(); err != nil {
-		return dbeventbus.NewRetriableError(errutil.Wrap(err, "error starting command"))
+		return errutil.Wrap(err, "error starting command")
 	}
 
 	if err := cmd.Wait(); err != nil {
-		return dbeventbus.NewRetriableError(errors.Wrapf(err, "error waiting for command to finish"))
+		return errutil.Wrapf(err, "error waiting for command to finish: %s", stderr.String())
 	}
 
 	return nil

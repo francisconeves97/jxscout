@@ -83,15 +83,12 @@ func (m *chunkDiscovererModule) subscribeAssetSavedEvent() error {
 			return dbeventbus.NewRetriableError(errutil.Wrap(err, "failed to get asset"))
 		}
 
-		if asset.IsInlineJS {
-			return nil
+		err = m.handleAssetSavedEvent(ctx, asset)
+		if err != nil {
+			return errutil.Wrapf(err, "failed to handle asset saved event for asset (%s)", asset.URL)
 		}
 
-		if isValid, ok := validChunkDiscovererContentTypes[asset.ContentType]; !ok || !isValid {
-			return nil
-		}
-
-		return m.discoverPossibleChunks(ctx, asset)
+		return nil
 	}, dbeventbus.Options{
 		Concurrency: m.concurrency,
 		MaxRetries:  3,
@@ -106,6 +103,18 @@ func (m *chunkDiscovererModule) subscribeAssetSavedEvent() error {
 	}
 
 	return nil
+}
+
+func (m *chunkDiscovererModule) handleAssetSavedEvent(ctx context.Context, asset assetservice.Asset) error {
+	if asset.IsInlineJS {
+		return nil
+	}
+
+	if isValid, ok := validChunkDiscovererContentTypes[asset.ContentType]; !ok || !isValid {
+		return nil
+	}
+
+	return m.discoverPossibleChunks(ctx, asset)
 }
 
 func (s *chunkDiscovererModule) discoverPossibleChunks(ctx context.Context, asset assetservice.Asset) error {

@@ -69,6 +69,7 @@ type assetService struct {
 	fileService    FileService
 	htmlCacheTTL   time.Duration
 	jsCacheTTL     time.Duration
+	projectName    string
 }
 
 type AssetServiceConfig struct {
@@ -80,6 +81,7 @@ type AssetServiceConfig struct {
 	Database                   *sqlx.DB
 	HTMLRequestsCacheTTL       time.Duration
 	JavascriptRequestsCacheTTL time.Duration
+	ProjectName                string
 }
 
 func NewAssetService(cfg AssetServiceConfig) (AssetService, error) {
@@ -91,6 +93,7 @@ func NewAssetService(cfg AssetServiceConfig) (AssetService, error) {
 		fileService:    cfg.FileService,
 		htmlCacheTTL:   cfg.HTMLRequestsCacheTTL,
 		jsCacheTTL:     cfg.JavascriptRequestsCacheTTL,
+		projectName:    cfg.ProjectName,
 	}
 
 	s.initializeQueueHandlers()
@@ -143,8 +146,8 @@ func (s *assetService) handleSaveAssetRequest(ctx context.Context, asset Asset) 
 			s.log.DebugContext(ctx, "asset content has changed, updating", "asset_url", asset.URL)
 		}
 
-		if dbAsset.ContentHash == common.Hash(asset.Content) {
-			s.log.DebugContext(ctx, "asset content has not changed, skipping", "asset_url", asset.URL)
+		if dbAsset.ContentHash == common.Hash(asset.Content) && dbAsset.Project == s.projectName {
+			s.log.DebugContext(ctx, "asset content has not changed within the same project, skipping", "asset_url", asset.URL)
 
 			return nil
 		}
