@@ -1,11 +1,9 @@
 package sourcemaps
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
-	"os/exec"
 	"path/filepath"
 	"time"
 
@@ -35,6 +33,11 @@ func NewSourceMaps(concurrency int) *sourceMapsModule {
 
 func (m *sourceMapsModule) Initialize(sdk *jxscouttypes.ModuleSDK) error {
 	m.sdk = sdk
+
+	err := initializeDatabase(m.sdk.Database)
+	if err != nil {
+		return errutil.Wrap(err, "failed to initialize database")
+	}
 
 	go func() {
 		err := m.subscribeAssetSavedEvent()
@@ -98,49 +101,63 @@ func (m *sourceMapsModule) handleAssetSavedEvent(ctx context.Context, asset asse
 }
 
 func (s *sourceMapsModule) sourceMapDiscover(ctx context.Context, asset assetservice.Asset) error {
-	if asset.IsInlineJS {
+	sourceMap, found, err := getSourceMapForAsset(ctx, asset, s.sdk)
+	if err != nil {
+		return errutil.Wrap(err, "failed to get source map for asset")
+	}
+	if !found {
 		return nil
 	}
 
-	sourceMapPath := fmt.Sprintf("%s.map", asset.URL)
-
-	res, ok, err := s.sdk.AssetFetcher.RateLimitedGet(ctx, sourceMapPath, nil)
-	if err != nil {
-		return dbeventbus.NewRetriableError(errors.Wrapf(err, "failed to fetch source map for asset %s", asset.URL))
-	}
-	if !ok {
-		return nil // no source map found
-	}
-
-	// check if res is a valid json
-	var sourceMap map[string]interface{}
-	err = json.Unmarshal([]byte(res), &sourceMap)
-	if err != nil {
-		s.sdk.Logger.DebugContext(ctx, "failed to unmarshal source map for asset. should not be a valid source map", "asset_url", asset.URL, "err", err)
-		return nil
+	urlToSave := common.NormalizeURL(sourceMap.URL.String())
+	if sourceMap.URL.Scheme == "data" {
+		urlToSave = fmt.Sprintf("%s.map", asset.URL)
 	}
 
 	filePath, err := s.sdk.FileService.SaveInSubfolder(ctx, sourceMapsFolder, assetservice.SaveFileRequest{
-		PathURL: sourceMapPath,
-		Content: res,
+		PathURL: urlToSave,
+		Content: sourceMap.OriginalContent,
 	})
 	if err != nil {
 		return dbeventbus.NewRetriableError(errors.Wrapf(err, "failed to save source map for asset %s", asset.URL))
 	}
 
-	s.sdk.Logger.Info("discovered source map 💼", "path", filePath, "asset_url", sourceMapPath)
+	s.sdk.Logger.Info("discovered source map 💼", "path", filePath, "asset_url", asset.URL, "sourcemap_url", urlToSave)
 
-	cmd := exec.Command("reverse-sourcemap", filePath, "--output-dir", filepath.Join(common.GetWorkingDirectory(), s.sdk.Options.ProjectName, sourceMapsFolder, sourceMapsReversed), "--recursive")
-
-	var stderr bytes.Buffer
-	cmd.Stderr = &stderr
-
-	if err := cmd.Start(); err != nil {
-		return errutil.Wrap(err, "error starting command")
+	dbSourceMap := &Sourcemap{
+		AssetID: asset.ID,
+		URL:     common.NormalizeURL(sourceMap.URL.String()),
+		Getter:  sourceMap.GetterName,
+		Path:    filePath,
+		Hash:    common.Hash(sourceMap.OriginalContent),
 	}
 
-	if err := cmd.Wait(); err != nil {
-		return errutil.Wrapf(err, "error waiting for command to finish: %s", stderr.String())
+	sourceMapID, err := SaveSourcemap(ctx, s.sdk.Database, dbSourceMap)
+	if err != nil {
+		return dbeventbus.NewRetriableError(errutil.Wrap(err, "failed to save source map"))
+	}
+
+	reversedSourceMapsDir := filepath.Join(common.GetWorkingDirectory(), s.sdk.Options.ProjectName, sourceMapsFolder, sourceMapsReversed)
+
+	for i, sourcePath := range sourceMap.Sources {
+		sourcePath = "/" + sourcePath // path.Clean will ignore a leading '..', must be a '/..'
+
+		scriptPath, scriptData := filepath.Join(reversedSourceMapsDir, filepath.Clean(sourcePath)), sourceMap.SourcesContent[i]
+
+		filePath, err := s.sdk.FileService.SimpleSave(scriptPath, scriptData)
+		if err != nil {
+			return dbeventbus.NewRetriableError(errors.Wrapf(err, "failed to save source map for asset %s", asset.URL))
+		}
+
+		reversedSourceMap := &ReversedSourcemap{
+			SourcemapID: sourceMapID,
+			Path:        filePath,
+		}
+
+		_, err = SaveReversedSourcemap(ctx, s.sdk.Database, reversedSourceMap)
+		if err != nil {
+			return dbeventbus.NewRetriableError(errutil.Wrap(err, "failed to save reversed source map"))
+		}
 	}
 
 	return nil

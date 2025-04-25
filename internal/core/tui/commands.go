@@ -31,7 +31,7 @@ const GuideContent = `
 ## Getting Started
 
 1. Install dependencies:
-   Type 'install' in the prompt to get all the tools you need (npm, bun, prettier, reverse-sourcemap)
+   Type 'install' in the prompt to get all the tools you need (npm, bun, prettier)
 
 2. Configure jxscout:
    Type 'config' to view and adjust your settings.
@@ -449,7 +449,7 @@ func (t *TUI) RegisterDefaultCommands() {
 	t.RegisterCommand(Command{
 		Name:        "install",
 		ShortName:   "i",
-		Description: "Install jxscout dependencies (npm, bun, prettier, reverse-sourcemap)",
+		Description: "Install jxscout dependencies (npm, bun, prettier)",
 		Usage:       "install",
 		Execute: func(args []string) (tea.Cmd, error) {
 			// Start the installation process in a goroutine
@@ -475,15 +475,15 @@ func (t *TUI) RegisterDefaultCommands() {
 				}
 				t.writeLineToOutput("✅ bun installed successfully")
 
-				// Install prettier and reverse-sourcemap using bun
-				t.writeLineToOutput("\nInstalling prettier and reverse-sourcemap...")
-				cmd = exec.Command("bun", "install", "-g", "prettier", "reverse-sourcemap")
+				// Install prettier using bun
+				t.writeLineToOutput("\nInstalling prettier...")
+				cmd = exec.Command("bun", "install", "-g", "prettier")
 				output, err = cmd.CombinedOutput()
 				if err != nil {
-					t.writeLineToOutput(fmt.Sprintf("❌ Failed to install prettier and reverse-sourcemap: %v\nOutput: %s", err, string(output)))
+					t.writeLineToOutput(fmt.Sprintf("❌ Failed to install prettier: %v\nOutput: %s", err, string(output)))
 					return
 				}
-				t.writeLineToOutput("✅ prettier and reverse-sourcemap installed successfully")
+				t.writeLineToOutput("✅ prettier installed successfully")
 
 				t.writeLineToOutput("\n🎉 All jxscout dependencies have been installed successfully!")
 			}()

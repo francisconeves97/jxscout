@@ -24,7 +24,7 @@ To install, just run the below command or download pre-compiled binary from [rel
 go install github.com/francisconeves97/jxscout/cmd/jxscout@latest
 ```
 
-You can then run the `install` command to get all the necessary dependencies (bun, prettier and reverse-sourcemap)
+You can then run the `install` command to get all the necessary dependencies (bun and prettier)
 
 ![jxscout](docs/jxscout.png)
 
@@ -42,6 +42,7 @@ jxscout
 ```
 
 Once jxscout is running, you can:
+
 - Run the `guide` command for a quick walkthrough
 - Watch the video tutorial for a visual guide on configuring and using jxscout
 
@@ -80,7 +81,7 @@ guide (g) - Show a guide on how to use jxscout
 help (h) - Shows help information for commands
   Usage: help [command]
 
-install (i) - Install jxscout dependencies (npm, bun, prettier, reverse-sourcemap)
+install (i) - Install jxscout dependencies (npm, bun, prettier)
   Usage: install
 
 loaded (ldd) - Show assets that loaded a specific JavaScript asset
@@ -92,7 +93,7 @@ loads (lds) - Show JavaScript assets loaded by a specific HTML page
 logs (l) - Toggle logs panel
   Usage: logs
 
-override (o) - Toggle local override for a specific URL (only available for Caido). 
+override (o) - Toggle local override for a specific URL (only available for Caido).
 This will override the content of an asset when you visit it in your browser.
 When overriding an HTML file keep the (index).html suffix.
 The `assets` command will give you the right URL to use.
@@ -190,8 +191,6 @@ go run cmd/jxscout/main.go
 ```
 
 4. Setup your proxy to ingest requests into jxscout
-
-
 
 ### Chunk Discovery Script
 

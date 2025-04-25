@@ -24,7 +24,7 @@ import (
 	"github.com/francisconeves97/jxscout/internal/modules/ingestion"
 	jsingestion "github.com/francisconeves97/jxscout/internal/modules/js-ingestion"
 	"github.com/francisconeves97/jxscout/internal/modules/overrides"
-	sourcemaps "github.com/francisconeves97/jxscout/internal/modules/source-maps"
+	"github.com/francisconeves97/jxscout/internal/modules/sourcemaps"
 	jxscouttypes "github.com/francisconeves97/jxscout/pkg/types"
 	"github.com/jmoiron/sqlx"
 

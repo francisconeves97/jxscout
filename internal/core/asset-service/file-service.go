@@ -7,6 +7,8 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"regexp"
+	"runtime"
 	"strings"
 
 	"github.com/francisconeves97/jxscout/internal/core/errutil"
@@ -27,6 +29,7 @@ type SaveFileRequest struct {
 
 type FileService interface {
 	Save(ctx context.Context, req SaveFileRequest) (string, error)
+	SimpleSave(path string, content string) (string, error)
 	SaveInSubfolder(ctx context.Context, subfolder string, req SaveFileRequest) (string, error)
 	UpdateWorkingDirectory(newPath string)
 }
@@ -60,6 +63,11 @@ func (s *fileServiceImpl) Save(ctx context.Context, req SaveFileRequest) (string
 	return s.save(ctx, filePath, req)
 }
 
+func cleanWindows(p string) string {
+	m1 := regexp.MustCompile(`[?%*|:"<>]`)
+	return m1.ReplaceAllString(p, "")
+}
+
 func (s *fileServiceImpl) save(ctx context.Context, filePath []string, req SaveFileRequest) (string, error) {
 	parsedURL, err := url.Parse(req.PathURL)
 	if err != nil {
@@ -74,7 +82,7 @@ func (s *fileServiceImpl) save(ctx context.Context, filePath []string, req SaveF
 	filePath = append(filePath, pathParts...)
 
 	targetPath := filepath.Join(filePath...)
-	err = s.writeToFile(targetPath, req.Content)
+	targetPath, err = s.SimpleSave(targetPath, req.Content)
 	if err != nil {
 		return "", errutil.Wrap(err, "failed to write file")
 	}
@@ -82,18 +90,24 @@ func (s *fileServiceImpl) save(ctx context.Context, filePath []string, req SaveF
 	return targetPath, nil
 }
 
-func (s *fileServiceImpl) writeToFile(filePath string, content string) error {
+func (s *fileServiceImpl) SimpleSave(filePath string, content string) (string, error) {
+	if runtime.GOOS == "windows" {
+		filePath = cleanWindows(filePath)
+	}
+
+	filePath = filepath.Clean(filePath)
+
 	dir := path.Dir(filePath)
 	if err := os.MkdirAll(dir, 0755); err != nil {
-		return errutil.Wrap(err, "failed to create directory")
+		return filePath, errutil.Wrap(err, "failed to create directory")
 	}
 
 	err := os.WriteFile(filePath, []byte(content), 0644)
 	if err != nil {
-		return errutil.Wrap(err, "failed to create file and write content")
+		return filePath, errutil.Wrap(err, "failed to create file and write content")
 	}
 
-	return nil
+	return filePath, nil
 }
 
 func (s *fileServiceImpl) UpdateWorkingDirectory(path string) {
