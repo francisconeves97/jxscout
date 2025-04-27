@@ -178,7 +178,7 @@ func (s *sourceMapsModule) sourceMapDiscover(ctx context.Context, asset assetser
 
 	reversedSourceMapsDir := filepath.Join(reverseSourceMapsDir...)
 
-	sourcemaps, err := s.execSourcemapsReverse(asset.Path, reversedSourceMapsDir)
+	sourcemaps, err := s.execSourcemapsReverse(filePath, reversedSourceMapsDir)
 	if err != nil {
 		return errutil.Wrap(err, "failed to execute sourcemaps reverse")
 	}
@@ -201,6 +201,8 @@ func (s *sourceMapsModule) sourceMapDiscover(ctx context.Context, asset assetser
 func (s *sourceMapsModule) execSourcemapsReverse(sourcemapPath string, sourcemapOutputDir string) ([]string, error) {
 	// Prepare the command to run the JavaScript script with Bun
 	cmd := exec.Command("bun", "run", s.sourcemapsBinaryPath, sourcemapPath, sourcemapOutputDir)
+
+	s.sdk.Logger.Debug("executing sourcemaps reverse", "command", cmd.String())
 
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
