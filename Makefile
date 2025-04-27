@@ -10,4 +10,5 @@ build:
 	make clean
 	bun build pkg/chunk-discoverer/index.ts --outfile internal/modules/chunk-discoverer/chunk-discoverer.js --target bun --minify
 	bun build pkg/ast-analyzer/index.ts --outfile internal/modules/ast-analyzer/ast-analyzer.js --target bun --minify
+	bun build pkg/sourcemap-reverse/index.ts --outfile internal/modules/sourcemaps/sourcemaps.js --target bun --minify
 	go build -o dist/jxscout cmd/jxscout/main.go

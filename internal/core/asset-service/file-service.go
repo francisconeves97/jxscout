@@ -32,6 +32,7 @@ type FileService interface {
 	SimpleSave(path string, content string) (string, error)
 	SaveInSubfolder(ctx context.Context, subfolder string, req SaveFileRequest) (string, error)
 	UpdateWorkingDirectory(newPath string)
+	URLToPath(pathURL string) ([]string, error)
 }
 
 type fileServiceImpl struct {
@@ -88,6 +89,25 @@ func (s *fileServiceImpl) save(ctx context.Context, filePath []string, req SaveF
 	}
 
 	return targetPath, nil
+}
+
+func (s *fileServiceImpl) URLToPath(pathURL string) ([]string, error) {
+	filePath := []string{}
+
+	parsedURL, err := url.Parse(pathURL)
+	if err != nil {
+		return nil, errutil.Wrap(err, "failed to parse url")
+	}
+
+	filePath = append(filePath, parsedURL.Host)
+
+	path := parsedURL.Path
+	pathParts := strings.Split(path, urlDelimiter)
+
+	filePath = append(filePath, pathParts...)
+
+	return filePath, nil
+
 }
 
 func (s *fileServiceImpl) SimpleSave(filePath string, content string) (string, error) {

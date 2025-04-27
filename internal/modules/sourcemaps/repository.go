@@ -63,15 +63,17 @@ func SaveSourcemap(ctx context.Context, db sqlx.QueryerContext, sourcemap *Sourc
 	var id int64
 	err := sqlx.GetContext(ctx, db, &id,
 		`
-		INSERT INTO sourcemaps (asset_id, url, path, hash) 
-		VALUES (?, ?, ?, ?)
+		INSERT INTO sourcemaps (asset_id, url, path, hash, getter) 
+		VALUES (?, ?, ?, ?, ?)
 		ON CONFLICT(url) DO UPDATE SET
 			path = excluded.path,
 			hash = excluded.hash,
+			getter = excluded.getter,
 			updated_at = CURRENT_TIMESTAMP
 		ON CONFLICT(path) DO UPDATE SET
 			url = excluded.url,
 			hash = excluded.hash,
+			getter = excluded.getter,
 			updated_at = CURRENT_TIMESTAMP
 		RETURNING id
 		`,
@@ -79,6 +81,7 @@ func SaveSourcemap(ctx context.Context, db sqlx.QueryerContext, sourcemap *Sourc
 		sourcemap.URL,
 		sourcemap.Path,
 		sourcemap.Hash,
+		sourcemap.Getter,
 	)
 	if err != nil {
 		return 0, errutil.Wrap(err, "failed to save sourcemap")

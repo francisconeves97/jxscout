@@ -1,10 +1,16 @@
 package sourcemaps
 
 import (
+	"bufio"
 	"context"
+	_ "embed"
 	"encoding/json"
 	"fmt"
+	"io"
+	"os"
+	"os/exec"
 	"path/filepath"
+	"strings"
 	"time"
 
 	assetservice "github.com/francisconeves97/jxscout/internal/core/asset-service"
@@ -15,14 +21,18 @@ import (
 	"github.com/pkg/errors"
 )
 
+//go:embed sourcemaps.js
+var sourcemapsBinary []byte
+
 const (
 	sourceMapsFolder   = "sourcemaps"
 	sourceMapsReversed = "reversed"
 )
 
 type sourceMapsModule struct {
-	sdk         *jxscouttypes.ModuleSDK
-	concurrency int
+	sdk                  *jxscouttypes.ModuleSDK
+	concurrency          int
+	sourcemapsBinaryPath string
 }
 
 func NewSourceMaps(concurrency int) *sourceMapsModule {
@@ -45,6 +55,21 @@ func (m *sourceMapsModule) Initialize(sdk *jxscouttypes.ModuleSDK) error {
 			m.sdk.Logger.Error("failed to subscribe to asset saved topic", "err", err)
 		}
 	}()
+
+	saveDir := filepath.Join(common.GetPrivateDirectory(), "extracted")
+
+	// Create the directory if it doesn't exist
+	if err := os.MkdirAll(saveDir, 0755); err != nil {
+		return errutil.Wrap(err, "failed to create binaries directory")
+	}
+
+	// Define the path for the extracted binary
+	binaryPath := filepath.Join(saveDir, "sourcemaps.js")
+	if err := os.WriteFile(binaryPath, sourcemapsBinary, 0755); err != nil {
+		return errutil.Wrap(err, "failed to write sourcemaps file")
+	}
+
+	m.sourcemapsBinaryPath = binaryPath
 
 	return nil
 }
@@ -137,21 +162,31 @@ func (s *sourceMapsModule) sourceMapDiscover(ctx context.Context, asset assetser
 		return dbeventbus.NewRetriableError(errutil.Wrap(err, "failed to save source map"))
 	}
 
-	reversedSourceMapsDir := filepath.Join(common.GetWorkingDirectory(), s.sdk.Options.ProjectName, sourceMapsFolder, sourceMapsReversed)
+	assetPath, err := s.sdk.FileService.URLToPath(asset.URL)
+	if err != nil {
+		return errutil.Wrap(err, "failed to convert asset url to path")
+	}
 
-	for i, sourcePath := range sourceMap.Sources {
-		sourcePath = "/" + sourcePath // path.Clean will ignore a leading '..', must be a '/..'
+	reverseSourceMapsDir := []string{
+		common.GetWorkingDirectory(),
+		s.sdk.Options.ProjectName,
+		sourceMapsFolder,
+		sourceMapsReversed,
+	}
 
-		scriptPath, scriptData := filepath.Join(reversedSourceMapsDir, filepath.Clean(sourcePath)), sourceMap.SourcesContent[i]
+	reverseSourceMapsDir = append(reverseSourceMapsDir, assetPath...)
 
-		filePath, err := s.sdk.FileService.SimpleSave(scriptPath, scriptData)
-		if err != nil {
-			return dbeventbus.NewRetriableError(errors.Wrapf(err, "failed to save source map for asset %s", asset.URL))
-		}
+	reversedSourceMapsDir := filepath.Join(reverseSourceMapsDir...)
 
+	sourcemaps, err := s.execSourcemapsReverse(asset.Path, reversedSourceMapsDir)
+	if err != nil {
+		return errutil.Wrap(err, "failed to execute sourcemaps reverse")
+	}
+
+	for _, sourcemap := range sourcemaps {
 		reversedSourceMap := &ReversedSourcemap{
 			SourcemapID: sourceMapID,
-			Path:        filePath,
+			Path:        sourcemap,
 		}
 
 		_, err = SaveReversedSourcemap(ctx, s.sdk.Database, reversedSourceMap)
@@ -161,4 +196,44 @@ func (s *sourceMapsModule) sourceMapDiscover(ctx context.Context, asset assetser
 	}
 
 	return nil
+}
+
+func (s *sourceMapsModule) execSourcemapsReverse(sourcemapPath string, sourcemapOutputDir string) ([]string, error) {
+	// Prepare the command to run the JavaScript script with Bun
+	cmd := exec.Command("bun", "run", s.sourcemapsBinaryPath, sourcemapPath, sourcemapOutputDir)
+
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return nil, errutil.Wrap(err, "error creating stdout pipe")
+	}
+	stderr, err := cmd.StderrPipe()
+	if err != nil {
+		return nil, errutil.Wrap(err, "error creating stderr pipe")
+	}
+
+	if err := cmd.Start(); err != nil {
+		return nil, errutil.Wrap(err, "error starting command")
+	}
+
+	var sourcemaps []string
+	scanner := bufio.NewScanner(stdout)
+	for scanner.Scan() {
+		sourcemaps = append(sourcemaps, scanner.Text())
+	}
+
+	// Check for errors in stderr
+	stderrBytes, err := io.ReadAll(stderr)
+	if err != nil {
+		return nil, errutil.Wrap(err, "failed to read stderr")
+	}
+	if len(stderrBytes) > 0 {
+		return nil, fmt.Errorf("error executing sourcemaps reverse: %s", strings.TrimSpace(string(stderrBytes)))
+	}
+
+	// Wait for the command to finish
+	if err := cmd.Wait(); err != nil {
+		return nil, errutil.Wrap(err, "error running JavaScript script")
+	}
+
+	return sourcemaps, nil
 }

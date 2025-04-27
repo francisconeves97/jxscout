@@ -119,7 +119,7 @@ func (s *assetService) initializeQueueHandlers() {
 func (s *assetService) handleSaveAssetRequest(ctx context.Context, asset Asset) error {
 	s.log.DebugContext(ctx, "processing request to save asset", "asset_url", asset.URL)
 
-	dbAsset, exists, err := GetAssetByURL(ctx, s.db, asset.URL)
+	dbAsset, exists, err := GetAssetByURLAndProjectName(ctx, s.db, asset.URL, s.projectName)
 	if err != nil {
 		return errutil.Wrap(err, "failed to get asset from repo")
 	}
@@ -260,7 +260,7 @@ func (s *assetService) mapRepoAssetToAsset(repoAsset DBAsset) Asset {
 func (s *assetService) GetAssetByURL(ctx context.Context, url string) (Asset, bool, error) {
 	cleanURL := common.NormalizeURL(url)
 
-	repoAsset, exists, err := GetAssetByURL(ctx, s.db, cleanURL)
+	repoAsset, exists, err := GetAssetByURLAndProjectName(ctx, s.db, cleanURL, s.projectName)
 	if err != nil {
 		return Asset{}, false, errutil.Wrap(err, "failed to get asset from repo")
 	}
@@ -289,7 +289,7 @@ func (s *assetService) GetAssets(ctx context.Context, params GetAssetsParams) ([
 func (s *assetService) GetAssetsThatLoad(ctx context.Context, url string, params GetAssetsParams) ([]Asset, int, error) {
 	cleanURL := common.NormalizeURL(url)
 
-	repoAssets, total, err := GetAssetsThatLoad(ctx, s.db, cleanURL, params)
+	repoAssets, total, err := GetAssetsThatLoad(ctx, s.db, cleanURL, s.projectName, params)
 	if err != nil {
 		return nil, 0, errutil.Wrap(err, "failed to get assets that load from repo")
 	}
@@ -305,7 +305,7 @@ func (s *assetService) GetAssetsThatLoad(ctx context.Context, url string, params
 func (s *assetService) GetAssetsLoadedBy(ctx context.Context, url string, params GetAssetsParams) ([]Asset, int, error) {
 	cleanURL := common.NormalizeURL(url)
 
-	repoAssets, total, err := GetAssetsLoadedBy(ctx, s.db, cleanURL, params)
+	repoAssets, total, err := GetAssetsLoadedBy(ctx, s.db, cleanURL, s.projectName, params)
 	if err != nil {
 		return nil, 0, errutil.Wrap(err, "failed to get assets loaded by from repo")
 	}

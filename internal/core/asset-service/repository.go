@@ -274,15 +274,15 @@ func GetAssetsByProjectName(ctx context.Context, db queryer, projectName string)
 	return assetsReturn, nil
 }
 
-func GetAssetByURL(ctx context.Context, db queryer, url string) (DBAsset, bool, error) {
+func GetAssetByURLAndProjectName(ctx context.Context, db queryer, url string, projectName string) (DBAsset, bool, error) {
 	query := `
 		SELECT *
 		FROM assets
-		WHERE url = ?
+		WHERE url = ? AND project = ?
 		`
 
 	var asset DBAsset
-	err := sqlx.GetContext(ctx, db, &asset, query, url)
+	err := sqlx.GetContext(ctx, db, &asset, query, url, projectName)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return DBAsset{}, false, nil
@@ -341,9 +341,9 @@ func GetAssets(ctx context.Context, db queryer, params GetAssetsParams) ([]DBAss
 	return assets, total, nil
 }
 
-func GetAssetsThatLoad(ctx context.Context, db queryer, url string, params GetAssetsParams) ([]DBAsset, int, error) {
+func GetAssetsThatLoad(ctx context.Context, db queryer, url string, projectName string, params GetAssetsParams) ([]DBAsset, int, error) {
 	// First get the target asset
-	targetAsset, exists, err := GetAssetByURL(ctx, db, url)
+	targetAsset, exists, err := GetAssetByURLAndProjectName(ctx, db, url, projectName)
 	if err != nil {
 		return nil, 0, errutil.Wrap(err, "failed to get target asset")
 	}
@@ -382,9 +382,9 @@ func GetAssetsThatLoad(ctx context.Context, db queryer, url string, params GetAs
 	return assets, total, nil
 }
 
-func GetAssetsLoadedBy(ctx context.Context, db queryer, url string, params GetAssetsParams) ([]DBAsset, int, error) {
+func GetAssetsLoadedBy(ctx context.Context, db queryer, url string, projectName string, params GetAssetsParams) ([]DBAsset, int, error) {
 	// First get the target asset
-	targetAsset, exists, err := GetAssetByURL(ctx, db, url)
+	targetAsset, exists, err := GetAssetByURLAndProjectName(ctx, db, url, projectName)
 	if err != nil {
 		return nil, 0, errutil.Wrap(err, "failed to get target asset")
 	}
