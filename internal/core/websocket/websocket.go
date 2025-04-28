@@ -10,7 +10,7 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-type wsServer struct {
+type WebsocketServer struct {
 	router       chi.Router
 	upgrader     websocket.Upgrader
 	clients      map[*websocket.Conn]bool
@@ -21,8 +21,8 @@ type wsServer struct {
 	handlers      map[string]WebsocketHandler
 }
 
-func NewWebsocketServer(r chi.Router, logger *slog.Logger) *wsServer {
-	wsServer := &wsServer{
+func NewWebsocketServer(r chi.Router, logger *slog.Logger) *WebsocketServer {
+	wsServer := &WebsocketServer{
 		router: r,
 		upgrader: websocket.Upgrader{
 			CheckOrigin: func(r *http.Request) bool {
@@ -38,7 +38,7 @@ func NewWebsocketServer(r chi.Router, logger *slog.Logger) *wsServer {
 	return wsServer
 }
 
-func (s *wsServer) handleWebsocket(w http.ResponseWriter, r *http.Request) {
+func (s *WebsocketServer) handleWebsocket(w http.ResponseWriter, r *http.Request) {
 	conn, err := s.upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		s.log.Error("failed to upgrade connection to websocket", "err", err)
@@ -78,7 +78,7 @@ func (s *wsServer) handleWebsocket(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (s *wsServer) SendError(conn *websocket.Conn, msgID string, errorMsg string) {
+func (s *WebsocketServer) SendError(conn *websocket.Conn, msgID string, errorMsg string) {
 	payload := ErrorResponse{Message: errorMsg}
 	data, err := json.Marshal(payload)
 	if err != nil {
@@ -97,7 +97,7 @@ func (s *wsServer) SendError(conn *websocket.Conn, msgID string, errorMsg string
 	}
 }
 
-func (s *wsServer) SendResponse(conn *websocket.Conn, msgID string, msgType string, payload interface{}) {
+func (s *WebsocketServer) SendResponse(conn *websocket.Conn, msgID string, msgType string, payload interface{}) {
 	data, err := json.Marshal(payload)
 	if err != nil {
 		s.log.Error("failed to marshal payload", "err", err)
@@ -116,7 +116,7 @@ func (s *wsServer) SendResponse(conn *websocket.Conn, msgID string, msgType stri
 	}
 }
 
-func (s *wsServer) RegisterHandler(msgType string, handler WebsocketHandler) {
+func (s *WebsocketServer) RegisterHandler(msgType string, handler WebsocketHandler) {
 	s.handlersMutex.Lock()
 	defer s.handlersMutex.Unlock()
 	s.handlers[msgType] = handler

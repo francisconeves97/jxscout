@@ -16,6 +16,7 @@ import (
 	dbeventbus "github.com/francisconeves97/jxscout/internal/core/dbeventbus"
 	"github.com/francisconeves97/jxscout/internal/core/errutil"
 	"github.com/francisconeves97/jxscout/internal/core/eventbus"
+	"github.com/francisconeves97/jxscout/internal/core/websocket"
 	astanalyzer "github.com/francisconeves97/jxscout/internal/modules/ast-analyzer"
 	"github.com/francisconeves97/jxscout/internal/modules/beautifier"
 	chunkdiscoverer "github.com/francisconeves97/jxscout/internal/modules/chunk-discoverer"
@@ -43,6 +44,7 @@ type jxscout struct {
 	assetService    jxscouttypes.AssetService
 	assetFetcher    jxscouttypes.AssetFetcher
 	httpServer      jxscouttypes.HTTPServer
+	websocketServer *websocket.WebsocketServer
 	scopeChecker    jxscouttypes.Scope
 	fileService     jxscouttypes.FileService
 	db              *sqlx.DB
@@ -195,6 +197,9 @@ func (s *jxscout) start() error {
 	r.Use(middleware.RequestID)
 	r.Use(middleware.Recoverer)
 
+	websocketServer := websocket.NewWebsocketServer(r, s.log)
+	s.websocketServer = websocketServer
+
 	err := s.initializeModules(r)
 	if err != nil {
 		return errutil.Wrap(err, "failed to initialize modules")
@@ -231,6 +236,7 @@ func (s *jxscout) initializeModules(r jxscouttypes.Router) error {
 		AssetService:     s.assetService,
 		Options:          s.options,
 		HTTPServer:       s.httpServer,
+		WebsocketServer:  s.websocketServer,
 		Logger:           s.log,
 		Scope:            s.scopeChecker,
 		AssetFetcher:     s.assetFetcher,

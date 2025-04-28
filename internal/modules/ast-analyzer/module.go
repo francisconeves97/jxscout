@@ -37,7 +37,6 @@ func NewAstAnalyzerModule(concurrency int) *astAnalyzerModule {
 	module := &astAnalyzerModule{
 		concurrency: concurrency,
 	}
-	module.wsServer = newWSServer(module)
 	return module
 }
 
@@ -49,6 +48,8 @@ func (m *astAnalyzerModule) Initialize(sdk *jxscouttypes.ModuleSDK) error {
 		return errutil.Wrap(err, "failed to create ast analyzer repository")
 	}
 	m.repo = repo
+
+	m.wsServer = newWsServer(sdk, m)
 
 	saveDir := filepath.Join(common.GetPrivateDirectory(), "extracted")
 
@@ -64,9 +65,6 @@ func (m *astAnalyzerModule) Initialize(sdk *jxscouttypes.ModuleSDK) error {
 	}
 
 	m.astAnalyzerBinaryPath = binaryPath
-
-	// Setup WebSocket endpoint
-	m.sdk.Router.HandleFunc("/ast-analyzer/ws", m.wsServer.handleWebSocket)
 
 	go func() {
 		err := m.subscribeAssetBeautified()

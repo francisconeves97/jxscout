@@ -10,6 +10,7 @@ import (
 	assetservice "github.com/francisconeves97/jxscout/internal/core/asset-service"
 	dbeventbus "github.com/francisconeves97/jxscout/internal/core/dbeventbus"
 	"github.com/francisconeves97/jxscout/internal/core/eventbus"
+	"github.com/francisconeves97/jxscout/internal/core/websocket"
 
 	"github.com/go-chi/chi"
 	"github.com/jmoiron/sqlx"
@@ -82,6 +83,7 @@ type ModuleSDK struct {
 	AssetFetcher     AssetFetcher
 	Options          Options
 	HTTPServer       HTTPServer
+	WebsocketServer  *websocket.WebsocketServer // used to communitate with VSCode
 	Logger           *slog.Logger
 	Scope            Scope
 	FileService      FileService
