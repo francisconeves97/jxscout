@@ -316,7 +316,10 @@ function hasFileExtension(path: string): boolean {
   );
 }
 
-const pathsAnalyzer = createRegexAnalyzer({
+export const PATHS_ANALYZER_NAME = "paths";
+
+const pathsAnalyzerBuilder = createRegexAnalyzer({
+  analyzerName: PATHS_ANALYZER_NAME,
   regex: PATH_REGEX,
   filter: (match) => {
     const value = match.value;
@@ -358,4 +361,4 @@ const pathsAnalyzer = createRegexAnalyzer({
   },
 });
 
-export { pathsAnalyzer };
+export { pathsAnalyzerBuilder };

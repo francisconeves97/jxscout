@@ -20,10 +20,7 @@ import (
 	jxscouttypes "github.com/francisconeves97/jxscout/pkg/types"
 )
 
-var enabledAnalyzers = map[string]string{
-	"paths":  "0.2.1",
-	"emails": "0.2.0",
-}
+const analyzerVersion = 1
 
 //go:embed ast-analyzer.js
 var astAnalyzerBinary []byte
@@ -98,7 +95,12 @@ func (m *astAnalyzerModule) subscribeAssetBeautified() error {
 			return nil
 		}
 
-		return m.analyzeAsset(asset)
+		_, err = m.analyzeAsset(asset)
+		if err != nil {
+			return errutil.Wrap(err, "failed to analyze asset")
+		}
+
+		return nil
 	}, dbeventbus.Options{
 		Concurrency:       m.concurrency,
 		MaxRetries:        3,
@@ -122,75 +124,60 @@ func isJavaScriptAsset(asset assetservice.Asset) bool {
 	return false
 }
 
-func (m *astAnalyzerModule) analyzeAsset(asset assetservice.Asset) error {
+type Position struct {
+	/** 1-based */
+	Line int64 `json:"line"`
+	/** 0-based */
+	Column int64 `json:"column"`
+}
+
+func (m *astAnalyzerModule) analyzeAsset(asset assetservice.Asset) (astAnalysis, error) {
 	// Get existing analyses for this asset
-	existingAnalyses, err := m.repo.getAnalysesByAssetID(m.sdk.Ctx, asset.ID)
+	analysis, found, err := m.repo.getASTAnalysisByAssetID(m.sdk.Ctx, asset.ID)
 	if err != nil {
-		return dbeventbus.NewRetriableError(errutil.Wrap(err, "failed to get existing analyses"))
+		return analysis, dbeventbus.NewRetriableError(errutil.Wrap(err, "failed to get existing analyses"))
 	}
 
-	// Determine which analyzers need to run
-	var analyzersToRun []string
-	for analyzerName, version := range enabledAnalyzers {
-		existing, exists := existingAnalyses[analyzerName]
-		if !exists || existing.AnalyzerVersion != version {
-			analyzersToRun = append(analyzersToRun, analyzerName)
-		}
-	}
-
-	// If no analyzers need to run, we're done
-	if len(analyzersToRun) == 0 {
-		m.sdk.Logger.Debug("all analyzers are up to date", "asset_id", asset.ID)
-		return nil
+	if found && analysis.AnalyzerVersion == analyzerVersion {
+		m.sdk.Logger.Debug("analysis is up to date, skipping", "asset_id", asset.ID, "analysis", analysis.ID)
+		return analysis, nil
 	}
 
 	// Run the AST analyzer script with specific analyzers
-	results, err := m.execASTAnalyzer(asset, analyzersToRun)
+	results, err := m.execASTAnalyzer(asset)
 	if err != nil {
-		return errutil.Wrap(err, "failed to execute ast analyzer")
+		return analysis, errutil.Wrap(err, "failed to execute ast analyzer")
 	}
 
-	// Parse the results to get analyzer name and results
-	var output map[string]interface{}
+	// make sure output is in the correct format
+	var output []AnalyzerMatch
 	if err := json.Unmarshal([]byte(results), &output); err != nil {
-		return errutil.Wrap(err, "failed to parse ast analyzer output")
+		return analysis, errutil.Wrap(err, "failed to parse ast analyzer output")
 	}
 
-	for analyzerName, analyzerResults := range output {
-		resultsJSON, err := json.Marshal(analyzerResults)
-		if err != nil {
-			m.sdk.Logger.Error("failed to marshal analyzer results", "err", err, "asset_id", asset.ID, "analyzer", analyzerName)
-			continue
-		}
-
-		analysis := &astAnalysis{
-			AssetID:         asset.ID,
-			Analyzer:        analyzerName,
-			AnalyzerVersion: enabledAnalyzers[analyzerName],
-			Results:         string(resultsJSON),
-		}
-
-		// Store the results in the database
-		if err := m.repo.createAnalysis(m.sdk.Ctx, analysis); err != nil {
-			return dbeventbus.NewRetriableError(errutil.Wrap(err, "failed to store ast analysis results"))
-		}
+	analysis = astAnalysis{
+		AssetID:         asset.ID,
+		AnalyzerVersion: analyzerVersion,
+		Results:         results,
 	}
 
-	return nil
+	// Store the results in the database
+	if err := m.repo.createAnalysis(m.sdk.Ctx, analysis); err != nil {
+		return analysis, dbeventbus.NewRetriableError(errutil.Wrap(err, "failed to store ast analysis results"))
+	}
+
+	return analysis, nil
 }
 
-func (m *astAnalyzerModule) execASTAnalyzer(asset assetservice.Asset, analyzers []string) (string, error) {
+func (m *astAnalyzerModule) execASTAnalyzer(asset assetservice.Asset) (string, error) {
 	// Get the absolute path of the asset
 	absPath, err := filepath.Abs(asset.Path)
 	if err != nil {
 		return "", errutil.Wrap(err, "failed to get absolute path of asset")
 	}
 
-	// Join analyzers with commas
-	analyzersArg := strings.Join(analyzers, ",")
-
 	// Run the AST analyzer script with Node.js
-	cmd := exec.Command("bun", "run", m.astAnalyzerBinaryPath, absPath, analyzersArg)
+	cmd := exec.Command("bun", "run", m.astAnalyzerBinaryPath, absPath)
 
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
@@ -223,12 +210,6 @@ func (m *astAnalyzerModule) execASTAnalyzer(asset assetservice.Asset, analyzers 
 	// Wait for the command to finish
 	if err := cmd.Wait(); err != nil {
 		return "", errutil.Wrap(err, "error running ast analyzer script")
-	}
-
-	// Parse the output to ensure it's valid JSON
-	var results interface{}
-	if err := json.Unmarshal(outputBytes, &results); err != nil {
-		return "", errutil.Wrap(err, "failed to parse ast analyzer output as JSON")
 	}
 
 	return string(outputBytes), nil

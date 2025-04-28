@@ -3,15 +3,14 @@ import { simple as traverse } from "acorn-walk";
 import { Analyzer, AnalyzerMatch, AnalyzerParams } from "./types";
 
 export interface RegexAnalyzerConfig {
+  analyzerName: string;
   regex: RegExp;
   filter?: (match: AnalyzerMatch) => boolean;
 }
 
 export function createRegexAnalyzer(config: RegexAnalyzerConfig): Analyzer {
-  return (args: AnalyzerParams): AnalyzerMatch[] => {
-    const foundMatches: AnalyzerMatch[] = [];
-
-    traverse(args.ast, {
+  return (args: AnalyzerParams, matchesReturn: AnalyzerMatch[]) => {
+    return {
       Literal(node) {
         const stringValue = node.value;
         if (typeof stringValue !== "string") {
@@ -26,7 +25,8 @@ export function createRegexAnalyzer(config: RegexAnalyzerConfig): Analyzer {
           return;
         }
 
-        const match = {
+        const match: AnalyzerMatch = {
+          analyzerName: config.analyzerName,
           value: stringValue,
           start: node.loc.start,
           end: node.loc.end,
@@ -36,7 +36,7 @@ export function createRegexAnalyzer(config: RegexAnalyzerConfig): Analyzer {
           return;
         }
 
-        foundMatches.push(match);
+        matchesReturn.push(match);
       },
 
       TemplateLiteral(node) {
@@ -52,7 +52,8 @@ export function createRegexAnalyzer(config: RegexAnalyzerConfig): Analyzer {
           return;
         }
 
-        const match = {
+        const match: AnalyzerMatch = {
+          analyzerName: config.analyzerName,
           value: templateValue,
           start: node.loc.start,
           end: node.loc.end,
@@ -62,10 +63,8 @@ export function createRegexAnalyzer(config: RegexAnalyzerConfig): Analyzer {
           return;
         }
 
-        foundMatches.push(match);
+        matchesReturn.push(match);
       },
-    });
-
-    return foundMatches;
+    };
   };
 }

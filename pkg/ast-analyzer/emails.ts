@@ -16,9 +16,12 @@ const isLikelyEmail = (match: { value: string }): boolean => {
   return true;
 };
 
-const emailsAnalyzer = createRegexAnalyzer({
+export const EMAILS_ANALYZER_NAME = "emails";
+
+const emailsAnalyzerBuilder = createRegexAnalyzer({
+  analyzerName: EMAILS_ANALYZER_NAME,
   regex: EMAIL_ADDRESS_REGEX,
   filter: isLikelyEmail,
 });
 
-export { emailsAnalyzer };
+export { emailsAnalyzerBuilder };

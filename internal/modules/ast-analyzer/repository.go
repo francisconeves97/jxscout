@@ -3,6 +3,7 @@ package astanalyzer
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"time"
 
 	"github.com/francisconeves97/jxscout/internal/core/errutil"
@@ -12,9 +13,8 @@ import (
 type astAnalysis struct {
 	ID              int64      `db:"id"`
 	AssetID         int64      `db:"asset_id"`
-	Analyzer        string     `db:"analyzer"`
-	AnalyzerVersion string     `db:"analyzer_version"`
-	Results         string     `db:"results"`
+	AnalyzerVersion int64      `db:"analyzer_version"`
+	Results         string     `db:"results"` // stores raw array of matches
 	CreatedAt       time.Time  `db:"created_at"`
 	UpdatedAt       time.Time  `db:"updated_at"`
 	DeletedAt       *time.Time `db:"deleted_at"`
@@ -44,36 +44,35 @@ func newAstAnalyzerRepository(db *sqlx.DB) (*astAnalyzerRepository, error) {
 func (r *astAnalyzerRepository) initializeTable() error {
 	_, err := r.db.Exec(
 		`
-		CREATE TABLE IF NOT EXISTS ast_analysis (
+		CREATE TABLE IF NOT EXISTS ast_analysis_results (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
 			asset_id INTEGER REFERENCES assets(id),
-			analyzer TEXT NOT NULL,
-			analyzer_version TEXT NOT NULL,
+			analyzer_version INTEGER NOT NULL,
 			results TEXT NOT NULL,
 			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 			updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 			deleted_at TIMESTAMP,
-			UNIQUE(asset_id, analyzer)
+			UNIQUE(asset_id)
 		)
 		`,
 	)
 	if err != nil {
-		return errutil.Wrap(err, "failed to create ast_analysis table schema")
+		return errutil.Wrap(err, "failed to create ast_analysis_results table schema")
 	}
 
 	return nil
 }
 
-func (r *astAnalyzerRepository) createAnalysis(ctx context.Context, analysis *astAnalysis) error {
+func (r *astAnalyzerRepository) createAnalysis(ctx context.Context, analysis astAnalysis) error {
 	query := `
-		INSERT INTO ast_analysis (asset_id, analyzer, analyzer_version, results)
-		VALUES (?, ?, ?, ?)
-		ON CONFLICT(asset_id, analyzer) DO UPDATE SET
+		INSERT INTO ast_analysis_results (asset_id, analyzer_version, results)
+		VALUES (?, ?, ?)
+		ON CONFLICT(asset_id) DO UPDATE SET
 			analyzer_version = excluded.analyzer_version,
 			results = excluded.results,
 			updated_at = CURRENT_TIMESTAMP
 	`
-	_, err := r.db.ExecContext(ctx, query, analysis.AssetID, analysis.Analyzer, analysis.AnalyzerVersion, analysis.Results)
+	_, err := r.db.ExecContext(ctx, query, analysis.AssetID, analysis.AnalyzerVersion, analysis.Results)
 	if err != nil {
 		return errutil.Wrap(err, "failed to create ast analysis")
 	}
@@ -100,23 +99,20 @@ func (r *astAnalyzerRepository) getAssetByPath(ctx context.Context, filePath str
 	return &a, nil
 }
 
-func (r *astAnalyzerRepository) getAnalysesByAssetID(ctx context.Context, assetID int64) (map[string]*astAnalysis, error) {
+func (r *astAnalyzerRepository) getASTAnalysisByAssetID(ctx context.Context, assetID int64) (astAnalysis, bool, error) {
 	query := `
-		SELECT id, asset_id, analyzer, analyzer_version, results, created_at, updated_at, deleted_at
-		FROM ast_analysis
+		SELECT *
+		FROM ast_analysis_results
 		WHERE asset_id = ? AND deleted_at IS NULL
 	`
 
-	var analyses []*astAnalysis
-	if err := r.db.SelectContext(ctx, &analyses, query, assetID); err != nil {
-		return nil, errutil.Wrap(err, "failed to get ast analyses by asset ID")
+	var analysis astAnalysis
+	if err := r.db.GetContext(ctx, &analysis, query, assetID); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return astAnalysis{}, false, nil
+		}
+		return astAnalysis{}, false, errutil.Wrap(err, "failed to get ast analysis by asset ID")
 	}
 
-	// Convert to map for easier lookup
-	analysisMap := make(map[string]*astAnalysis)
-	for _, analysis := range analyses {
-		analysisMap[analysis.Analyzer] = analysis
-	}
-
-	return analysisMap, nil
+	return analysis, true, nil
 }

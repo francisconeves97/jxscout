@@ -29,8 +29,8 @@ type getAnalysisRequest struct {
 }
 
 type analysisResponse struct {
-	FilePath string                 `json:"filePath"`
-	Results  map[string]interface{} `json:"results"`
+	FilePath string              `json:"filePath"`
+	Results  ASTAnalyzerTreeNode `json:"results"`
 }
 
 type errorResponse struct {
@@ -118,33 +118,41 @@ func (s *wsServer) handleGetAnalysis(conn *websocket.Conn, msgID string, req get
 	}
 
 	// Trigger analysis
-	if err := s.module.analyzeAsset(assetObj); err != nil {
+	analysis, err := s.module.analyzeAsset(assetObj)
+	if err != nil {
 		s.sendError(conn, msgID, fmt.Sprintf("failed to analyze asset: %v", err))
 		return
 	}
 
-	// Get the analyses again after running the analysis
-	analyses, err := s.module.repo.getAnalysesByAssetID(s.module.sdk.Ctx, asset.ID)
+	// // Get the analyses again after running the analysis
+	// analyses, err := s.module.repo.getAnalysesByAssetID(s.module.sdk.Ctx, asset.ID)
+	// if err != nil {
+	// 	s.sendError(conn, msgID, fmt.Sprintf("failed to get analyses after running analysis: %v", err))
+	// 	return
+	// }
+
+	// // Create a map of results keyed by analyzer name
+	// results := make(map[string]interface{})
+	// for _, analysis := range analyses {
+	// 	var analyzerResults interface{}
+	// 	if err := json.Unmarshal([]byte(analysis.Results), &analyzerResults); err != nil {
+	// 		s.module.sdk.Logger.Error("failed to parse analysis results", "err", err, "analyzer", analysis.Analyzer)
+	// 		continue
+	// 	}
+	// 	results[analysis.Analyzer] = analyzerResults
+	// }
+
+	var matches []AnalyzerMatch
+	err = json.Unmarshal([]byte(analysis.Results), &matches)
 	if err != nil {
-		s.sendError(conn, msgID, fmt.Sprintf("failed to get analyses after running analysis: %v", err))
+		s.sendError(conn, msgID, fmt.Sprintf("failed to unmarshal analysis result: %v", err))
 		return
 	}
 
-	// Create a map of results keyed by analyzer name
-	results := make(map[string]interface{})
-	for _, analysis := range analyses {
-		var analyzerResults interface{}
-		if err := json.Unmarshal([]byte(analysis.Results), &analyzerResults); err != nil {
-			s.module.sdk.Logger.Error("failed to parse analysis results", "err", err, "analyzer", analysis.Analyzer)
-			continue
-		}
-		results[analysis.Analyzer] = analyzerResults
-	}
-
-	// Send response
+	// // Send response
 	response := analysisResponse{
 		FilePath: req.FilePath,
-		Results:  results,
+		Results:  formatMatchesV1(matches),
 	}
 
 	s.sendResponse(conn, msgID, response)
