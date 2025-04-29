@@ -64,6 +64,8 @@ function main() {
         emailsAnalyzer.TemplateLiteral?.(node, state);
       },
     });
+
+    console.log(JSON.stringify(results));
   } catch (error) {
     console.error(`Error running ast analysis:`, error);
     process.exit(1);

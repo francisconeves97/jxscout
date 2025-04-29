@@ -29,8 +29,9 @@ func NewWebsocketServer(r chi.Router, logger *slog.Logger) *WebsocketServer {
 				return true // In production, implement proper origin checking
 			},
 		},
-		clients: make(map[*websocket.Conn]bool),
-		log:     logger,
+		clients:  make(map[*websocket.Conn]bool),
+		log:      logger,
+		handlers: make(map[string]WebsocketHandler),
 	}
 
 	r.HandleFunc("/ws", wsServer.handleWebsocket)

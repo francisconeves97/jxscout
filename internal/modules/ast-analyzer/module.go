@@ -95,7 +95,7 @@ func (m *astAnalyzerModule) subscribeAssetBeautified() error {
 
 		_, err = m.analyzeAsset(asset)
 		if err != nil {
-			return errutil.Wrap(err, "failed to analyze asset")
+			return errutil.Wrapf(err, "failed to analyze asset: %s", asset.Path)
 		}
 
 		return nil
@@ -150,7 +150,7 @@ func (m *astAnalyzerModule) analyzeAsset(asset assetservice.Asset) (astAnalysis,
 	// make sure output is in the correct format
 	var output []AnalyzerMatch
 	if err := json.Unmarshal([]byte(results), &output); err != nil {
-		return analysis, errutil.Wrap(err, "failed to parse ast analyzer output")
+		return analysis, errutil.Wrapf(err, "failed to parse ast analyzer output: %s", results)
 	}
 
 	analysis = astAnalysis{
@@ -176,6 +176,8 @@ func (m *astAnalyzerModule) execASTAnalyzer(asset assetservice.Asset) (string, e
 
 	// Run the AST analyzer script with Node.js
 	cmd := exec.Command("bun", "run", m.astAnalyzerBinaryPath, absPath)
+
+	m.sdk.Logger.Debug("executing ast analyzer", "asset_id", asset.ID, "path", absPath, "cmd", cmd.String())
 
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {

@@ -201,7 +201,9 @@ func (b *EventBus) fetchAndDistributeEvents(ctx context.Context, topic, queueNam
 		return errutil.Wrap(err, "failed to fetch events")
 	}
 
-	b.log.DebugContext(ctx, "Found events to process", "count", len(eventsToProcess), "topic", topic, "queue", queueName)
+	if len(eventsToProcess) > 0 {
+		b.log.DebugContext(ctx, "Found events to process", "count", len(eventsToProcess), "topic", topic, "queue", queueName)
+	}
 
 	// Send events to workers after transaction is committed
 	for _, event := range eventsToProcess {

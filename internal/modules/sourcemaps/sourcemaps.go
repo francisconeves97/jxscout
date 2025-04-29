@@ -162,10 +162,10 @@ func (s *sourceMapsModule) sourceMapDiscover(ctx context.Context, asset assetser
 		return dbeventbus.NewRetriableError(errutil.Wrap(err, "failed to save source map"))
 	}
 
-	assetPath, err := s.sdk.FileService.URLToPath(asset.URL)
-	if err != nil {
-		return errutil.Wrap(err, "failed to convert asset url to path")
-	}
+	// assetPath, err := s.sdk.FileService.URLToPath(asset.URL)
+	// if err != nil {
+	// 	return errutil.Wrap(err, "failed to convert asset url to path")
+	// }
 
 	reverseSourceMapsDir := []string{
 		common.GetWorkingDirectory(),
@@ -174,7 +174,7 @@ func (s *sourceMapsModule) sourceMapDiscover(ctx context.Context, asset assetser
 		sourceMapsReversed,
 	}
 
-	reverseSourceMapsDir = append(reverseSourceMapsDir, assetPath...)
+	// reverseSourceMapsDir = append(reverseSourceMapsDir, assetPath...)
 
 	reversedSourceMapsDir := filepath.Join(reverseSourceMapsDir...)
 
