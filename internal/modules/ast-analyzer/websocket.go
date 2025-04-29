@@ -89,7 +89,7 @@ func (s *wsServer) getAnalysis(req getAnalysisRequest) (getAnalysisResponse, err
 		return getAnalysisResponse{}, errutil.Wrap(err, "failed to unmarshal analysis result")
 	}
 
-	// // Send response
+	// Send response
 	response := getAnalysisResponse{
 		FilePath: req.FilePath,
 		Results:  formatMatchesV1(matches),
