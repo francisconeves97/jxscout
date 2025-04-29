@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 
-	assetservice "github.com/francisconeves97/jxscout/internal/core/asset-service"
 	"github.com/francisconeves97/jxscout/internal/core/errutil"
 	jxwebsocket "github.com/francisconeves97/jxscout/internal/core/websocket"
 	jxscouttypes "github.com/francisconeves97/jxscout/pkg/types"
@@ -72,13 +71,8 @@ func (s *wsServer) getAnalysis(req getAnalysisRequest) (getAnalysisResponse, err
 		return getAnalysisResponse{}, errors.New("asset not found")
 	}
 
-	assetObj := assetservice.Asset{
-		ID:   asset.ID,
-		Path: asset.Path,
-	}
-
 	// Trigger analysis
-	analysis, err := s.module.analyzeAsset(assetObj)
+	analysis, err := s.module.analyzeAsset(*asset)
 	if err != nil {
 		return getAnalysisResponse{}, errutil.Wrap(err, "failed to analyze asset")
 	}

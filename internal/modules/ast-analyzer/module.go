@@ -17,6 +17,7 @@ import (
 	"github.com/francisconeves97/jxscout/internal/core/dbeventbus"
 	"github.com/francisconeves97/jxscout/internal/core/errutil"
 	"github.com/francisconeves97/jxscout/internal/modules/beautifier"
+	"github.com/francisconeves97/jxscout/internal/modules/sourcemaps"
 	jxscouttypes "github.com/francisconeves97/jxscout/pkg/types"
 )
 
@@ -84,13 +85,52 @@ func (m *astAnalyzerModule) subscribeAssetBeautified() error {
 			return errutil.Wrap(err, "failed to unmarshal payload")
 		}
 
-		asset, err := m.sdk.AssetService.GetAssetByID(ctx, event.AssetID)
+		assetServiceAsset, err := m.sdk.AssetService.GetAssetByID(ctx, event.AssetID)
 		if err != nil {
 			return dbeventbus.NewRetriableError(errutil.Wrap(err, "failed to get asset"))
 		}
 
-		if !isJavaScriptAsset(asset) {
+		if !isJavaScriptAsset(assetServiceAsset) {
 			return nil
+		}
+
+		asset := asset{
+			ID:        assetServiceAsset.ID,
+			Path:      assetServiceAsset.Path,
+			AssetType: AssetTypeOriginalAsset,
+		}
+
+		_, err = m.analyzeAsset(asset)
+		if err != nil {
+			return errutil.Wrapf(err, "failed to analyze asset: %s", asset.Path)
+		}
+
+		return nil
+	}, dbeventbus.Options{
+		Concurrency:       m.concurrency,
+		MaxRetries:        3,
+		Backoff:           common.ExponentialBackoff,
+		PollInterval:      1 * time.Second,
+		HeartbeatInterval: 10 * time.Second,
+	})
+
+	m.sdk.DBEventBus.Subscribe(m.sdk.Ctx, sourcemaps.TopicSourcemapsReversedSourcemapSaved, "ast-analyzer", func(ctx context.Context, payload []byte) error {
+		var event sourcemaps.EventSourcemapsReversedSourcemapSaved
+		err := json.Unmarshal(payload, &event)
+		if err != nil {
+			return errutil.Wrap(err, "failed to unmarshal payload")
+		}
+
+		var reversedSourcemap sourcemaps.ReversedSourcemap
+		err = m.sdk.Database.GetContext(ctx, &reversedSourcemap, "SELECT * FROM reversed_sourcemaps WHERE id = ?", event.ReversedSourcemapID)
+		if err != nil {
+			return dbeventbus.NewRetriableError(errutil.Wrap(err, "failed to get reversed sourcemap"))
+		}
+
+		asset := asset{
+			ID:        reversedSourcemap.ID,
+			Path:      reversedSourcemap.Path,
+			AssetType: AssetTypeReversedSourcemap,
 		}
 
 		_, err = m.analyzeAsset(asset)
@@ -129,9 +169,9 @@ type Position struct {
 	Column int64 `json:"column"`
 }
 
-func (m *astAnalyzerModule) analyzeAsset(asset assetservice.Asset) (astAnalysis, error) {
+func (m *astAnalyzerModule) analyzeAsset(asset asset) (astAnalysis, error) {
 	// Get existing analyses for this asset
-	analysis, found, err := m.repo.getASTAnalysisByAssetID(m.sdk.Ctx, asset.ID)
+	analysis, found, err := m.repo.getASTAnalysisByAssetID(m.sdk.Ctx, asset.ID, asset.AssetType)
 	if err != nil {
 		return analysis, dbeventbus.NewRetriableError(errutil.Wrap(err, "failed to get existing analyses"))
 	}
@@ -157,6 +197,7 @@ func (m *astAnalyzerModule) analyzeAsset(asset assetservice.Asset) (astAnalysis,
 		AssetID:         asset.ID,
 		AnalyzerVersion: analyzerVersion,
 		Results:         results,
+		AssetType:       asset.AssetType,
 	}
 
 	// Store the results in the database
@@ -167,7 +208,7 @@ func (m *astAnalyzerModule) analyzeAsset(asset assetservice.Asset) (astAnalysis,
 	return analysis, nil
 }
 
-func (m *astAnalyzerModule) execASTAnalyzer(asset assetservice.Asset) (string, error) {
+func (m *astAnalyzerModule) execASTAnalyzer(asset asset) (string, error) {
 	// Get the absolute path of the asset
 	absPath, err := filepath.Abs(asset.Path)
 	if err != nil {

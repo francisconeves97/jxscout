@@ -183,18 +183,34 @@ func (s *sourceMapsModule) sourceMapDiscover(ctx context.Context, asset assetser
 		return errutil.Wrap(err, "failed to execute sourcemaps reverse")
 	}
 
+	tx, err := s.sdk.Database.BeginTxx(ctx, nil)
+	if err != nil {
+		return errutil.Wrap(err, "failed to begin transaction")
+	}
+
 	for _, sourcemap := range sourcemaps {
 		reversedSourceMap := &ReversedSourcemap{
 			SourcemapID: sourceMapID,
 			Path:        sourcemap,
 		}
 
-		_, err = SaveReversedSourcemap(ctx, s.sdk.Database, reversedSourceMap)
+		reversedSourceMapID, err := SaveReversedSourcemap(ctx, tx, reversedSourceMap)
 		if err != nil {
 			return dbeventbus.NewRetriableError(errutil.Wrap(err, "failed to save reversed source map"))
 		}
+
+		err = s.sdk.DBEventBus.Publish(ctx, tx, TopicSourcemapsReversedSourcemapSaved, EventSourcemapsReversedSourcemapSaved{
+			ReversedSourcemapID: reversedSourceMapID,
+		})
+		if err != nil {
+			return dbeventbus.NewRetriableError(errutil.Wrap(err, "failed to publish reversed source map"))
+		}
 	}
 
+	err = tx.Commit()
+	if err != nil {
+		return errutil.Wrap(err, "failed to commit transaction")
+	}
 	return nil
 }
 
