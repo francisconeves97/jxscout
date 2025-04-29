@@ -151,8 +151,11 @@ func (b *EventBus) Subscribe(ctx context.Context, topic, queueName string, handl
 	// Start the poller
 	go b.pollEvents(ctx, topic, queueName, jobs, opts)
 
-	// Start the cleanup goroutine
+	// Start the cleanup goroutine for stale events
 	go b.cleanupStaleEvents(ctx, queueName, opts.HeartbeatInterval)
+
+	// Start the cleanup goroutine for completed events
+	go b.cleanupCompletedEvents(ctx)
 
 	return nil
 }
@@ -418,6 +421,63 @@ func (b *EventBus) resetStaleEvents(ctx context.Context, queueName string, heart
 		statusPending, queueName, statusProcessing, staleCutoff)
 	if err != nil {
 		return errutil.Wrap(err, "failed to reset stale events")
+	}
+
+	if err := tx.Commit(); err != nil {
+		return errutil.Wrap(err, "failed to commit transaction")
+	}
+
+	return nil
+}
+
+// cleanupCompletedEvents periodically deletes events that were completed more than 1 day ago
+func (b *EventBus) cleanupCompletedEvents(ctx context.Context) {
+	ticker := time.NewTicker(30 * time.Minute)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			if err := b.deleteOldCompletedEvents(ctx); err != nil {
+				b.log.ErrorContext(ctx, "Error cleaning up completed events", "error", err)
+			}
+		}
+	}
+}
+
+// deleteOldCompletedEvents deletes events that were completed more than 1 day ago
+func (b *EventBus) deleteOldCompletedEvents(ctx context.Context) error {
+	tx, err := b.db.BeginTxx(ctx, nil)
+	if err != nil {
+		return errutil.Wrap(err, "failed to begin transaction")
+	}
+	defer tx.Rollback()
+
+	// Calculate the cutoff time (1 day ago)
+	cutoff := time.Now().UTC().Add(-24 * time.Hour)
+
+	b.log.DebugContext(ctx, "Cleaning up completed events", "cutoff", cutoff)
+
+	// First delete from event_processing table
+	_, err = tx.ExecContext(ctx,
+		`DELETE FROM event_processing 
+         WHERE status = ? 
+         AND finished_at < ?`,
+		statusCompleted, cutoff)
+	if err != nil {
+		return errutil.Wrap(err, "failed to delete old completed event processing records")
+	}
+
+	// Then delete from events table where there are no remaining event_processing records
+	_, err = tx.ExecContext(ctx,
+		`DELETE FROM events 
+         WHERE id NOT IN (SELECT event_id FROM event_processing) 
+         AND created_at < ?`,
+		cutoff)
+	if err != nil {
+		return errutil.Wrap(err, "failed to delete old completed events")
 	}
 
 	if err := tx.Commit(); err != nil {
