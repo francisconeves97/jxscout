@@ -7,6 +7,7 @@
   },
   "dependencies": {
     "acorn": "^8.12.1",
+    "acorn-loose": "^8.5.0",
     "acorn-walk": "^8.3.4",
     "astring": "^1.9.0",
     "estree-toolkit": "^1.7.8",

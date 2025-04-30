@@ -1,7 +1,8 @@
-import * as fs from "fs";
-import { parse, Program } from "acorn";
+import fs from "fs";
+import { Program } from "acorn";
+import { parse } from "acorn-loose";
 import { simple as traverse } from "acorn-walk";
-import { AnalyzerParams, Analyzer, AnalyzerMatch } from "./types";
+import { AnalyzerParams, AnalyzerMatch } from "./types";
 import { pathsAnalyzerBuilder } from "./paths";
 import { emailsAnalyzerBuilder } from "./emails";
 

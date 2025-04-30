@@ -1,5 +1,3 @@
-import { Position, Program } from "acorn";
-import { simple as traverse } from "acorn-walk";
 import { Analyzer, AnalyzerMatch, AnalyzerParams } from "./types";
 
 export interface RegexAnalyzerConfig {

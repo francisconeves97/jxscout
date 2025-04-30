@@ -1,4 +1,5 @@
-import { parse, Program } from "acorn";
+import { Program } from "acorn";
+import { parse } from "acorn-loose";
 import { is, traverse } from "estree-toolkit";
 import Sval from "sval";
 import {
