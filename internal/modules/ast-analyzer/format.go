@@ -57,13 +57,16 @@ func matchToTreeNode(match AnalyzerMatch) ASTAnalyzerTreeNode {
 }
 
 func formatMatchesV1(matches []AnalyzerMatch) ASTAnalyzerTreeNode {
-	tree := ASTAnalyzerTreeNode{
-		Children: []ASTAnalyzerTreeNode{
-			formatPaths(matches),
-		},
+	pathsNode := formatPaths(matches)
+
+	// Only include paths if it's not empty
+	if pathsNode.Type != "" || len(pathsNode.Children) > 0 {
+		return ASTAnalyzerTreeNode{
+			Children: []ASTAnalyzerTreeNode{pathsNode},
+		}
 	}
 
-	return tree
+	return ASTAnalyzerTreeNode{}
 }
 
 func formatPaths(matches []AnalyzerMatch) ASTAnalyzerTreeNode {
@@ -90,21 +93,36 @@ func formatPaths(matches []AnalyzerMatch) ASTAnalyzerTreeNode {
 		}
 	}
 
+	children := []ASTAnalyzerTreeNode{}
+
+	if len(paths) > 0 {
+		children = append(children, createNavigationTreeNode(ASTAnalyzerTreeNode{
+			Label:    "All",
+			Children: paths,
+		}))
+	}
+
+	if len(api) > 0 {
+		children = append(children, createNavigationTreeNode(ASTAnalyzerTreeNode{
+			Label:    "API",
+			Children: api,
+		}))
+	}
+
+	if len(queryParams) > 0 {
+		children = append(children, createNavigationTreeNode(ASTAnalyzerTreeNode{
+			Label:    "Query Params",
+			Children: queryParams,
+		}))
+	}
+
+	// If no children, return empty node
+	if len(children) == 0 {
+		return ASTAnalyzerTreeNode{}
+	}
+
 	return createNavigationTreeNode(ASTAnalyzerTreeNode{
-		Label: "Paths",
-		Children: []ASTAnalyzerTreeNode{
-			createNavigationTreeNode(ASTAnalyzerTreeNode{
-				Label:    "All",
-				Children: paths,
-			}),
-			createNavigationTreeNode(ASTAnalyzerTreeNode{
-				Label:    "API",
-				Children: api,
-			}),
-			createNavigationTreeNode(ASTAnalyzerTreeNode{
-				Label:    "Query Params",
-				Children: queryParams,
-			}),
-		},
+		Label:    "Paths",
+		Children: children,
 	})
 }
