@@ -34,8 +34,8 @@ func (a *astAnalysis) GetMatches() ([]AnalyzerMatch, error) {
 		return nil, errutil.Wrap(err, "failed to unmarshal analysis result")
 	}
 
-	for _, match := range matches {
-		match.FilePath = a.AssetPath
+	for i := range matches {
+		matches[i].FilePath = a.AssetPath
 	}
 
 	return matches, nil

@@ -39,7 +39,7 @@ type ASTAnalyzerTreeNode struct {
 	Data        any                     `json:"data,omitempty"`
 	Label       string                  `json:"label,omitempty"`
 	Description string                  `json:"description,omitempty"`
-	IconPath    string                  `json:"iconPath,omitempty"`
+	IconName    string                  `json:"iconName,omitempty"`
 	Tooltip     string                  `json:"tooltip,omitempty"`
 	Children    []ASTAnalyzerTreeNode   `json:"children,omitempty"`
 }
@@ -80,6 +80,8 @@ func formatPaths(matches []AnalyzerMatch) ASTAnalyzerTreeNode {
 		}
 
 		treeNode := matchToTreeNode(match)
+		treeNode.Label = match.Value
+		treeNode.Description = match.FilePath
 
 		paths = append(paths, treeNode)
 
@@ -124,5 +126,6 @@ func formatPaths(matches []AnalyzerMatch) ASTAnalyzerTreeNode {
 	return createNavigationTreeNode(ASTAnalyzerTreeNode{
 		Label:    "Paths",
 		Children: children,
+		IconName: "folder",
 	})
 }
