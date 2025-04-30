@@ -7,6 +7,7 @@ const (
 )
 
 type AnalyzerMatch struct {
+	FilePath     string   `json:"filePath"`
 	AnalyzerName string   `json:"analyzerName"`
 	Value        string   `json:"value"`
 	Start        Position `json:"start"`

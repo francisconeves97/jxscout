@@ -3,6 +3,7 @@ package astanalyzer
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"time"
 
@@ -19,11 +20,25 @@ type astAnalysis struct {
 	ID              int64      `db:"id"`
 	AssetType       string     `db:"asset_type"`
 	AssetID         int64      `db:"asset_id"`
+	AssetPath       string     `db:"asset_path"`
 	AnalyzerVersion int64      `db:"analyzer_version"`
 	Results         string     `db:"results"` // stores raw array of matches
 	CreatedAt       time.Time  `db:"created_at"`
 	UpdatedAt       time.Time  `db:"updated_at"`
 	DeletedAt       *time.Time `db:"deleted_at"`
+}
+
+func (a *astAnalysis) GetMatches() ([]AnalyzerMatch, error) {
+	var matches []AnalyzerMatch
+	if err := json.Unmarshal([]byte(a.Results), &matches); err != nil {
+		return nil, errutil.Wrap(err, "failed to unmarshal analysis result")
+	}
+
+	for _, match := range matches {
+		match.FilePath = a.AssetPath
+	}
+
+	return matches, nil
 }
 
 type asset struct {
@@ -55,6 +70,7 @@ func (r *astAnalyzerRepository) initializeTable() error {
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
 			asset_id INTEGER NOT NULL,
 			asset_type TEXT NOT NULL,
+			asset_path TEXT NOT NULL,
 			analyzer_version INTEGER NOT NULL,
 			results TEXT NOT NULL,
 			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -73,14 +89,14 @@ func (r *astAnalyzerRepository) initializeTable() error {
 
 func (r *astAnalyzerRepository) createAnalysis(ctx context.Context, analysis astAnalysis) error {
 	query := `
-		INSERT INTO ast_analysis_results (asset_id, asset_type, analyzer_version, results)
-		VALUES (?, ?, ?, ?)
+		INSERT INTO ast_analysis_results (asset_id, asset_type, asset_path, analyzer_version, results)
+		VALUES (?, ?, ?, ?, ?)
 		ON CONFLICT(asset_id, asset_type) DO UPDATE SET
 			analyzer_version = excluded.analyzer_version,
 			results = excluded.results,
 			updated_at = CURRENT_TIMESTAMP	
 	`
-	_, err := r.db.ExecContext(ctx, query, analysis.AssetID, analysis.AssetType, analysis.AnalyzerVersion, analysis.Results)
+	_, err := r.db.ExecContext(ctx, query, analysis.AssetID, analysis.AssetType, analysis.AssetPath, analysis.AnalyzerVersion, analysis.Results)
 	if err != nil {
 		return errutil.Wrap(err, "failed to create ast analysis")
 	}

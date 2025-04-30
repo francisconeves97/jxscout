@@ -16,6 +16,7 @@ type WebsocketMessage struct {
 	Type    string          `json:"type"`
 	ID      string          `json:"id"`
 	Payload json.RawMessage `json:"payload"`
+	Error   *ErrorResponse  `json:"error,omitempty"`
 }
 
 type ErrorResponse struct {

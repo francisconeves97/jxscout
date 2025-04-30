@@ -26,7 +26,7 @@ func NewWebsocketServer(r chi.Router, logger *slog.Logger) *WebsocketServer {
 		router: r,
 		upgrader: websocket.Upgrader{
 			CheckOrigin: func(r *http.Request) bool {
-				return true // In production, implement proper origin checking
+				return true
 			},
 		},
 		clients:  make(map[*websocket.Conn]bool),
@@ -69,9 +69,11 @@ func (s *WebsocketServer) handleWebsocket(w http.ResponseWriter, r *http.Request
 			break
 		}
 
+		s.log.Debug("received websocket message", "msg_type", msg.Type, "msg_id", msg.ID)
+
 		handler, found := s.handlers[msg.Type]
 		if !found {
-			s.SendError(conn, msg.ID, "unknown message type")
+			s.SendGenericError(conn, msg.ID, "unknown message type")
 			continue
 		}
 
@@ -79,18 +81,23 @@ func (s *WebsocketServer) handleWebsocket(w http.ResponseWriter, r *http.Request
 	}
 }
 
-func (s *WebsocketServer) SendError(conn *websocket.Conn, msgID string, errorMsg string) {
-	payload := ErrorResponse{Message: errorMsg}
-	data, err := json.Marshal(payload)
-	if err != nil {
-		s.log.Error("failed to marshal payload", "err", err)
-		return
+func (s *WebsocketServer) SendGenericError(conn *websocket.Conn, msgID string, errorMsg string) {
+	response := WebsocketMessage{
+		Type:  MsgTypeError,
+		ID:    msgID,
+		Error: &ErrorResponse{Message: errorMsg},
 	}
 
+	if err := conn.WriteJSON(response); err != nil {
+		s.log.Error("failed to send error response", "err", err)
+	}
+}
+
+func (s *WebsocketServer) SendErrorResponse(conn *websocket.Conn, msgID string, msgType string, errorMessage string) {
 	response := WebsocketMessage{
-		Type:    MsgTypeError,
-		ID:      msgID,
-		Payload: data,
+		Type:  msgType,
+		ID:    msgID,
+		Error: &ErrorResponse{Message: errorMessage},
 	}
 
 	if err := conn.WriteJSON(response); err != nil {

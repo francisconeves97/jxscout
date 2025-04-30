@@ -41,20 +41,19 @@ type getAnalysisRequest struct {
 }
 
 type getAnalysisResponse struct {
-	FilePath string              `json:"filePath"`
-	Results  ASTAnalyzerTreeNode `json:"results"`
+	Results ASTAnalyzerTreeNode `json:"results"`
 }
 
 func (s *wsServer) getAnalysisHandler(msg jxwebsocket.WebsocketMessage, conn *websocket.Conn) {
 	var req getAnalysisRequest
 	if err := json.Unmarshal(msg.Payload, &req); err != nil {
-		s.sdk.WebsocketServer.SendError(conn, msg.ID, fmt.Sprintf("invalid request payload: %s", err.Error()))
+		s.sdk.WebsocketServer.SendErrorResponse(conn, msg.ID, MsgTypeGetAnalysisResponse, fmt.Sprintf("invalid request payload: %s", err.Error()))
 		return
 	}
 
 	tree, err := s.getAnalysis(req)
 	if err != nil {
-		s.sdk.WebsocketServer.SendError(conn, msg.ID, fmt.Sprintf("failed to get analysis: %s", err.Error()))
+		s.sdk.WebsocketServer.SendErrorResponse(conn, msg.ID, MsgTypeGetAnalysisResponse, fmt.Sprintf("failed to get analysis: %s", err.Error()))
 		return
 	}
 
@@ -77,16 +76,14 @@ func (s *wsServer) getAnalysis(req getAnalysisRequest) (getAnalysisResponse, err
 		return getAnalysisResponse{}, errutil.Wrap(err, "failed to analyze asset")
 	}
 
-	var matches []AnalyzerMatch
-	err = json.Unmarshal([]byte(analysis.Results), &matches)
+	matches, err := analysis.GetMatches()
 	if err != nil {
-		return getAnalysisResponse{}, errutil.Wrap(err, "failed to unmarshal analysis result")
+		return getAnalysisResponse{}, errutil.Wrap(err, "failed to get matches")
 	}
 
 	// Send response
 	response := getAnalysisResponse{
-		FilePath: req.FilePath,
-		Results:  formatMatchesV1(matches),
+		Results: formatMatchesV1(matches),
 	}
 
 	return response, nil

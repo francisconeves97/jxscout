@@ -198,6 +198,7 @@ func (m *astAnalyzerModule) analyzeAsset(asset asset) (astAnalysis, error) {
 		AnalyzerVersion: analyzerVersion,
 		Results:         results,
 		AssetType:       asset.AssetType,
+		AssetPath:       asset.Path,
 	}
 
 	// Store the results in the database
