@@ -1,16 +1,17 @@
+import { Node } from "acorn";
 import { Analyzer, AnalyzerMatch, AnalyzerParams } from "./types";
 
 export interface RegexAnalyzerConfig {
   analyzerName: string;
   regex: RegExp;
-  filter?: (match: AnalyzerMatch) => boolean;
+  filter?: (match: AnalyzerMatch, ancestors: Node[]) => boolean;
   tags?: (value: string) => Record<string, true>;
 }
 
 export function createRegexAnalyzer(config: RegexAnalyzerConfig): Analyzer {
   return (args: AnalyzerParams, matchesReturn: AnalyzerMatch[]) => {
     return {
-      Literal(node) {
+      Literal(node, _state, ancestors) {
         const stringValue = node.value;
         if (typeof stringValue !== "string") {
           return;
@@ -32,14 +33,14 @@ export function createRegexAnalyzer(config: RegexAnalyzerConfig): Analyzer {
           tags: config.tags ? config.tags(stringValue) : {},
         };
 
-        if (config.filter && !config.filter(match)) {
+        if (config.filter && !config.filter(match, ancestors)) {
           return;
         }
 
         matchesReturn.push(match);
       },
 
-      TemplateLiteral(node) {
+      TemplateLiteral(node, _state, ancestors) {
         const templateValue = args.source
           .slice(node.start, node.end)
           .replaceAll("`", "");
@@ -60,7 +61,7 @@ export function createRegexAnalyzer(config: RegexAnalyzerConfig): Analyzer {
           tags: config.tags ? config.tags(templateValue) : {},
         };
 
-        if (config.filter && !config.filter(match)) {
+        if (config.filter && !config.filter(match, ancestors)) {
           return;
         }
 

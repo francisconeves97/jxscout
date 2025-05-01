@@ -1,3 +1,7 @@
+import { apiBaseUrl } from "abc/def";
+
+import("asd/asd")
+
 // ===== API BASE URL EXAMPLES =====
 const apiBaseUrl = "https://api.example.com"; // should not detect
 

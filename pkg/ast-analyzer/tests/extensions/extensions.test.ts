@@ -3,7 +3,7 @@ import { expect, test } from "vitest";
 import { fileExtensionsAnalyzerBuilder } from "../../extensions";
 import { parseFile } from "../../index";
 import { AnalyzerMatch } from "../../types";
-import { simple as traverse } from "acorn-walk";
+import { ancestor as traverse } from "acorn-walk";
 
 interface ExtensionsTestCase {
   jsFileName: string;
@@ -735,11 +735,11 @@ test.each(testCases)(
     const extensionsAnalyzer = fileExtensionsAnalyzerBuilder(args, results);
 
     traverse(args.ast, {
-      Literal(node, state) {
-        extensionsAnalyzer.Literal?.(node, state);
+      Literal(node, state, ancestors) {
+        extensionsAnalyzer.Literal?.(node, state, ancestors);
       },
-      TemplateLiteral(node, state) {
-        extensionsAnalyzer.TemplateLiteral?.(node, state);
+      TemplateLiteral(node, state, ancestors) {
+        extensionsAnalyzer.TemplateLiteral?.(node, state, ancestors);
       },
     });
 

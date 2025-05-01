@@ -1,7 +1,7 @@
 import fs from "fs";
 import { Program } from "acorn";
 import { parse } from "acorn-loose";
-import { simple as traverse } from "acorn-walk";
+import { ancestor as traverse } from "acorn-walk";
 import { AnalyzerParams, AnalyzerMatch } from "./types";
 import { pathsAnalyzerBuilder } from "./paths";
 import { emailsAnalyzerBuilder } from "./emails";
@@ -55,14 +55,14 @@ function main() {
     const emailsAnalyzer = emailsAnalyzerBuilder(args, results);
 
     traverse(args.ast, {
-      Literal(node, state) {
-        pathsAnalyzer.Literal?.(node, state);
-        emailsAnalyzer.Literal?.(node, state);
+      Literal(node, state, ancestors) {
+        pathsAnalyzer.Literal?.(node, state, ancestors);
+        emailsAnalyzer.Literal?.(node, state, ancestors);
       },
 
-      TemplateLiteral(node, state) {
-        pathsAnalyzer.TemplateLiteral?.(node, state);
-        emailsAnalyzer.TemplateLiteral?.(node, state);
+      TemplateLiteral(node, state, ancestors) {
+        pathsAnalyzer.TemplateLiteral?.(node, state, ancestors);
+        emailsAnalyzer.TemplateLiteral?.(node, state, ancestors);
       },
     });
 

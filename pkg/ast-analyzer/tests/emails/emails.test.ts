@@ -3,7 +3,7 @@ import { expect, test } from "vitest";
 import { emailsAnalyzerBuilder } from "../../emails";
 import { parseFile } from "../../index";
 import { AnalyzerMatch } from "../../types";
-import { simple as traverse } from "acorn-walk";
+import { ancestor as traverse } from "acorn-walk";
 
 interface EmailsTestCase {
   jsFileName: string;
@@ -249,11 +249,11 @@ test.each(testCases)(
     const emailsAnalyzer = emailsAnalyzerBuilder(args, results);
 
     traverse(args.ast, {
-      Literal(node, state) {
-        emailsAnalyzer.Literal?.(node, state);
+      Literal(node, state, ancestors) {
+        emailsAnalyzer.Literal?.(node, state, ancestors);
       },
-      TemplateLiteral(node, state) {
-        emailsAnalyzer.TemplateLiteral?.(node, state);
+      TemplateLiteral(node, state, ancestors) {
+        emailsAnalyzer.TemplateLiteral?.(node, state, ancestors);
       },
     });
 

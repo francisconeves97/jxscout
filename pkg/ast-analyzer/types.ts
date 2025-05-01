@@ -1,5 +1,5 @@
 import { Position, Program } from "acorn";
-import { SimpleVisitors } from "acorn-walk";
+import { AncestorVisitors } from "acorn-walk";
 
 export interface AnalyzerMatch {
   analyzerName: string;
@@ -17,4 +17,4 @@ export interface AnalyzerParams {
 export type Analyzer = (
   params: AnalyzerParams,
   matchesReturn: AnalyzerMatch[]
-) => SimpleVisitors<unknown>;
+) => AncestorVisitors<unknown>;

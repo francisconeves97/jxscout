@@ -321,7 +321,7 @@ export const PATHS_ANALYZER_NAME = "paths";
 const pathsAnalyzerBuilder = createRegexAnalyzer({
   analyzerName: PATHS_ANALYZER_NAME,
   regex: PATH_REGEX,
-  filter: (match) => {
+  filter: (match, ancestors) => {
     const value = match.value;
 
     if (!value.includes("/")) {
@@ -354,6 +354,10 @@ const pathsAnalyzerBuilder = createRegexAnalyzer({
 
     // Exclude paths that end with a static asset extension
     if (hasFileExtension(value)) {
+      return false;
+    }
+
+    if (ancestors.some((ancestor) => ancestor.type === "ImportDeclaration")) {
       return false;
     }
 
