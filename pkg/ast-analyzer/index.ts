@@ -24,6 +24,7 @@ import { ajaxRequestHeaderManipulationAnalyzerBuilder } from "./ajax-request-hea
 import { localFilePathManipulationAnalyzerBuilder } from "./local-file-path-manipulation";
 import { html5StorageManipulationAnalyzerBuilder } from "./html5-storage-manipulation";
 import { xpathInjectionAnalyzerBuilder } from "./xpath-injection";
+import { domDataManipulationAnalyzerBuilder } from "./dom-data-manipulation";
 
 export function parseFile(filePath: string): AnalyzerParams {
   const fileContent = fs.readFileSync(filePath, "utf-8");
@@ -72,7 +73,8 @@ export type AnalyzerType =
   | "ajax-request-header-manipulation"
   | "local-file-path-manipulation"
   | "html5-storage-manipulation"
-  | "xpath-injection";
+  | "xpath-injection"
+  | "dom-data-manipulation";
 
 export function analyzeFile(
   filePath: string,
@@ -160,6 +162,10 @@ export function analyzeFile(
     "xpath-injection",
     xpathInjectionAnalyzerBuilder
   );
+  const domDataManipulationAnalyzer = createAnalyzer(
+    "dom-data-manipulation",
+    domDataManipulationAnalyzerBuilder
+  );
 
   traverse(args.ast, {
     Literal(node, state, ancestors) {
@@ -224,6 +230,7 @@ export function analyzeFile(
         ancestors
       );
       linkManipulationAnalyzer?.MemberExpression?.(node, state, ancestors);
+      domDataManipulationAnalyzer?.MemberExpression?.(node, state, ancestors);
     },
   });
 
