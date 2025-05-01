@@ -22,6 +22,7 @@ import { websocketUrlPoisoningAnalyzerBuilder } from "./websocket-url-poisoning"
 import { linkManipulationAnalyzerBuilder } from "./link-manipulation";
 import { ajaxRequestHeaderManipulationAnalyzerBuilder } from "./ajax-request-header-manipulation";
 import { localFilePathManipulationAnalyzerBuilder } from "./local-file-path-manipulation";
+import { html5StorageManipulationAnalyzerBuilder } from "./html5-storage-manipulation";
 
 export function parseFile(filePath: string): AnalyzerParams {
   const fileContent = fs.readFileSync(filePath, "utf-8");
@@ -68,7 +69,8 @@ export type AnalyzerType =
   | "websocket-url-poisoning"
   | "link-manipulation"
   | "ajax-request-header-manipulation"
-  | "local-file-path-manipulation";
+  | "local-file-path-manipulation"
+  | "html5-storage-manipulation";
 
 export function analyzeFile(
   filePath: string,
@@ -148,6 +150,10 @@ export function analyzeFile(
     "local-file-path-manipulation",
     localFilePathManipulationAnalyzerBuilder
   );
+  const html5StorageManipulationAnalyzer = createAnalyzer(
+    "html5-storage-manipulation",
+    html5StorageManipulationAnalyzerBuilder
+  );
 
   traverse(args.ast, {
     Literal(node, state, ancestors) {
@@ -182,6 +188,11 @@ export function analyzeFile(
         ancestors
       );
       localFilePathManipulationAnalyzer?.CallExpression?.(
+        node,
+        state,
+        ancestors
+      );
+      html5StorageManipulationAnalyzer?.CallExpression?.(
         node,
         state,
         ancestors
