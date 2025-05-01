@@ -130,10 +130,10 @@ const testCases: PathsTestCase[] = [
       },
       {
         analyzerName: "paths",
-        value: "api/products",
+        value: "api/products#asdasd",
         start: { line: 11, column: 28 },
-        end: { line: 11, column: 42 },
-        tags: { api: true },
+        end: { line: 11, column: 49 },
+        tags: { api: true, fragment: true },
       },
       {
         analyzerName: "paths",

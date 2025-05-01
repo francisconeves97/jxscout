@@ -8,7 +8,7 @@ import { createRegexAnalyzer } from "./regex-analyzer";
 // - Paths with query parameters
 // - Alphanumeric characters, hyphens, underscores, dots, and other URL-safe characters
 const PATH_REGEX =
-  /^(?!https?:\/\/)(?:\/)?(?:[A-Za-z0-9\-._~!$&'()*+,;=:@{}]+\/)*[A-Za-z0-9\-._~!$&'()*+,;=:@{}]+(?:\?[^#]*)?$/;
+  /^(?!https?:\/\/)(?:\/)?(?:[A-Za-z0-9\-._~!$&'()*+,;=:@{}]+\/)*[A-Za-z0-9\-._~!$&'()*+,;=:@{}]+(?:\?[^#]*)?(?:#[^]*)?$/;
 
 function isHighEntropy(str, threshold = 4.9) {
   const freq = {};
@@ -372,6 +372,10 @@ const pathsAnalyzerBuilder = createRegexAnalyzer({
 
     if (value.includes("?")) {
       tags.query = true;
+    }
+
+    if (value.includes("#")) {
+      tags.fragment = true;
     }
 
     return tags;

@@ -8,7 +8,7 @@ const apiBaseUrl = "https://api.example.com"; // should not detect
 // ===== VALID API ENDPOINT PATHS =====
 // Simple endpoint paths
 const userEndpointPath = "/users"; // should detect
-const productEndpointPath = "api/products"; // should detect
+const productEndpointPath = "api/products#asdasd"; // should detect
 const orderEndpointPath = "/orders/123"; // should detect
 const longPath =
   "/api/v1/users/123/orders/456/status/and/more/segments/of/users/in/users"; // should detect
