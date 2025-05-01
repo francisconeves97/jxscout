@@ -18,6 +18,7 @@ import { openRedirectionAnalyzerBuilder } from "./open-redirection";
 import { cookieManipulationAnalyzerBuilder } from "./cookie-manipulation";
 import { javascriptInjectionAnalyzerBuilder } from "./javascript-injection";
 import { documentDomainManipulationAnalyzerBuilder } from "./document-domain-manipulation";
+import { websocketUrlPoisoningAnalyzerBuilder } from "./websocket-url-poisoning";
 
 export function parseFile(filePath: string): AnalyzerParams {
   const fileContent = fs.readFileSync(filePath, "utf-8");
@@ -60,7 +61,8 @@ export type AnalyzerType =
   | "open-redirection"
   | "cookie-manipulation"
   | "javascript-injection"
-  | "document-domain-manipulation";
+  | "document-domain-manipulation"
+  | "websocket-url-poisoning";
 
 export function analyzeFile(
   filePath: string,
@@ -124,6 +126,10 @@ export function analyzeFile(
     "document-domain-manipulation",
     documentDomainManipulationAnalyzerBuilder
   );
+  const websocketUrlPoisoningAnalyzer = createAnalyzer(
+    "websocket-url-poisoning",
+    websocketUrlPoisoningAnalyzerBuilder
+  );
 
   traverse(args.ast, {
     Literal(node, state, ancestors) {
@@ -135,6 +141,7 @@ export function analyzeFile(
     },
     NewExpression(node, state, ancestors) {
       regexAnalyzer?.NewExpression?.(node, state, ancestors);
+      websocketUrlPoisoningAnalyzer?.NewExpression?.(node, state, ancestors);
     },
     TemplateLiteral(node, state, ancestors) {
       pathsAnalyzer?.TemplateLiteral?.(node, state, ancestors);
