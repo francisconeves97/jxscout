@@ -7,6 +7,7 @@ import { pathsAnalyzerBuilder } from "./paths";
 import { emailsAnalyzerBuilder } from "./emails";
 import { postMessageAnalyzerBuilder } from "./post-message";
 import { messageListenerAnalyzerBuilder } from "./message-listener";
+import { regexMatchAnalyzerBuilder } from "./regex-match";
 
 export function parseFile(filePath: string): AnalyzerParams {
   const fileContent = fs.readFileSync(filePath, "utf-8");
@@ -60,6 +61,7 @@ function main() {
       args,
       results
     );
+    const regexMatchAnalyzer = regexMatchAnalyzerBuilder(args, results);
 
     traverse(args.ast, {
       Literal(node, state, ancestors) {
@@ -75,6 +77,7 @@ function main() {
       CallExpression(node, state, ancestors) {
         postMessageAnalyzer.CallExpression?.(node, state, ancestors);
         messageListenerAnalyzer.CallExpression?.(node, state, ancestors);
+        regexMatchAnalyzer.CallExpression?.(node, state, ancestors);
       },
 
       AssignmentExpression(node, state, ancestors) {
