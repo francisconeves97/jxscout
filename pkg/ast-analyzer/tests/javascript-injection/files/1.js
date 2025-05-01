@@ -1,0 +1,10 @@
+eval("console.log('test')");
+Function("console.log('test')");
+setTimeout("console.log('test')", 1000);
+setInterval("console.log('test')", 1000);
+setImmediate("console.log('test')");
+document.execCommand("insertHTML", false, "<script>alert(1)</script>");
+document.execScript("console.log('test')");
+window.msSetImmediate("console.log('test')");
+crypto.generateCRMFRequest("test");
+range.createContextualFragment("<script>alert(1)</script>"); 

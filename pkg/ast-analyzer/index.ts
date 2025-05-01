@@ -16,6 +16,7 @@ import { urlsAnalyzerBuilder } from "./urls";
 import { jqueryDomXssAnalyzerBuilder } from "./jquery-dom-xss";
 import { openRedirectionAnalyzerBuilder } from "./open-redirection";
 import { cookieManipulationAnalyzerBuilder } from "./cookie-manipulation";
+import { javascriptInjectionAnalyzerBuilder } from "./javascript-injection";
 
 export function parseFile(filePath: string): AnalyzerParams {
   const fileContent = fs.readFileSync(filePath, "utf-8");
@@ -56,7 +57,8 @@ export type AnalyzerType =
   | "urls"
   | "jquery-dom-xss"
   | "open-redirection"
-  | "cookie-manipulation";
+  | "cookie-manipulation"
+  | "javascript-injection";
 
 export function analyzeFile(
   filePath: string,
@@ -112,6 +114,10 @@ export function analyzeFile(
     "cookie-manipulation",
     cookieManipulationAnalyzerBuilder
   );
+  const javascriptInjectionAnalyzer = createAnalyzer(
+    "javascript-injection",
+    javascriptInjectionAnalyzerBuilder
+  );
 
   traverse(args.ast, {
     Literal(node, state, ancestors) {
@@ -138,6 +144,7 @@ export function analyzeFile(
       domXssAnalyzer?.CallExpression?.(node, state, ancestors);
       jqueryDomXssAnalyzer?.CallExpression?.(node, state, ancestors);
       openRedirectionAnalyzer?.CallExpression?.(node, state, ancestors);
+      javascriptInjectionAnalyzer?.CallExpression?.(node, state, ancestors);
     },
     AssignmentExpression(node, state, ancestors) {
       messageListenerAnalyzer?.AssignmentExpression?.(node, state, ancestors);
