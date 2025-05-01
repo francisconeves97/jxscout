@@ -3,7 +3,7 @@ import { createRegexAnalyzer } from "./regex-analyzer";
 // Regex pattern for file extensions
 // This pattern matches common file extensions with optional version numbers and query parameters
 const FILE_EXTENSION_REGEX =
-  /\.(js|ts|jsx|tsx|html|htm|css|scss|sass|json|md|yaml|yml|py|go|java|rb|php|sh|conf|config|xml|sql)(\?.*)?$/i;
+  /\.(js|ts|jsx|tsx|html|htm|css|scss|sass|json|md|yaml|yml|py|go|java|rb|php|sh|conf|config|xml|sql)(\?.*)?/i;
 
 export const FILE_EXTENSIONS_ANALYZER_NAME = "file-extensions";
 
