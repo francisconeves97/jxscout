@@ -68,8 +68,6 @@ test.each(testCases)(
       a.value.localeCompare(b.value)
     );
 
-    console.log(JSON.stringify(sortedCalls));
-
     expect(sortedCalls).toEqual(sortedExpected);
   }
 );
