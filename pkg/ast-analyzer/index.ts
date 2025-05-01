@@ -13,6 +13,7 @@ import { regexAnalyzerBuilder } from "./regex";
 import { domXssAnalyzerBuilder } from "./dom-xss";
 import { graphqlAnalyzerBuilder } from "./graphql";
 import { urlsAnalyzerBuilder } from "./urls";
+import { jqueryDomXssAnalyzerBuilder } from "./jquery-dom-xss";
 
 export function parseFile(filePath: string): AnalyzerParams {
   const fileContent = fs.readFileSync(filePath, "utf-8");
@@ -50,7 +51,8 @@ export type AnalyzerType =
   | "regex"
   | "dom-xss"
   | "graphql"
-  | "urls";
+  | "urls"
+  | "jquery-dom-xss";
 
 export function analyzeFile(
   filePath: string,
@@ -94,6 +96,10 @@ export function analyzeFile(
   const domXssAnalyzer = createAnalyzer("dom-xss", domXssAnalyzerBuilder);
   const graphqlAnalyzer = createAnalyzer("graphql", graphqlAnalyzerBuilder);
   const urlsAnalyzer = createAnalyzer("urls", urlsAnalyzerBuilder);
+  const jqueryDomXssAnalyzer = createAnalyzer(
+    "jquery-dom-xss",
+    jqueryDomXssAnalyzerBuilder
+  );
 
   traverse(args.ast, {
     Literal(node, state, ancestors) {
@@ -118,6 +124,7 @@ export function analyzeFile(
       regexMatchAnalyzer?.CallExpression?.(node, state, ancestors);
       hashChangeAnalyzer?.CallExpression?.(node, state, ancestors);
       domXssAnalyzer?.CallExpression?.(node, state, ancestors);
+      jqueryDomXssAnalyzer?.CallExpression?.(node, state, ancestors);
     },
     AssignmentExpression(node, state, ancestors) {
       messageListenerAnalyzer?.AssignmentExpression?.(node, state, ancestors);
