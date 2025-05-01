@@ -20,6 +20,7 @@ import { javascriptInjectionAnalyzerBuilder } from "./javascript-injection";
 import { documentDomainManipulationAnalyzerBuilder } from "./document-domain-manipulation";
 import { websocketUrlPoisoningAnalyzerBuilder } from "./websocket-url-poisoning";
 import { linkManipulationAnalyzerBuilder } from "./link-manipulation";
+import { ajaxRequestHeaderManipulationAnalyzerBuilder } from "./ajax-request-header-manipulation";
 
 export function parseFile(filePath: string): AnalyzerParams {
   const fileContent = fs.readFileSync(filePath, "utf-8");
@@ -64,7 +65,8 @@ export type AnalyzerType =
   | "javascript-injection"
   | "document-domain-manipulation"
   | "websocket-url-poisoning"
-  | "link-manipulation";
+  | "link-manipulation"
+  | "ajax-request-header-manipulation";
 
 export function analyzeFile(
   filePath: string,
@@ -136,6 +138,10 @@ export function analyzeFile(
     "link-manipulation",
     linkManipulationAnalyzerBuilder
   );
+  const ajaxRequestHeaderManipulationAnalyzer = createAnalyzer(
+    "ajax-request-header-manipulation",
+    ajaxRequestHeaderManipulationAnalyzerBuilder
+  );
 
   traverse(args.ast, {
     Literal(node, state, ancestors) {
@@ -164,6 +170,11 @@ export function analyzeFile(
       jqueryDomXssAnalyzer?.CallExpression?.(node, state, ancestors);
       openRedirectionAnalyzer?.CallExpression?.(node, state, ancestors);
       javascriptInjectionAnalyzer?.CallExpression?.(node, state, ancestors);
+      ajaxRequestHeaderManipulationAnalyzer?.CallExpression?.(
+        node,
+        state,
+        ancestors
+      );
     },
     AssignmentExpression(node, state, ancestors) {
       messageListenerAnalyzer?.AssignmentExpression?.(node, state, ancestors);
