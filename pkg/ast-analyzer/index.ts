@@ -15,6 +15,7 @@ import { graphqlAnalyzerBuilder } from "./graphql";
 import { urlsAnalyzerBuilder } from "./urls";
 import { jqueryDomXssAnalyzerBuilder } from "./jquery-dom-xss";
 import { openRedirectionAnalyzerBuilder } from "./open-redirection";
+import { cookieManipulationAnalyzerBuilder } from "./cookie-manipulation";
 
 export function parseFile(filePath: string): AnalyzerParams {
   const fileContent = fs.readFileSync(filePath, "utf-8");
@@ -54,7 +55,8 @@ export type AnalyzerType =
   | "graphql"
   | "urls"
   | "jquery-dom-xss"
-  | "open-redirection";
+  | "open-redirection"
+  | "cookie-manipulation";
 
 export function analyzeFile(
   filePath: string,
@@ -106,6 +108,10 @@ export function analyzeFile(
     "open-redirection",
     openRedirectionAnalyzerBuilder
   );
+  const cookieManipulationAnalyzer = createAnalyzer(
+    "cookie-manipulation",
+    cookieManipulationAnalyzerBuilder
+  );
 
   traverse(args.ast, {
     Literal(node, state, ancestors) {
@@ -137,6 +143,11 @@ export function analyzeFile(
       messageListenerAnalyzer?.AssignmentExpression?.(node, state, ancestors);
       hashChangeAnalyzer?.AssignmentExpression?.(node, state, ancestors);
       domXssAnalyzer?.AssignmentExpression?.(node, state, ancestors);
+      cookieManipulationAnalyzer?.AssignmentExpression?.(
+        node,
+        state,
+        ancestors
+      );
     },
     MemberExpression(node, state, ancestors) {
       openRedirectionAnalyzer?.MemberExpression?.(node, state, ancestors);
