@@ -14,6 +14,7 @@ import { domXssAnalyzerBuilder } from "./dom-xss";
 import { graphqlAnalyzerBuilder } from "./graphql";
 import { urlsAnalyzerBuilder } from "./urls";
 import { jqueryDomXssAnalyzerBuilder } from "./jquery-dom-xss";
+import { openRedirectionAnalyzerBuilder } from "./open-redirection";
 
 export function parseFile(filePath: string): AnalyzerParams {
   const fileContent = fs.readFileSync(filePath, "utf-8");
@@ -52,7 +53,8 @@ export type AnalyzerType =
   | "dom-xss"
   | "graphql"
   | "urls"
-  | "jquery-dom-xss";
+  | "jquery-dom-xss"
+  | "open-redirection";
 
 export function analyzeFile(
   filePath: string,
@@ -100,6 +102,10 @@ export function analyzeFile(
     "jquery-dom-xss",
     jqueryDomXssAnalyzerBuilder
   );
+  const openRedirectionAnalyzer = createAnalyzer(
+    "open-redirection",
+    openRedirectionAnalyzerBuilder
+  );
 
   traverse(args.ast, {
     Literal(node, state, ancestors) {
@@ -125,11 +131,15 @@ export function analyzeFile(
       hashChangeAnalyzer?.CallExpression?.(node, state, ancestors);
       domXssAnalyzer?.CallExpression?.(node, state, ancestors);
       jqueryDomXssAnalyzer?.CallExpression?.(node, state, ancestors);
+      openRedirectionAnalyzer?.CallExpression?.(node, state, ancestors);
     },
     AssignmentExpression(node, state, ancestors) {
       messageListenerAnalyzer?.AssignmentExpression?.(node, state, ancestors);
       hashChangeAnalyzer?.AssignmentExpression?.(node, state, ancestors);
       domXssAnalyzer?.AssignmentExpression?.(node, state, ancestors);
+    },
+    MemberExpression(node, state, ancestors) {
+      openRedirectionAnalyzer?.MemberExpression?.(node, state, ancestors);
     },
   });
 
