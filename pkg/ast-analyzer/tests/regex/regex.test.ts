@@ -1,9 +1,7 @@
 import path from "path";
 import { expect, test } from "vitest";
-import { regexAnalyzerBuilder, REGEX_ANALYZER_NAME } from "../../regex";
-import { parseFile } from "../../index";
+import { analyzeFile } from "../../index";
 import { AnalyzerMatch } from "../../types";
-import { ancestor as traverse } from "acorn-walk";
 
 interface RegexTestCase {
   jsFileName: string;
@@ -109,19 +107,7 @@ test.each(testCases)(
   "regex - $jsFileName",
   ({ jsFileName, expectedMatches }) => {
     const filePath = path.join(__dirname, "files", jsFileName);
-
-    const args = parseFile(filePath);
-    const results: AnalyzerMatch[] = [];
-    const regexAnalyzer = regexAnalyzerBuilder(args, results);
-
-    traverse(args.ast, {
-      Literal(node, state, ancestors) {
-        regexAnalyzer.Literal?.(node, state, ancestors);
-      },
-      NewExpression(node, state, ancestors) {
-        regexAnalyzer.NewExpression?.(node, state, ancestors);
-      },
-    });
+    const results = analyzeFile(filePath, ["regex"]);
 
     // Sort both arrays by value to ensure consistent comparison
     const sortedResults = results.sort((a, b) =>

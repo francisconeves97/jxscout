@@ -1,19 +1,17 @@
 import path from "path";
 import { expect, test } from "vitest";
-import { graphqlAnalyzerBuilder } from "../../graphql";
-import { parseFile } from "../../index";
+import { analyzeFile } from "../../index";
 import { AnalyzerMatch } from "../../types";
-import { ancestor as traverse } from "acorn-walk";
 
-interface GraphQLTestCase {
+interface GraphqlTestCase {
   jsFileName: string;
-  expectedQueries: AnalyzerMatch[];
+  expectedCalls: AnalyzerMatch[];
 }
 
-const testCases: GraphQLTestCase[] = [
+const testCases: GraphqlTestCase[] = [
   {
     jsFileName: "1.js",
-    expectedQueries: [
+    expectedCalls: [
       {
         analyzerName: "graphql",
         value:
@@ -67,30 +65,16 @@ const testCases: GraphQLTestCase[] = [
 
 test.each(testCases)(
   "graphql - $jsFileName",
-  ({ jsFileName, expectedQueries }) => {
+  ({ jsFileName, expectedCalls }) => {
     const filePath = path.join(__dirname, "files", jsFileName);
-
-    const args = parseFile(filePath);
-    const results: AnalyzerMatch[] = [];
-    const graphqlAnalyzer = graphqlAnalyzerBuilder(args, results);
-
-    traverse(args.ast, {
-      Literal(node, state, ancestors) {
-        graphqlAnalyzer.Literal?.(node, state, ancestors);
-      },
-      TemplateLiteral(node, state, ancestors) {
-        graphqlAnalyzer.TemplateLiteral?.(node, state, ancestors);
-      },
-    });
+    const results = analyzeFile(filePath, ["graphql"]);
 
     // Sort both arrays by value to ensure consistent comparison
-    const sortedQueries = results.sort((a, b) =>
-      a.value.localeCompare(b.value)
-    );
-    const sortedExpected = expectedQueries.sort((a, b) =>
+    const sortedCalls = results.sort((a, b) => a.value.localeCompare(b.value));
+    const sortedExpected = expectedCalls.sort((a, b) =>
       a.value.localeCompare(b.value)
     );
 
-    expect(sortedQueries).toEqual(sortedExpected);
+    expect(sortedCalls).toEqual(sortedExpected);
   }
 );

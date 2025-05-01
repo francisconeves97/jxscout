@@ -1,9 +1,7 @@
 import path from "path";
 import { expect, test } from "vitest";
-import { postMessageAnalyzerBuilder } from "../../post-message";
-import { parseFile } from "../../index";
+import { analyzeFile } from "../../index";
 import { AnalyzerMatch } from "../../types";
-import { ancestor as traverse } from "acorn-walk";
 
 interface PostMessageTestCase {
   jsFileName: string;
@@ -51,16 +49,7 @@ test.each(testCases)(
   "post-message - $jsFileName",
   ({ jsFileName, expectedCalls }) => {
     const filePath = path.join(__dirname, "files", jsFileName);
-
-    const args = parseFile(filePath);
-    const results: AnalyzerMatch[] = [];
-    const postMessageAnalyzer = postMessageAnalyzerBuilder(args, results);
-
-    traverse(args.ast, {
-      CallExpression(node, state, ancestors) {
-        postMessageAnalyzer.CallExpression?.(node, state, ancestors);
-      },
-    });
+    const results = analyzeFile(filePath, ["post-message"]);
 
     // Sort both arrays by value to ensure consistent comparison
     const sortedCalls = results.sort((a, b) => a.value.localeCompare(b.value));

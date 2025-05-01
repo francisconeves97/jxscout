@@ -40,6 +40,95 @@ function printUsage() {
   process.exit(1);
 }
 
+export type AnalyzerType =
+  | "paths"
+  | "emails"
+  | "post-message"
+  | "message-listener"
+  | "regex-match"
+  | "hash-change"
+  | "regex"
+  | "dom-xss"
+  | "graphql"
+  | "urls";
+
+export function analyzeFile(
+  filePath: string,
+  analyzersToRun?: AnalyzerType[]
+): AnalyzerMatch[] {
+  if (!fs.existsSync(filePath)) {
+    throw new Error(`Error: File not found: ${filePath}`);
+  }
+
+  const results: AnalyzerMatch[] = [];
+  const args = parseFile(filePath);
+
+  const createAnalyzer = <T extends { [key: string]: any }>(
+    type: AnalyzerType,
+    builder: (args: AnalyzerParams, results: AnalyzerMatch[]) => T
+  ): T | null => {
+    return !analyzersToRun || analyzersToRun.includes(type)
+      ? builder(args, results)
+      : null;
+  };
+
+  const pathsAnalyzer = createAnalyzer("paths", pathsAnalyzerBuilder);
+  const emailsAnalyzer = createAnalyzer("emails", emailsAnalyzerBuilder);
+  const postMessageAnalyzer = createAnalyzer(
+    "post-message",
+    postMessageAnalyzerBuilder
+  );
+  const messageListenerAnalyzer = createAnalyzer(
+    "message-listener",
+    messageListenerAnalyzerBuilder
+  );
+  const regexMatchAnalyzer = createAnalyzer(
+    "regex-match",
+    regexMatchAnalyzerBuilder
+  );
+  const hashChangeAnalyzer = createAnalyzer(
+    "hash-change",
+    hashChangeAnalyzerBuilder
+  );
+  const regexAnalyzer = createAnalyzer("regex", regexAnalyzerBuilder);
+  const domXssAnalyzer = createAnalyzer("dom-xss", domXssAnalyzerBuilder);
+  const graphqlAnalyzer = createAnalyzer("graphql", graphqlAnalyzerBuilder);
+  const urlsAnalyzer = createAnalyzer("urls", urlsAnalyzerBuilder);
+
+  traverse(args.ast, {
+    Literal(node, state, ancestors) {
+      pathsAnalyzer?.Literal?.(node, state, ancestors);
+      emailsAnalyzer?.Literal?.(node, state, ancestors);
+      regexAnalyzer?.Literal?.(node, state, ancestors);
+      graphqlAnalyzer?.Literal?.(node, state, ancestors);
+      urlsAnalyzer?.Literal?.(node, state, ancestors);
+    },
+    NewExpression(node, state, ancestors) {
+      regexAnalyzer?.NewExpression?.(node, state, ancestors);
+    },
+    TemplateLiteral(node, state, ancestors) {
+      pathsAnalyzer?.TemplateLiteral?.(node, state, ancestors);
+      emailsAnalyzer?.TemplateLiteral?.(node, state, ancestors);
+      graphqlAnalyzer?.TemplateLiteral?.(node, state, ancestors);
+      urlsAnalyzer?.TemplateLiteral?.(node, state, ancestors);
+    },
+    CallExpression(node, state, ancestors) {
+      postMessageAnalyzer?.CallExpression?.(node, state, ancestors);
+      messageListenerAnalyzer?.CallExpression?.(node, state, ancestors);
+      regexMatchAnalyzer?.CallExpression?.(node, state, ancestors);
+      hashChangeAnalyzer?.CallExpression?.(node, state, ancestors);
+      domXssAnalyzer?.CallExpression?.(node, state, ancestors);
+    },
+    AssignmentExpression(node, state, ancestors) {
+      messageListenerAnalyzer?.AssignmentExpression?.(node, state, ancestors);
+      hashChangeAnalyzer?.AssignmentExpression?.(node, state, ancestors);
+      domXssAnalyzer?.AssignmentExpression?.(node, state, ancestors);
+    },
+  });
+
+  return results;
+}
+
 function main() {
   const args = process.argv.slice(2);
 
@@ -49,61 +138,8 @@ function main() {
 
   const [filePath] = args;
 
-  if (!fs.existsSync(filePath)) {
-    console.error(`Error: File not found: ${filePath}`);
-    process.exit(1);
-  }
-
-  const results: AnalyzerMatch[] = [];
-
   try {
-    const args = parseFile(filePath);
-
-    const pathsAnalyzer = pathsAnalyzerBuilder(args, results);
-    const emailsAnalyzer = emailsAnalyzerBuilder(args, results);
-    const postMessageAnalyzer = postMessageAnalyzerBuilder(args, results);
-    const messageListenerAnalyzer = messageListenerAnalyzerBuilder(
-      args,
-      results
-    );
-    const regexMatchAnalyzer = regexMatchAnalyzerBuilder(args, results);
-    const hashChangeAnalyzer = hashChangeAnalyzerBuilder(args, results);
-    const regexAnalyzer = regexAnalyzerBuilder(args, results);
-    const domXssAnalyzer = domXssAnalyzerBuilder(args, results);
-    const graphqlAnalyzer = graphqlAnalyzerBuilder(args, results);
-    const urlsAnalyzer = urlsAnalyzerBuilder(args, results);
-
-    traverse(args.ast, {
-      Literal(node, state, ancestors) {
-        pathsAnalyzer.Literal?.(node, state, ancestors);
-        emailsAnalyzer.Literal?.(node, state, ancestors);
-        regexAnalyzer.Literal?.(node, state, ancestors);
-        graphqlAnalyzer.Literal?.(node, state, ancestors);
-        urlsAnalyzer.Literal?.(node, state, ancestors);
-      },
-      NewExpression(node, state, ancestors) {
-        regexAnalyzer.NewExpression?.(node, state, ancestors);
-      },
-      TemplateLiteral(node, state, ancestors) {
-        pathsAnalyzer.TemplateLiteral?.(node, state, ancestors);
-        emailsAnalyzer.TemplateLiteral?.(node, state, ancestors);
-        graphqlAnalyzer.TemplateLiteral?.(node, state, ancestors);
-        urlsAnalyzer.TemplateLiteral?.(node, state, ancestors);
-      },
-      CallExpression(node, state, ancestors) {
-        postMessageAnalyzer.CallExpression?.(node, state, ancestors);
-        messageListenerAnalyzer.CallExpression?.(node, state, ancestors);
-        regexMatchAnalyzer.CallExpression?.(node, state, ancestors);
-        hashChangeAnalyzer.CallExpression?.(node, state, ancestors);
-        domXssAnalyzer.CallExpression?.(node, state, ancestors);
-      },
-      AssignmentExpression(node, state, ancestors) {
-        messageListenerAnalyzer.AssignmentExpression?.(node, state, ancestors);
-        hashChangeAnalyzer.AssignmentExpression?.(node, state, ancestors);
-        domXssAnalyzer.AssignmentExpression?.(node, state, ancestors);
-      },
-    });
-
+    const results = analyzeFile(filePath);
     console.log(JSON.stringify(results));
   } catch (error) {
     console.error(`Error running ast analysis:`, error);

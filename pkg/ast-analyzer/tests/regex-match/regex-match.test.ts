@@ -1,22 +1,17 @@
 import path from "path";
 import { expect, test } from "vitest";
-import {
-  regexMatchAnalyzerBuilder,
-  REGEX_MATCH_ANALYZER_NAME,
-} from "../../regex-match";
-import { parseFile } from "../../index";
+import { analyzeFile } from "../../index";
 import { AnalyzerMatch } from "../../types";
-import { ancestor as traverse } from "acorn-walk";
 
 interface RegexMatchTestCase {
   jsFileName: string;
-  expectedMatches: AnalyzerMatch[];
+  expectedCalls: AnalyzerMatch[];
 }
 
 const testCases: RegexMatchTestCase[] = [
   {
     jsFileName: "1.js",
-    expectedMatches: [
+    expectedCalls: [
       {
         analyzerName: "regex-match",
         value: '"asd".match(/world/)',
@@ -58,27 +53,16 @@ const testCases: RegexMatchTestCase[] = [
 
 test.each(testCases)(
   "regex-match - $jsFileName",
-  ({ jsFileName, expectedMatches }) => {
+  ({ jsFileName, expectedCalls }) => {
     const filePath = path.join(__dirname, "files", jsFileName);
-
-    const args = parseFile(filePath);
-    const results: AnalyzerMatch[] = [];
-    const regexMatchAnalyzer = regexMatchAnalyzerBuilder(args, results);
-
-    traverse(args.ast, {
-      CallExpression(node, state, ancestors) {
-        regexMatchAnalyzer.CallExpression?.(node, state, ancestors);
-      },
-    });
+    const results = analyzeFile(filePath, ["regex-match"]);
 
     // Sort both arrays by value to ensure consistent comparison
-    const sortedResults = results.sort((a, b) =>
-      a.value.localeCompare(b.value)
-    );
-    const sortedExpected = expectedMatches.sort((a, b) =>
+    const sortedCalls = results.sort((a, b) => a.value.localeCompare(b.value));
+    const sortedExpected = expectedCalls.sort((a, b) =>
       a.value.localeCompare(b.value)
     );
 
-    expect(sortedResults).toEqual(sortedExpected);
+    expect(sortedCalls).toEqual(sortedExpected);
   }
 );

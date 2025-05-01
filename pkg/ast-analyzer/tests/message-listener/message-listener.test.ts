@@ -1,9 +1,7 @@
 import path from "path";
 import { expect, test } from "vitest";
-import { messageListenerAnalyzerBuilder } from "../../message-listener";
-import { parseFile } from "../../index";
+import { analyzeFile } from "../../index";
 import { AnalyzerMatch } from "../../types";
-import { ancestor as traverse } from "acorn-walk";
 
 interface MessageListenerTestCase {
   jsFileName: string;
@@ -53,22 +51,7 @@ test.each(testCases)(
   "message-listener - $jsFileName",
   ({ jsFileName, expectedCalls }) => {
     const filePath = path.join(__dirname, "files", jsFileName);
-
-    const args = parseFile(filePath);
-    const results: AnalyzerMatch[] = [];
-    const messageListenerAnalyzer = messageListenerAnalyzerBuilder(
-      args,
-      results
-    );
-
-    traverse(args.ast, {
-      CallExpression(node, state, ancestors) {
-        messageListenerAnalyzer.CallExpression?.(node, state, ancestors);
-      },
-      AssignmentExpression(node, state, ancestors) {
-        messageListenerAnalyzer.AssignmentExpression?.(node, state, ancestors);
-      },
-    });
+    const results = analyzeFile(filePath, ["message-listener"]);
 
     // Sort both arrays by value to ensure consistent comparison
     const sortedCalls = results.sort((a, b) => a.value.localeCompare(b.value));

@@ -1,9 +1,7 @@
 import path from "path";
 import { expect, test } from "vitest";
-import { urlsAnalyzerBuilder } from "../../urls";
-import { parseFile } from "../../index";
+import { analyzeFile } from "../../index";
 import { AnalyzerMatch } from "../../types";
-import { ancestor as traverse } from "acorn-walk";
 
 interface UrlsTestCase {
   jsFileName: string;
@@ -69,19 +67,7 @@ const testCases: UrlsTestCase[] = [
 
 test.each(testCases)("urls - $jsFileName", ({ jsFileName, expectedUrls }) => {
   const filePath = path.join(__dirname, "files", jsFileName);
-
-  const args = parseFile(filePath);
-  const results: AnalyzerMatch[] = [];
-  const urlsAnalyzer = urlsAnalyzerBuilder(args, results);
-
-  traverse(args.ast, {
-    Literal(node, state, ancestors) {
-      urlsAnalyzer.Literal?.(node, state, ancestors);
-    },
-    TemplateLiteral(node, state, ancestors) {
-      urlsAnalyzer.TemplateLiteral?.(node, state, ancestors);
-    },
-  });
+  const results = analyzeFile(filePath, ["urls"]);
 
   // Sort both arrays by value to ensure consistent comparison
   const sortedUrls = results.sort((a, b) => a.value.localeCompare(b.value));

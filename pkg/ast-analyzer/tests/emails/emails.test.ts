@@ -1,9 +1,7 @@
 import path from "path";
 import { expect, test } from "vitest";
-import { emailsAnalyzerBuilder } from "../../emails";
-import { parseFile } from "../../index";
+import { analyzeFile } from "../../index";
 import { AnalyzerMatch } from "../../types";
-import { ancestor as traverse } from "acorn-walk";
 
 interface EmailsTestCase {
   jsFileName: string;
@@ -243,19 +241,7 @@ test.each(testCases)(
   "emails - $jsFileName",
   ({ jsFileName, expectedEmails }) => {
     const filePath = path.join(__dirname, "files", jsFileName);
-
-    const args = parseFile(filePath);
-    const results: AnalyzerMatch[] = [];
-    const emailsAnalyzer = emailsAnalyzerBuilder(args, results);
-
-    traverse(args.ast, {
-      Literal(node, state, ancestors) {
-        emailsAnalyzer.Literal?.(node, state, ancestors);
-      },
-      TemplateLiteral(node, state, ancestors) {
-        emailsAnalyzer.TemplateLiteral?.(node, state, ancestors);
-      },
-    });
+    const results = analyzeFile(filePath, ["emails"]);
 
     // Sort both arrays by value to ensure consistent comparison
     const sortedEmails = results.sort((a, b) => a.value.localeCompare(b.value));

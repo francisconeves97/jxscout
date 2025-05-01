@@ -1,9 +1,7 @@
 import path from "path";
 import { expect, test } from "vitest";
-import { domXssAnalyzerBuilder } from "../../dom-xss";
-import { parseFile } from "../../index";
+import { analyzeFile } from "../../index";
 import { AnalyzerMatch } from "../../types";
-import { ancestor as traverse } from "acorn-walk";
 
 interface DomXssTestCase {
   jsFileName: string;
@@ -72,19 +70,7 @@ test.each(testCases)(
   "dom-xss - $jsFileName",
   ({ jsFileName, expectedCalls }) => {
     const filePath = path.join(__dirname, "files", jsFileName);
-
-    const args = parseFile(filePath);
-    const results: AnalyzerMatch[] = [];
-    const domXssAnalyzer = domXssAnalyzerBuilder(args, results);
-
-    traverse(args.ast, {
-      CallExpression(node, state, ancestors) {
-        domXssAnalyzer.CallExpression?.(node, state, ancestors);
-      },
-      AssignmentExpression(node, state, ancestors) {
-        domXssAnalyzer.AssignmentExpression?.(node, state, ancestors);
-      },
-    });
+    const results = analyzeFile(filePath, ["dom-xss"]);
 
     // Sort both arrays by value to ensure consistent comparison
     const sortedCalls = results.sort((a, b) => a.value.localeCompare(b.value));
