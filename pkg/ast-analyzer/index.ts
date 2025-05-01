@@ -8,6 +8,8 @@ import { emailsAnalyzerBuilder } from "./emails";
 import { postMessageAnalyzerBuilder } from "./post-message";
 import { messageListenerAnalyzerBuilder } from "./message-listener";
 import { regexMatchAnalyzerBuilder } from "./regex-match";
+import { hashChangeAnalyzerBuilder } from "./hash-change";
+import { regexAnalyzerBuilder } from "./regex";
 
 export function parseFile(filePath: string): AnalyzerParams {
   const fileContent = fs.readFileSync(filePath, "utf-8");
@@ -62,13 +64,17 @@ function main() {
       results
     );
     const regexMatchAnalyzer = regexMatchAnalyzerBuilder(args, results);
-
+    const hashChangeAnalyzer = hashChangeAnalyzerBuilder(args, results);
+    const regexAnalyzer = regexAnalyzerBuilder(args, results);
     traverse(args.ast, {
       Literal(node, state, ancestors) {
         pathsAnalyzer.Literal?.(node, state, ancestors);
         emailsAnalyzer.Literal?.(node, state, ancestors);
+        regexAnalyzer.Literal?.(node, state, ancestors);
       },
-
+      NewExpression(node, state, ancestors) {
+        regexAnalyzer.NewExpression?.(node, state, ancestors);
+      },
       TemplateLiteral(node, state, ancestors) {
         pathsAnalyzer.TemplateLiteral?.(node, state, ancestors);
         emailsAnalyzer.TemplateLiteral?.(node, state, ancestors);
@@ -78,10 +84,12 @@ function main() {
         postMessageAnalyzer.CallExpression?.(node, state, ancestors);
         messageListenerAnalyzer.CallExpression?.(node, state, ancestors);
         regexMatchAnalyzer.CallExpression?.(node, state, ancestors);
+        hashChangeAnalyzer.CallExpression?.(node, state, ancestors);
       },
 
       AssignmentExpression(node, state, ancestors) {
         messageListenerAnalyzer.AssignmentExpression?.(node, state, ancestors);
+        hashChangeAnalyzer.AssignmentExpression?.(node, state, ancestors);
       },
     });
 
