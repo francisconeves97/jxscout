@@ -25,6 +25,7 @@ import { localFilePathManipulationAnalyzerBuilder } from "./local-file-path-mani
 import { html5StorageManipulationAnalyzerBuilder } from "./html5-storage-manipulation";
 import { xpathInjectionAnalyzerBuilder } from "./xpath-injection";
 import { domDataManipulationAnalyzerBuilder } from "./dom-data-manipulation";
+import { commonSourcesAnalyzerBuilder } from "./common-sources";
 
 export function parseFile(filePath: string): AnalyzerParams {
   const fileContent = fs.readFileSync(filePath, "utf-8");
@@ -74,7 +75,8 @@ export type AnalyzerType =
   | "local-file-path-manipulation"
   | "html5-storage-manipulation"
   | "xpath-injection"
-  | "dom-data-manipulation";
+  | "dom-data-manipulation"
+  | "common-sources";
 
 export function analyzeFile(
   filePath: string,
@@ -166,6 +168,10 @@ export function analyzeFile(
     "dom-data-manipulation",
     domDataManipulationAnalyzerBuilder
   );
+  const commonSourcesAnalyzer = createAnalyzer(
+    "common-sources",
+    commonSourcesAnalyzerBuilder
+  );
 
   traverse(args.ast, {
     Literal(node, state, ancestors) {
@@ -210,6 +216,7 @@ export function analyzeFile(
         ancestors
       );
       xpathInjectionAnalyzer?.CallExpression?.(node, state, ancestors);
+      commonSourcesAnalyzer?.CallExpression?.(node, state, ancestors);
     },
     AssignmentExpression(node, state, ancestors) {
       messageListenerAnalyzer?.AssignmentExpression?.(node, state, ancestors);
@@ -231,6 +238,10 @@ export function analyzeFile(
       );
       linkManipulationAnalyzer?.MemberExpression?.(node, state, ancestors);
       domDataManipulationAnalyzer?.MemberExpression?.(node, state, ancestors);
+      commonSourcesAnalyzer?.MemberExpression?.(node, state, ancestors);
+    },
+    Identifier(node, state, ancestors) {
+      commonSourcesAnalyzer?.Identifier?.(node, state, ancestors);
     },
   });
 
