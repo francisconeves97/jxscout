@@ -5,6 +5,7 @@ import { ancestor as traverse } from "acorn-walk";
 import { AnalyzerParams, AnalyzerMatch } from "./types";
 import { pathsAnalyzerBuilder } from "./paths";
 import { emailsAnalyzerBuilder } from "./emails";
+import { postMessageAnalyzerBuilder } from "./post-message";
 
 export function parseFile(filePath: string): AnalyzerParams {
   const fileContent = fs.readFileSync(filePath, "utf-8");
@@ -53,6 +54,7 @@ function main() {
 
     const pathsAnalyzer = pathsAnalyzerBuilder(args, results);
     const emailsAnalyzer = emailsAnalyzerBuilder(args, results);
+    const postMessageAnalyzer = postMessageAnalyzerBuilder(args, results);
 
     traverse(args.ast, {
       Literal(node, state, ancestors) {
@@ -63,6 +65,10 @@ function main() {
       TemplateLiteral(node, state, ancestors) {
         pathsAnalyzer.TemplateLiteral?.(node, state, ancestors);
         emailsAnalyzer.TemplateLiteral?.(node, state, ancestors);
+      },
+
+      CallExpression(node, state, ancestors) {
+        postMessageAnalyzer.CallExpression?.(node, state, ancestors);
       },
     });
 
