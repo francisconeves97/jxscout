@@ -1,15 +1,13 @@
 import path from "path";
 import { expect, test } from "vitest";
-import { emailsAnalyzer } from "../../emails";
+import { emailsAnalyzerBuilder } from "../../emails";
 import { parseFile } from "../../index";
+import { AnalyzerMatch } from "../../types";
+import { simple as traverse } from "acorn-walk";
 
 interface EmailsTestCase {
   jsFileName: string;
-  expectedEmails: Array<{
-    value: string;
-    start: { line: number; column: number };
-    end: { line: number; column: number };
-  }>;
+  expectedEmails: AnalyzerMatch[];
 }
 
 const testCases: EmailsTestCase[] = [
@@ -17,6 +15,7 @@ const testCases: EmailsTestCase[] = [
     jsFileName: "1.js",
     expectedEmails: [
       {
+        analyzerName: "emails",
         value: "user@example.com",
         start: {
           line: 2,
@@ -26,8 +25,10 @@ const testCases: EmailsTestCase[] = [
           line: 2,
           column: 40,
         },
+        tags: {},
       },
       {
+        analyzerName: "emails",
         value: "user@subdomain.example.com",
         start: {
           line: 3,
@@ -37,8 +38,10 @@ const testCases: EmailsTestCase[] = [
           line: 3,
           column: 55,
         },
+        tags: {},
       },
       {
+        analyzerName: "emails",
         value: "user123@example.com",
         start: {
           line: 4,
@@ -48,8 +51,10 @@ const testCases: EmailsTestCase[] = [
           line: 4,
           column: 46,
         },
+        tags: {},
       },
       {
+        analyzerName: "emails",
         value: "user.name+tag@example.com",
         start: {
           line: 5,
@@ -59,8 +64,10 @@ const testCases: EmailsTestCase[] = [
           line: 5,
           column: 57,
         },
+        tags: {},
       },
       {
+        analyzerName: "emails",
         value: "user-name@example-site.com",
         start: {
           line: 6,
@@ -70,8 +77,10 @@ const testCases: EmailsTestCase[] = [
           line: 6,
           column: 52,
         },
+        tags: {},
       },
       {
+        analyzerName: "emails",
         value: "User.Name@Example.com",
         start: {
           line: 7,
@@ -81,8 +90,10 @@ const testCases: EmailsTestCase[] = [
           line: 7,
           column: 50,
         },
+        tags: {},
       },
       {
+        analyzerName: "emails",
         value: "first.last@domain.example",
         start: {
           line: 8,
@@ -92,8 +103,10 @@ const testCases: EmailsTestCase[] = [
           line: 8,
           column: 52,
         },
+        tags: {},
       },
       {
+        analyzerName: "emails",
         value: "contact@me.io",
         start: {
           line: 9,
@@ -103,8 +116,10 @@ const testCases: EmailsTestCase[] = [
           line: 9,
           column: 40,
         },
+        tags: {},
       },
       {
+        analyzerName: "emails",
         value: "user+tag@example",
         start: {
           line: 10,
@@ -114,8 +129,10 @@ const testCases: EmailsTestCase[] = [
           line: 10,
           column: 41,
         },
+        tags: {},
       },
       {
+        analyzerName: "emails",
         value: "support@company.org",
         start: {
           line: 14,
@@ -125,8 +142,10 @@ const testCases: EmailsTestCase[] = [
           line: 14,
           column: 32,
         },
+        tags: {},
       },
       {
+        analyzerName: "emails",
         value: "sales@company.org",
         start: {
           line: 15,
@@ -136,8 +155,10 @@ const testCases: EmailsTestCase[] = [
           line: 15,
           column: 28,
         },
+        tags: {},
       },
       {
+        analyzerName: "emails",
         value: "information@company.org",
         start: {
           line: 16,
@@ -147,8 +168,10 @@ const testCases: EmailsTestCase[] = [
           line: 16,
           column: 33,
         },
+        tags: {},
       },
       {
+        analyzerName: "emails",
         value: "dev@company.com",
         start: {
           line: 20,
@@ -158,8 +181,10 @@ const testCases: EmailsTestCase[] = [
           line: 20,
           column: 19,
         },
+        tags: {},
       },
       {
+        analyzerName: "emails",
         value: "marketing@company.com",
         start: {
           line: 21,
@@ -169,8 +194,10 @@ const testCases: EmailsTestCase[] = [
           line: 21,
           column: 25,
         },
+        tags: {},
       },
       {
+        analyzerName: "emails",
         value: "hr@company.com",
         start: {
           line: 22,
@@ -180,8 +207,10 @@ const testCases: EmailsTestCase[] = [
           line: 22,
           column: 18,
         },
+        tags: {},
       },
       {
+        analyzerName: "emails",
         value: "admin@${emailWithNoTLD}",
         start: {
           line: 26,
@@ -191,8 +220,10 @@ const testCases: EmailsTestCase[] = [
           line: 26,
           column: 44,
         },
+        tags: {},
       },
       {
+        analyzerName: "emails",
         value: "${department}@ourcompany.com",
         start: {
           line: 28,
@@ -202,6 +233,7 @@ const testCases: EmailsTestCase[] = [
           line: 28,
           column: 39,
         },
+        tags: {},
       },
     ],
   },
@@ -213,10 +245,20 @@ test.each(testCases)(
     const filePath = path.join(__dirname, "files", jsFileName);
 
     const args = parseFile(filePath);
-    const emails = emailsAnalyzer(args);
+    const results: AnalyzerMatch[] = [];
+    const emailsAnalyzer = emailsAnalyzerBuilder(args, results);
+
+    traverse(args.ast, {
+      Literal(node, state) {
+        emailsAnalyzer.Literal?.(node, state);
+      },
+      TemplateLiteral(node, state) {
+        emailsAnalyzer.TemplateLiteral?.(node, state);
+      },
+    });
 
     // Sort both arrays by value to ensure consistent comparison
-    const sortedEmails = emails.sort((a, b) => a.value.localeCompare(b.value));
+    const sortedEmails = results.sort((a, b) => a.value.localeCompare(b.value));
     const sortedExpected = expectedEmails.sort((a, b) =>
       a.value.localeCompare(b.value)
     );

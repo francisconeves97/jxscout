@@ -359,6 +359,19 @@ const pathsAnalyzerBuilder = createRegexAnalyzer({
 
     return true;
   },
+  tags: (value) => {
+    const tags: Record<string, true> = {};
+
+    if (value.includes("api")) {
+      tags.api = true;
+    }
+
+    if (value.includes("?")) {
+      tags.query = true;
+    }
+
+    return tags;
+  },
 });
 
 export { pathsAnalyzerBuilder };

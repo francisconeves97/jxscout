@@ -4,6 +4,7 @@ export interface RegexAnalyzerConfig {
   analyzerName: string;
   regex: RegExp;
   filter?: (match: AnalyzerMatch) => boolean;
+  tags?: (value: string) => Record<string, true>;
 }
 
 export function createRegexAnalyzer(config: RegexAnalyzerConfig): Analyzer {
@@ -28,6 +29,7 @@ export function createRegexAnalyzer(config: RegexAnalyzerConfig): Analyzer {
           value: stringValue,
           start: node.loc.start,
           end: node.loc.end,
+          tags: config.tags ? config.tags(stringValue) : {},
         };
 
         if (config.filter && !config.filter(match)) {
@@ -55,6 +57,7 @@ export function createRegexAnalyzer(config: RegexAnalyzerConfig): Analyzer {
           value: templateValue,
           start: node.loc.start,
           end: node.loc.end,
+          tags: config.tags ? config.tags(templateValue) : {},
         };
 
         if (config.filter && !config.filter(match)) {

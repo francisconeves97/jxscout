@@ -6,6 +6,7 @@ export interface AnalyzerMatch {
   value: string;
   start: Position;
   end: Position;
+  tags: Record<string, true>;
 }
 
 export interface AnalyzerParams {
