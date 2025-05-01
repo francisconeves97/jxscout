@@ -10,6 +10,9 @@ import { messageListenerAnalyzerBuilder } from "./message-listener";
 import { regexMatchAnalyzerBuilder } from "./regex-match";
 import { hashChangeAnalyzerBuilder } from "./hash-change";
 import { regexAnalyzerBuilder } from "./regex";
+import { domXssAnalyzerBuilder } from "./dom-xss";
+import { graphqlAnalyzerBuilder } from "./graphql";
+import { urlsAnalyzerBuilder } from "./urls";
 
 export function parseFile(filePath: string): AnalyzerParams {
   const fileContent = fs.readFileSync(filePath, "utf-8");
@@ -66,11 +69,17 @@ function main() {
     const regexMatchAnalyzer = regexMatchAnalyzerBuilder(args, results);
     const hashChangeAnalyzer = hashChangeAnalyzerBuilder(args, results);
     const regexAnalyzer = regexAnalyzerBuilder(args, results);
+    const domXssAnalyzer = domXssAnalyzerBuilder(args, results);
+    const graphqlAnalyzer = graphqlAnalyzerBuilder(args, results);
+    const urlsAnalyzer = urlsAnalyzerBuilder(args, results);
+
     traverse(args.ast, {
       Literal(node, state, ancestors) {
         pathsAnalyzer.Literal?.(node, state, ancestors);
         emailsAnalyzer.Literal?.(node, state, ancestors);
         regexAnalyzer.Literal?.(node, state, ancestors);
+        graphqlAnalyzer.Literal?.(node, state, ancestors);
+        urlsAnalyzer.Literal?.(node, state, ancestors);
       },
       NewExpression(node, state, ancestors) {
         regexAnalyzer.NewExpression?.(node, state, ancestors);
@@ -78,18 +87,20 @@ function main() {
       TemplateLiteral(node, state, ancestors) {
         pathsAnalyzer.TemplateLiteral?.(node, state, ancestors);
         emailsAnalyzer.TemplateLiteral?.(node, state, ancestors);
+        graphqlAnalyzer.TemplateLiteral?.(node, state, ancestors);
+        urlsAnalyzer.TemplateLiteral?.(node, state, ancestors);
       },
-
       CallExpression(node, state, ancestors) {
         postMessageAnalyzer.CallExpression?.(node, state, ancestors);
         messageListenerAnalyzer.CallExpression?.(node, state, ancestors);
         regexMatchAnalyzer.CallExpression?.(node, state, ancestors);
         hashChangeAnalyzer.CallExpression?.(node, state, ancestors);
+        domXssAnalyzer.CallExpression?.(node, state, ancestors);
       },
-
       AssignmentExpression(node, state, ancestors) {
         messageListenerAnalyzer.AssignmentExpression?.(node, state, ancestors);
         hashChangeAnalyzer.AssignmentExpression?.(node, state, ancestors);
+        domXssAnalyzer.AssignmentExpression?.(node, state, ancestors);
       },
     });
 
