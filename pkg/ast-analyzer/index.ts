@@ -19,6 +19,7 @@ import { cookieManipulationAnalyzerBuilder } from "./cookie-manipulation";
 import { javascriptInjectionAnalyzerBuilder } from "./javascript-injection";
 import { documentDomainManipulationAnalyzerBuilder } from "./document-domain-manipulation";
 import { websocketUrlPoisoningAnalyzerBuilder } from "./websocket-url-poisoning";
+import { linkManipulationAnalyzerBuilder } from "./link-manipulation";
 
 export function parseFile(filePath: string): AnalyzerParams {
   const fileContent = fs.readFileSync(filePath, "utf-8");
@@ -62,7 +63,8 @@ export type AnalyzerType =
   | "cookie-manipulation"
   | "javascript-injection"
   | "document-domain-manipulation"
-  | "websocket-url-poisoning";
+  | "websocket-url-poisoning"
+  | "link-manipulation";
 
 export function analyzeFile(
   filePath: string,
@@ -130,6 +132,10 @@ export function analyzeFile(
     "websocket-url-poisoning",
     websocketUrlPoisoningAnalyzerBuilder
   );
+  const linkManipulationAnalyzer = createAnalyzer(
+    "link-manipulation",
+    linkManipulationAnalyzerBuilder
+  );
 
   traverse(args.ast, {
     Literal(node, state, ancestors) {
@@ -168,6 +174,7 @@ export function analyzeFile(
         state,
         ancestors
       );
+      linkManipulationAnalyzer?.AssignmentExpression?.(node, state, ancestors);
     },
     MemberExpression(node, state, ancestors) {
       openRedirectionAnalyzer?.MemberExpression?.(node, state, ancestors);
@@ -176,6 +183,7 @@ export function analyzeFile(
         state,
         ancestors
       );
+      linkManipulationAnalyzer?.MemberExpression?.(node, state, ancestors);
     },
   });
 
