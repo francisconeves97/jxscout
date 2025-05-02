@@ -18,6 +18,8 @@ const testCases: DomXssTestCase[] = [
         start: { line: 8, column: 0 },
         end: { line: 8, column: 31 },
         tags: { "dom-xss": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/dom-xss/files/1.js",
       },
       {
         analyzerName: "dom-xss",
@@ -25,6 +27,8 @@ const testCases: DomXssTestCase[] = [
         start: { line: 2, column: 0 },
         end: { line: 2, column: 43 },
         tags: { "dom-xss": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/dom-xss/files/1.js",
       },
       {
         analyzerName: "dom-xss",
@@ -32,6 +36,8 @@ const testCases: DomXssTestCase[] = [
         start: { line: 5, column: 0 },
         end: { line: 5, column: 45 },
         tags: { "dom-xss": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/dom-xss/files/1.js",
       },
       {
         analyzerName: "dom-xss",
@@ -39,6 +45,8 @@ const testCases: DomXssTestCase[] = [
         start: { line: 11, column: 0 },
         end: { line: 11, column: 47 },
         tags: { "dom-xss": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/dom-xss/files/1.js",
       },
       {
         analyzerName: "dom-xss",
@@ -47,6 +55,8 @@ const testCases: DomXssTestCase[] = [
         start: { line: 17, column: 0 },
         end: { line: 17, column: 68 },
         tags: { "dom-xss": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/dom-xss/files/1.js",
       },
       {
         analyzerName: "dom-xss",
@@ -54,6 +64,8 @@ const testCases: DomXssTestCase[] = [
         start: { line: 20, column: 0 },
         end: { line: 20, column: 28 },
         tags: { "dom-xss": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/dom-xss/files/1.js",
       },
       {
         analyzerName: "dom-xss",
@@ -61,6 +73,8 @@ const testCases: DomXssTestCase[] = [
         start: { line: 14, column: 0 },
         end: { line: 14, column: 47 },
         tags: { "dom-xss": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/dom-xss/files/1.js",
       },
     ],
   },

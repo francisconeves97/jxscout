@@ -18,6 +18,8 @@ const testCases: Html5StorageManipulationTestCase[] = [
         start: { line: 1, column: 0 },
         end: { line: 1, column: 36 },
         tags: { "html5-storage-manipulation": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/html5-storage-manipulation/files/1.js",
       },
       {
         analyzerName: "html5-storage-manipulation",
@@ -25,6 +27,8 @@ const testCases: Html5StorageManipulationTestCase[] = [
         start: { line: 2, column: 0 },
         end: { line: 2, column: 38 },
         tags: { "html5-storage-manipulation": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/html5-storage-manipulation/files/1.js",
       },
     ],
   },

@@ -26,6 +26,7 @@ const regexMatchAnalyzerBuilder = (
           node.arguments[0].type === "RegExpLiteral")
       ) {
         const match: AnalyzerMatch = {
+          filePath: args.filePath,
           analyzerName: REGEX_MATCH_ANALYZER_NAME,
           value: args.source.slice(node.start, node.end),
           start: node.loc.start,
@@ -53,6 +54,7 @@ const regexMatchAnalyzerBuilder = (
             node.callee.object.name === "regex"))
       ) {
         const match: AnalyzerMatch = {
+          filePath: args.filePath,
           analyzerName: REGEX_MATCH_ANALYZER_NAME,
           value: args.source.slice(node.start, node.end),
           start: node.loc.start,
@@ -80,6 +82,7 @@ const regexMatchAnalyzerBuilder = (
             node.callee.object.name === "regex"))
       ) {
         const match: AnalyzerMatch = {
+          filePath: args.filePath,
           analyzerName: REGEX_MATCH_ANALYZER_NAME,
           value: args.source.slice(node.start, node.end),
           start: node.loc.start,

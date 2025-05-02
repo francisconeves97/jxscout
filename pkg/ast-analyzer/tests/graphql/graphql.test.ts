@@ -19,6 +19,8 @@ const testCases: GraphqlTestCase[] = [
         start: { line: 37, column: 27 },
         end: { line: 44, column: 1 },
         tags: { query: true, directive: true, variable: true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/graphql/files/1.js",
       },
       {
         analyzerName: "graphql",
@@ -27,6 +29,8 @@ const testCases: GraphqlTestCase[] = [
         start: { line: 11, column: 27 },
         end: { line: 17, column: 2 },
         tags: { mutation: true, variable: true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/graphql/files/1.js",
       },
       {
         analyzerName: "graphql",
@@ -35,6 +39,8 @@ const testCases: GraphqlTestCase[] = [
         start: { line: 20, column: 25 },
         end: { line: 27, column: 2 },
         tags: { query: true, fragment: true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/graphql/files/1.js",
       },
       {
         analyzerName: "graphql",
@@ -43,6 +49,8 @@ const testCases: GraphqlTestCase[] = [
         start: { line: 2, column: 21 },
         end: { line: 8, column: 2 },
         tags: { query: true, variable: true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/graphql/files/1.js",
       },
       {
         analyzerName: "graphql",
@@ -51,6 +59,8 @@ const testCases: GraphqlTestCase[] = [
         start: { line: 30, column: 30 },
         end: { line: 35, column: 2 },
         tags: { query: true, directive: true, variable: true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/graphql/files/1.js",
       },
       {
         analyzerName: "graphql",
@@ -58,6 +68,8 @@ const testCases: GraphqlTestCase[] = [
         start: { line: 46, column: 23 },
         end: { line: 46, column: 51 },
         tags: {},
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/graphql/files/1.js",
       },
     ],
   },

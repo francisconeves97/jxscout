@@ -18,6 +18,8 @@ const testCases: CookieManipulationTestCase[] = [
         start: { line: 1, column: 0 },
         end: { line: 1, column: 30 },
         tags: { "cookie-manipulation": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/cookie-manipulation/files/1.js",
       },
       {
         analyzerName: "cookie-manipulation",
@@ -25,6 +27,8 @@ const testCases: CookieManipulationTestCase[] = [
         start: { line: 3, column: 0 },
         end: { line: 3, column: 21 },
         tags: { "cookie-manipulation": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/cookie-manipulation/files/1.js",
       },
     ],
   },

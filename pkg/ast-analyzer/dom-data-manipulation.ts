@@ -20,6 +20,7 @@ const domDataManipulationAnalyzerBuilder = (
         node.callee.property.name === "setAttribute"
       ) {
         const match: AnalyzerMatch = {
+          filePath: args.filePath,
           analyzerName: DOM_DATA_MANIPULATION_ANALYZER_NAME,
           value: args.source.slice(node.start, node.end),
           start: node.loc.start,
@@ -44,6 +45,7 @@ const domDataManipulationAnalyzerBuilder = (
         node.callee.property.name === "createHTMLDocument"
       ) {
         const match: AnalyzerMatch = {
+          filePath: args.filePath,
           analyzerName: DOM_DATA_MANIPULATION_ANALYZER_NAME,
           value: args.source.slice(node.start, node.end),
           start: node.loc.start,
@@ -66,6 +68,7 @@ const domDataManipulationAnalyzerBuilder = (
           node.callee.property.name === "replaceState")
       ) {
         const match: AnalyzerMatch = {
+          filePath: args.filePath,
           analyzerName: DOM_DATA_MANIPULATION_ANALYZER_NAME,
           value: args.source.slice(node.start, node.end),
           start: node.loc.start,
@@ -92,6 +95,7 @@ const domDataManipulationAnalyzerBuilder = (
         ["src", "text", "textContent", "innerText"].includes(node.property.name)
       ) {
         const match: AnalyzerMatch = {
+          filePath: args.filePath,
           analyzerName: DOM_DATA_MANIPULATION_ANALYZER_NAME,
           value: args.source.slice(node.start, node.end),
           start: node.loc.start,
@@ -124,6 +128,7 @@ const domDataManipulationAnalyzerBuilder = (
         ].includes(node.property.name)
       ) {
         const match: AnalyzerMatch = {
+          filePath: args.filePath,
           analyzerName: DOM_DATA_MANIPULATION_ANALYZER_NAME,
           value: args.source.slice(node.start, node.end),
           start: node.loc.start,
@@ -144,6 +149,7 @@ const domDataManipulationAnalyzerBuilder = (
         node.property.name === "title"
       ) {
         const match: AnalyzerMatch = {
+          filePath: args.filePath,
           analyzerName: DOM_DATA_MANIPULATION_ANALYZER_NAME,
           value: args.source.slice(node.start, node.end),
           start: node.loc.start,

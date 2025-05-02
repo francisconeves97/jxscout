@@ -24,6 +24,8 @@ const testCases: EmailsTestCase[] = [
           column: 40,
         },
         tags: {},
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/emails/files/1.js",
       },
       {
         analyzerName: "emails",
@@ -37,6 +39,8 @@ const testCases: EmailsTestCase[] = [
           column: 55,
         },
         tags: {},
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/emails/files/1.js",
       },
       {
         analyzerName: "emails",
@@ -50,6 +54,8 @@ const testCases: EmailsTestCase[] = [
           column: 46,
         },
         tags: {},
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/emails/files/1.js",
       },
       {
         analyzerName: "emails",
@@ -63,6 +69,8 @@ const testCases: EmailsTestCase[] = [
           column: 57,
         },
         tags: {},
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/emails/files/1.js",
       },
       {
         analyzerName: "emails",
@@ -76,6 +84,8 @@ const testCases: EmailsTestCase[] = [
           column: 52,
         },
         tags: {},
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/emails/files/1.js",
       },
       {
         analyzerName: "emails",
@@ -89,6 +99,8 @@ const testCases: EmailsTestCase[] = [
           column: 50,
         },
         tags: {},
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/emails/files/1.js",
       },
       {
         analyzerName: "emails",
@@ -102,6 +114,8 @@ const testCases: EmailsTestCase[] = [
           column: 52,
         },
         tags: {},
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/emails/files/1.js",
       },
       {
         analyzerName: "emails",
@@ -115,6 +129,8 @@ const testCases: EmailsTestCase[] = [
           column: 40,
         },
         tags: {},
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/emails/files/1.js",
       },
       {
         analyzerName: "emails",
@@ -128,6 +144,8 @@ const testCases: EmailsTestCase[] = [
           column: 41,
         },
         tags: {},
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/emails/files/1.js",
       },
       {
         analyzerName: "emails",
@@ -141,6 +159,8 @@ const testCases: EmailsTestCase[] = [
           column: 32,
         },
         tags: {},
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/emails/files/1.js",
       },
       {
         analyzerName: "emails",
@@ -154,6 +174,8 @@ const testCases: EmailsTestCase[] = [
           column: 28,
         },
         tags: {},
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/emails/files/1.js",
       },
       {
         analyzerName: "emails",
@@ -167,6 +189,8 @@ const testCases: EmailsTestCase[] = [
           column: 33,
         },
         tags: {},
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/emails/files/1.js",
       },
       {
         analyzerName: "emails",
@@ -180,6 +204,8 @@ const testCases: EmailsTestCase[] = [
           column: 19,
         },
         tags: {},
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/emails/files/1.js",
       },
       {
         analyzerName: "emails",
@@ -193,6 +219,8 @@ const testCases: EmailsTestCase[] = [
           column: 25,
         },
         tags: {},
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/emails/files/1.js",
       },
       {
         analyzerName: "emails",
@@ -206,6 +234,8 @@ const testCases: EmailsTestCase[] = [
           column: 18,
         },
         tags: {},
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/emails/files/1.js",
       },
       {
         analyzerName: "emails",
@@ -219,6 +249,8 @@ const testCases: EmailsTestCase[] = [
           column: 44,
         },
         tags: {},
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/emails/files/1.js",
       },
       {
         analyzerName: "emails",
@@ -232,6 +264,8 @@ const testCases: EmailsTestCase[] = [
           column: 39,
         },
         tags: {},
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/emails/files/1.js",
       },
     ],
   },

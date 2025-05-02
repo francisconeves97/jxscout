@@ -65,6 +65,7 @@ const jqueryDomXssAnalyzerBuilder = (
 
         if (isJQueryObject) {
           const match: AnalyzerMatch = {
+            filePath: args.filePath,
             analyzerName: JQUERY_DOM_XSS_ANALYZER_NAME,
             value: args.source.slice(node.start, node.end),
             start: node.loc.start,
@@ -88,6 +89,7 @@ const jqueryDomXssAnalyzerBuilder = (
           node.callee.object.name === "$")
       ) {
         const match: AnalyzerMatch = {
+          filePath: args.filePath,
           analyzerName: JQUERY_DOM_XSS_ANALYZER_NAME,
           value: args.source.slice(node.start, node.end),
           start: node.loc.start,

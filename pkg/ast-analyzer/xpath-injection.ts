@@ -22,6 +22,7 @@ const xpathInjectionAnalyzerBuilder = (
         node.callee.property.name === "evaluate"
       ) {
         const match: AnalyzerMatch = {
+          filePath: args.filePath,
           analyzerName: XPATH_INJECTION_ANALYZER_NAME,
           value: args.source.slice(node.start, node.end),
           start: node.loc.start,
@@ -44,6 +45,7 @@ const xpathInjectionAnalyzerBuilder = (
         node.callee.object.name !== "document" // Ensure we don't match document.evaluate again
       ) {
         const match: AnalyzerMatch = {
+          filePath: args.filePath,
           analyzerName: XPATH_INJECTION_ANALYZER_NAME,
           value: args.source.slice(node.start, node.end),
           start: node.loc.start,

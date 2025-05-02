@@ -13,6 +13,8 @@ const testCases: AjaxRequestHeaderManipulationTestCase[] = [
     jsFileName: "1.js",
     expectedCalls: [
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/ajax-request-header-manipulation/files/1.js",
         analyzerName: "ajax-request-header-manipulation",
         value: "$.globalEval(\"console.log('test')\")",
         start: { line: 5, column: 0 },
@@ -20,6 +22,8 @@ const testCases: AjaxRequestHeaderManipulationTestCase[] = [
         tags: { "ajax-request-header-manipulation": true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/ajax-request-header-manipulation/files/1.js",
         analyzerName: "ajax-request-header-manipulation",
         value: "jQuery.globalEval(\"console.log('test')\")",
         start: { line: 4, column: 0 },
@@ -27,6 +31,8 @@ const testCases: AjaxRequestHeaderManipulationTestCase[] = [
         tags: { "ajax-request-header-manipulation": true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/ajax-request-header-manipulation/files/1.js",
         analyzerName: "ajax-request-header-manipulation",
         value: 'xhr.open("GET", "https://example.com")',
         start: { line: 2, column: 0 },
@@ -34,6 +40,8 @@ const testCases: AjaxRequestHeaderManipulationTestCase[] = [
         tags: { "ajax-request-header-manipulation": true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/ajax-request-header-manipulation/files/1.js",
         analyzerName: "ajax-request-header-manipulation",
         value: "xhr.send()",
         start: { line: 3, column: 0 },
@@ -41,6 +49,8 @@ const testCases: AjaxRequestHeaderManipulationTestCase[] = [
         tags: { "ajax-request-header-manipulation": true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/ajax-request-header-manipulation/files/1.js",
         analyzerName: "ajax-request-header-manipulation",
         value: 'xhr.setRequestHeader("Content-Type", "application/json")',
         start: { line: 1, column: 0 },

@@ -16,6 +16,7 @@ const javascriptInjectionAnalyzerBuilder = (
       // Check for eval()
       if (node.callee.type === "Identifier" && node.callee.name === "eval") {
         const match: AnalyzerMatch = {
+          filePath: args.filePath,
           analyzerName: JAVASCRIPT_INJECTION_ANALYZER_NAME,
           value: args.source.slice(node.start, node.end),
           start: node.loc.start,
@@ -34,6 +35,7 @@ const javascriptInjectionAnalyzerBuilder = (
         node.callee.name === "Function"
       ) {
         const match: AnalyzerMatch = {
+          filePath: args.filePath,
           analyzerName: JAVASCRIPT_INJECTION_ANALYZER_NAME,
           value: args.source.slice(node.start, node.end),
           start: node.loc.start,
@@ -52,6 +54,7 @@ const javascriptInjectionAnalyzerBuilder = (
         node.callee.name === "setTimeout"
       ) {
         const match: AnalyzerMatch = {
+          filePath: args.filePath,
           analyzerName: JAVASCRIPT_INJECTION_ANALYZER_NAME,
           value: args.source.slice(node.start, node.end),
           start: node.loc.start,
@@ -70,6 +73,7 @@ const javascriptInjectionAnalyzerBuilder = (
         node.callee.name === "setInterval"
       ) {
         const match: AnalyzerMatch = {
+          filePath: args.filePath,
           analyzerName: JAVASCRIPT_INJECTION_ANALYZER_NAME,
           value: args.source.slice(node.start, node.end),
           start: node.loc.start,
@@ -88,6 +92,7 @@ const javascriptInjectionAnalyzerBuilder = (
         node.callee.name === "setImmediate"
       ) {
         const match: AnalyzerMatch = {
+          filePath: args.filePath,
           analyzerName: JAVASCRIPT_INJECTION_ANALYZER_NAME,
           value: args.source.slice(node.start, node.end),
           start: node.loc.start,
@@ -107,6 +112,7 @@ const javascriptInjectionAnalyzerBuilder = (
         node.callee.property.name === "execCommand"
       ) {
         const match: AnalyzerMatch = {
+          filePath: args.filePath,
           analyzerName: JAVASCRIPT_INJECTION_ANALYZER_NAME,
           value: args.source.slice(node.start, node.end),
           start: node.loc.start,
@@ -126,6 +132,7 @@ const javascriptInjectionAnalyzerBuilder = (
         node.callee.property.name === "execScript"
       ) {
         const match: AnalyzerMatch = {
+          filePath: args.filePath,
           analyzerName: JAVASCRIPT_INJECTION_ANALYZER_NAME,
           value: args.source.slice(node.start, node.end),
           start: node.loc.start,
@@ -145,6 +152,7 @@ const javascriptInjectionAnalyzerBuilder = (
         node.callee.property.name === "msSetImmediate"
       ) {
         const match: AnalyzerMatch = {
+          filePath: args.filePath,
           analyzerName: JAVASCRIPT_INJECTION_ANALYZER_NAME,
           value: args.source.slice(node.start, node.end),
           start: node.loc.start,
@@ -166,6 +174,7 @@ const javascriptInjectionAnalyzerBuilder = (
         node.callee.property.name === "generateCRMFRequest"
       ) {
         const match: AnalyzerMatch = {
+          filePath: args.filePath,
           analyzerName: JAVASCRIPT_INJECTION_ANALYZER_NAME,
           value: args.source.slice(node.start, node.end),
           start: node.loc.start,
@@ -187,6 +196,7 @@ const javascriptInjectionAnalyzerBuilder = (
         node.callee.property.name === "createContextualFragment"
       ) {
         const match: AnalyzerMatch = {
+          filePath: args.filePath,
           analyzerName: JAVASCRIPT_INJECTION_ANALYZER_NAME,
           value: args.source.slice(node.start, node.end),
           start: node.loc.start,

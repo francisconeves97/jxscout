@@ -15,6 +15,8 @@ const testCases: ExtensionsTestCase[] = [
     jsFileName: "1.js",
     expectedExtensions: [
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "./file.js",
         start: { line: 29, column: 21 },
@@ -22,6 +24,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: ".file.js",
         start: { line: 34, column: 19 },
@@ -29,6 +33,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "/path/to/file.js",
         start: { line: 30, column: 21 },
@@ -36,6 +42,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "app.js",
         start: { line: 2, column: 15 },
@@ -43,6 +51,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "App.jsx",
         start: { line: 8, column: 16 },
@@ -50,6 +60,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "app.py",
         start: { line: 14, column: 15 },
@@ -57,6 +69,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { py: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "app.rb",
         start: { line: 17, column: 15 },
@@ -64,6 +78,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { rb: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "App.tsx",
         start: { line: 7, column: 16 },
@@ -71,6 +87,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { ts: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "config.conf",
         start: { line: 19, column: 17 },
@@ -78,6 +96,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { conf: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "config.config",
         start: { line: 20, column: 19 },
@@ -85,6 +105,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { conf: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "config.json",
         start: { line: 5, column: 17 },
@@ -92,6 +114,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "config.yaml",
         start: { line: 10, column: 17 },
@@ -99,6 +123,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { yaml: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "config.yml",
         start: { line: 9, column: 16 },
@@ -106,6 +132,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { yml: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "data.xml",
         start: { line: 12, column: 16 },
@@ -113,6 +141,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { xml: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.asm.js",
         start: { line: 56, column: 16 },
@@ -120,6 +150,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.asm.js",
         start: { line: 91, column: 17 },
@@ -127,6 +159,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.browser.js",
         start: { line: 60, column: 20 },
@@ -134,6 +168,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.browser.js",
         start: { line: 95, column: 21 },
@@ -141,6 +177,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.bundle.js",
         start: { line: 47, column: 19 },
@@ -148,6 +186,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.bundle.js",
         start: { line: 82, column: 20 },
@@ -155,6 +195,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.chunk.js",
         start: { line: 48, column: 18 },
@@ -162,6 +204,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.chunk.js",
         start: { line: 83, column: 19 },
@@ -169,6 +213,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.client.js",
         start: { line: 64, column: 19 },
@@ -176,6 +222,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.client.js",
         start: { line: 99, column: 20 },
@@ -183,6 +231,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.common.js",
         start: { line: 50, column: 19 },
@@ -190,6 +240,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.common.js",
         start: { line: 85, column: 20 },
@@ -197,6 +249,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.config.js",
         start: { line: 70, column: 20 },
@@ -204,6 +258,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { conf: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.config.js",
         start: { line: 105, column: 20 },
@@ -211,6 +267,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { conf: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.constant.js",
         start: { line: 69, column: 21 },
@@ -218,6 +276,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.constant.js",
         start: { line: 104, column: 22 },
@@ -225,6 +285,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.core.js",
         start: { line: 66, column: 17 },
@@ -232,6 +294,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.core.js",
         start: { line: 101, column: 18 },
@@ -239,6 +303,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.coverage.js",
         start: { line: 46, column: 21 },
@@ -246,6 +312,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.coverage.js",
         start: { line: 81, column: 22 },
@@ -253,6 +321,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.dev.js",
         start: { line: 74, column: 16 },
@@ -260,6 +330,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.dev.js",
         start: { line: 109, column: 17 },
@@ -267,6 +339,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.electron.js",
         start: { line: 59, column: 21 },
@@ -274,6 +348,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.electron.js",
         start: { line: 94, column: 22 },
@@ -281,6 +357,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.env.js",
         start: { line: 71, column: 16 },
@@ -288,6 +366,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.env.js",
         start: { line: 106, column: 17 },
@@ -295,6 +375,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.fixture.js",
         start: { line: 44, column: 20 },
@@ -302,6 +384,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.fixture.js",
         start: { line: 79, column: 21 },
@@ -309,6 +393,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.helper.js",
         start: { line: 68, column: 19 },
@@ -316,6 +402,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.helper.js",
         start: { line: 103, column: 20 },
@@ -323,6 +411,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.isomorphic.js",
         start: { line: 62, column: 23 },
@@ -330,6 +420,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.isomorphic.js",
         start: { line: 97, column: 24 },
@@ -337,6 +429,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.js?param=value",
         start: { line: 27, column: 20 },
@@ -344,6 +438,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.js.1.0.0",
         start: { line: 33, column: 16 },
@@ -351,6 +447,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.js.gz",
         start: { line: 37, column: 23 },
@@ -358,6 +456,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.js.map",
         start: { line: 39, column: 18 },
@@ -365,6 +465,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.js.tmp",
         start: { line: 36, column: 17 },
@@ -372,6 +474,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.js#section",
         start: { line: 28, column: 13 },
@@ -379,6 +483,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.js~",
         start: { line: 35, column: 19 },
@@ -386,6 +492,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.local.js",
         start: { line: 72, column: 18 },
@@ -393,6 +501,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.local.js",
         start: { line: 107, column: 19 },
@@ -400,6 +510,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.manifest.js",
         start: { line: 52, column: 21 },
@@ -407,6 +519,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.manifest.js",
         start: { line: 87, column: 22 },
@@ -414,6 +528,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.min.js",
         start: { line: 38, column: 21 },
@@ -421,6 +537,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.mock.js",
         start: { line: 43, column: 17 },
@@ -428,6 +546,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.mock.js",
         start: { line: 78, column: 18 },
@@ -435,6 +555,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.native.js",
         start: { line: 57, column: 19 },
@@ -442,6 +564,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.native.js",
         start: { line: 92, column: 20 },
@@ -449,6 +573,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.node.js",
         start: { line: 58, column: 17 },
@@ -456,6 +582,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.node.js",
         start: { line: 93, column: 18 },
@@ -463,6 +591,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.prod.js",
         start: { line: 73, column: 17 },
@@ -470,6 +600,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.prod.js",
         start: { line: 108, column: 18 },
@@ -477,6 +609,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.runtime.js",
         start: { line: 51, column: 20 },
@@ -484,6 +618,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.runtime.js",
         start: { line: 86, column: 21 },
@@ -491,6 +627,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.server.js",
         start: { line: 63, column: 19 },
@@ -498,6 +636,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.server.js",
         start: { line: 98, column: 20 },
@@ -505,6 +645,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.shared.js",
         start: { line: 65, column: 19 },
@@ -512,6 +654,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { sh: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.shared.js",
         start: { line: 100, column: 20 },
@@ -519,6 +663,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { sh: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.snap.js",
         start: { line: 45, column: 21 },
@@ -526,6 +672,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.snap.js",
         start: { line: 80, column: 22 },
@@ -533,6 +681,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.spec.js",
         start: { line: 41, column: 17 },
@@ -540,6 +690,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.spec.js",
         start: { line: 76, column: 18 },
@@ -547,6 +699,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.stories.js",
         start: { line: 42, column: 18 },
@@ -554,6 +708,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.stories.js",
         start: { line: 77, column: 19 },
@@ -561,6 +717,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.sw.js",
         start: { line: 53, column: 26 },
@@ -568,6 +726,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.sw.js",
         start: { line: 88, column: 27 },
@@ -575,6 +735,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.test.js",
         start: { line: 40, column: 17 },
@@ -582,6 +744,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.test.js",
         start: { line: 75, column: 18 },
@@ -589,6 +753,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.universal.js",
         start: { line: 61, column: 22 },
@@ -596,6 +762,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.universal.js",
         start: { line: 96, column: 23 },
@@ -603,6 +771,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.util.js",
         start: { line: 67, column: 17 },
@@ -610,6 +780,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.util.js",
         start: { line: 102, column: 18 },
@@ -617,6 +789,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.vendor.js",
         start: { line: 49, column: 19 },
@@ -624,6 +798,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.vendor.js",
         start: { line: 84, column: 20 },
@@ -631,6 +807,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.wasm.js",
         start: { line: 55, column: 17 },
@@ -638,6 +816,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.wasm.js",
         start: { line: 90, column: 18 },
@@ -645,6 +825,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.worker.js",
         start: { line: 54, column: 19 },
@@ -652,6 +834,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "file.worker.js",
         start: { line: 89, column: 20 },
@@ -659,6 +843,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "https://example.com/file.js",
         start: { line: 31, column: 12 },
@@ -666,6 +852,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { js: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "index.html",
         start: { line: 4, column: 17 },
@@ -673,6 +861,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { html: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "index.php",
         start: { line: 18, column: 16 },
@@ -680,6 +870,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { php: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "main.go",
         start: { line: 15, column: 15 },
@@ -687,6 +879,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { go: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "Main.java",
         start: { line: 16, column: 17 },
@@ -694,6 +888,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { java: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "main.ts",
         start: { line: 6, column: 15 },
@@ -701,6 +897,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { ts: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "query.sql",
         start: { line: 13, column: 16 },
@@ -708,6 +906,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { sql: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "script.sh",
         start: { line: 11, column: 15 },
@@ -715,6 +915,8 @@ const testCases: ExtensionsTestCase[] = [
         tags: { sh: true },
       },
       {
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/extensions/files/1.js",
         analyzerName: "file-extensions",
         value: "styles.css",
         start: { line: 3, column: 16 },

@@ -22,6 +22,7 @@ const cookieManipulationAnalyzerBuilder = (
         node.left.property.name === "cookie"
       ) {
         const match: AnalyzerMatch = {
+          filePath: args.filePath,
           analyzerName: COOKIE_MANIPULATION_ANALYZER_NAME,
           value: args.source.slice(node.start, node.end),
           start: node.loc.start,

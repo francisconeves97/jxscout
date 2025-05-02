@@ -19,6 +19,8 @@ const testCases: XPathInjectionTestCase[] = [
         start: { line: 1, column: 0 },
         end: { line: 1, column: 70 },
         tags: { "xpath-injection": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/xpath-injection/files/1.js",
       },
       {
         analyzerName: "xpath-injection",
@@ -27,6 +29,8 @@ const testCases: XPathInjectionTestCase[] = [
         start: { line: 2, column: 0 },
         end: { line: 2, column: 69 },
         tags: { "xpath-injection": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/xpath-injection/files/1.js",
       },
     ],
   },

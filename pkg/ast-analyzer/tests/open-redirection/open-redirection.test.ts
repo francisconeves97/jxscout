@@ -18,6 +18,8 @@ const testCases: OpenRedirectionTestCase[] = [
         start: { line: 8, column: 0 },
         end: { line: 8, column: 38 },
         tags: { "open-redirection": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/open-redirection/files/1.js",
       },
       {
         analyzerName: "open-redirection",
@@ -25,6 +27,8 @@ const testCases: OpenRedirectionTestCase[] = [
         start: { line: 6, column: 0 },
         end: { line: 6, column: 14 },
         tags: { "open-redirection": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/open-redirection/files/1.js",
       },
       {
         analyzerName: "open-redirection",
@@ -32,6 +36,8 @@ const testCases: OpenRedirectionTestCase[] = [
         start: { line: 9, column: 0 },
         end: { line: 9, column: 43 },
         tags: { "open-redirection": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/open-redirection/files/1.js",
       },
       {
         analyzerName: "open-redirection",
@@ -39,6 +45,8 @@ const testCases: OpenRedirectionTestCase[] = [
         start: { line: 3, column: 0 },
         end: { line: 3, column: 38 },
         tags: { "open-redirection": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/open-redirection/files/1.js",
       },
       {
         analyzerName: "open-redirection",
@@ -46,6 +54,8 @@ const testCases: OpenRedirectionTestCase[] = [
         start: { line: 10, column: 0 },
         end: { line: 10, column: 13 },
         tags: { "open-redirection": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/open-redirection/files/1.js",
       },
       {
         analyzerName: "open-redirection",
@@ -53,6 +63,8 @@ const testCases: OpenRedirectionTestCase[] = [
         start: { line: 11, column: 0 },
         end: { line: 11, column: 17 },
         tags: { "open-redirection": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/open-redirection/files/1.js",
       },
       {
         analyzerName: "open-redirection",
@@ -60,6 +72,8 @@ const testCases: OpenRedirectionTestCase[] = [
         start: { line: 2, column: 0 },
         end: { line: 2, column: 13 },
         tags: { "open-redirection": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/open-redirection/files/1.js",
       },
       {
         analyzerName: "open-redirection",
@@ -67,6 +81,8 @@ const testCases: OpenRedirectionTestCase[] = [
         start: { line: 12, column: 0 },
         end: { line: 12, column: 17 },
         tags: { "open-redirection": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/open-redirection/files/1.js",
       },
       {
         analyzerName: "open-redirection",
@@ -74,6 +90,8 @@ const testCases: OpenRedirectionTestCase[] = [
         start: { line: 14, column: 0 },
         end: { line: 14, column: 17 },
         tags: { "open-redirection": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/open-redirection/files/1.js",
       },
       {
         analyzerName: "open-redirection",
@@ -81,6 +99,8 @@ const testCases: OpenRedirectionTestCase[] = [
         start: { line: 4, column: 0 },
         end: { line: 4, column: 39 },
         tags: { "open-redirection": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/open-redirection/files/1.js",
       },
       {
         analyzerName: "open-redirection",
@@ -88,6 +108,8 @@ const testCases: OpenRedirectionTestCase[] = [
         start: { line: 13, column: 0 },
         end: { line: 13, column: 15 },
         tags: { "open-redirection": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/open-redirection/files/1.js",
       },
       {
         analyzerName: "open-redirection",
@@ -95,6 +117,8 @@ const testCases: OpenRedirectionTestCase[] = [
         start: { line: 5, column: 0 },
         end: { line: 5, column: 34 },
         tags: { "open-redirection": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/open-redirection/files/1.js",
       },
       {
         analyzerName: "open-redirection",
@@ -102,6 +126,8 @@ const testCases: OpenRedirectionTestCase[] = [
         start: { line: 7, column: 0 },
         end: { line: 7, column: 38 },
         tags: { "open-redirection": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/open-redirection/files/1.js",
       },
     ],
   },

@@ -18,6 +18,8 @@ const testCases: JavaScriptInjectionTestCase[] = [
         start: { line: 9, column: 0 },
         end: { line: 9, column: 34 },
         tags: { "javascript-injection": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/javascript-injection/files/1.js",
       },
       {
         analyzerName: "javascript-injection",
@@ -26,6 +28,8 @@ const testCases: JavaScriptInjectionTestCase[] = [
         start: { line: 6, column: 0 },
         end: { line: 6, column: 70 },
         tags: { "javascript-injection": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/javascript-injection/files/1.js",
       },
       {
         analyzerName: "javascript-injection",
@@ -33,6 +37,8 @@ const testCases: JavaScriptInjectionTestCase[] = [
         start: { line: 7, column: 0 },
         end: { line: 7, column: 42 },
         tags: { "javascript-injection": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/javascript-injection/files/1.js",
       },
       {
         analyzerName: "javascript-injection",
@@ -40,6 +46,8 @@ const testCases: JavaScriptInjectionTestCase[] = [
         start: { line: 1, column: 0 },
         end: { line: 1, column: 27 },
         tags: { "javascript-injection": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/javascript-injection/files/1.js",
       },
       {
         analyzerName: "javascript-injection",
@@ -47,6 +55,8 @@ const testCases: JavaScriptInjectionTestCase[] = [
         start: { line: 2, column: 0 },
         end: { line: 2, column: 31 },
         tags: { "javascript-injection": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/javascript-injection/files/1.js",
       },
       {
         analyzerName: "javascript-injection",
@@ -54,6 +64,8 @@ const testCases: JavaScriptInjectionTestCase[] = [
         start: { line: 10, column: 0 },
         end: { line: 10, column: 59 },
         tags: { "javascript-injection": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/javascript-injection/files/1.js",
       },
       {
         analyzerName: "javascript-injection",
@@ -61,6 +73,8 @@ const testCases: JavaScriptInjectionTestCase[] = [
         start: { line: 5, column: 0 },
         end: { line: 5, column: 35 },
         tags: { "javascript-injection": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/javascript-injection/files/1.js",
       },
       {
         analyzerName: "javascript-injection",
@@ -68,6 +82,8 @@ const testCases: JavaScriptInjectionTestCase[] = [
         start: { line: 4, column: 0 },
         end: { line: 4, column: 40 },
         tags: { "javascript-injection": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/javascript-injection/files/1.js",
       },
       {
         analyzerName: "javascript-injection",
@@ -75,6 +91,8 @@ const testCases: JavaScriptInjectionTestCase[] = [
         start: { line: 3, column: 0 },
         end: { line: 3, column: 39 },
         tags: { "javascript-injection": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/javascript-injection/files/1.js",
       },
       {
         analyzerName: "javascript-injection",
@@ -82,6 +100,8 @@ const testCases: JavaScriptInjectionTestCase[] = [
         start: { line: 8, column: 0 },
         end: { line: 8, column: 44 },
         tags: { "javascript-injection": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/javascript-injection/files/1.js",
       },
     ],
   },

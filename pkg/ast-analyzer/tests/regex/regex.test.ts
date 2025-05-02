@@ -19,6 +19,8 @@ const testCases: RegexTestCase[] = [
         start: { line: 13, column: 12 },
         end: { line: 13, column: 72 },
         tags: { regex: true, "regex-like-string": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/regex/files/1.js",
       },
       {
         analyzerName: "regex",
@@ -27,6 +29,8 @@ const testCases: RegexTestCase[] = [
         start: { line: 18, column: 2 },
         end: { line: 18, column: 62 },
         tags: { regex: true, "regex-like-string": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/regex/files/1.js",
       },
       {
         analyzerName: "regex",
@@ -34,6 +38,8 @@ const testCases: RegexTestCase[] = [
         start: { line: 4, column: 15 },
         end: { line: 4, column: 24 },
         tags: { regex: true, "regex-literal": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/regex/files/1.js",
       },
       {
         analyzerName: "regex",
@@ -41,6 +47,8 @@ const testCases: RegexTestCase[] = [
         start: { line: 16, column: 19 },
         end: { line: 16, column: 69 },
         tags: { regex: true, "regex-literal": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/regex/files/1.js",
       },
       {
         analyzerName: "regex",
@@ -48,6 +56,8 @@ const testCases: RegexTestCase[] = [
         start: { line: 5, column: 15 },
         end: { line: 5, column: 30 },
         tags: { regex: true, "regex-literal": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/regex/files/1.js",
       },
       {
         analyzerName: "regex",
@@ -55,6 +65,8 @@ const testCases: RegexTestCase[] = [
         start: { line: 2, column: 15 },
         end: { line: 2, column: 22 },
         tags: { regex: true, "regex-literal": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/regex/files/1.js",
       },
       {
         analyzerName: "regex",
@@ -62,6 +74,8 @@ const testCases: RegexTestCase[] = [
         start: { line: 3, column: 15 },
         end: { line: 3, column: 23 },
         tags: { regex: true, "regex-literal": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/regex/files/1.js",
       },
       {
         analyzerName: "regex",
@@ -70,6 +84,8 @@ const testCases: RegexTestCase[] = [
         start: { line: 17, column: 17 },
         end: { line: 20, column: 1 },
         tags: { regex: true, "regex-constructor": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/regex/files/1.js",
       },
       {
         analyzerName: "regex",
@@ -77,6 +93,8 @@ const testCases: RegexTestCase[] = [
         start: { line: 9, column: 15 },
         end: { line: 9, column: 50 },
         tags: { regex: true, "regex-constructor": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/regex/files/1.js",
       },
       {
         analyzerName: "regex",
@@ -84,6 +102,8 @@ const testCases: RegexTestCase[] = [
         start: { line: 10, column: 15 },
         end: { line: 10, column: 40 },
         tags: { regex: true, "regex-constructor": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/regex/files/1.js",
       },
       {
         analyzerName: "regex",
@@ -91,6 +111,8 @@ const testCases: RegexTestCase[] = [
         start: { line: 11, column: 15 },
         end: { line: 11, column: 43 },
         tags: { regex: true, "regex-constructor": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/regex/files/1.js",
       },
       {
         analyzerName: "regex",
@@ -98,6 +120,8 @@ const testCases: RegexTestCase[] = [
         start: { line: 8, column: 15 },
         end: { line: 8, column: 36 },
         tags: { regex: true, "regex-constructor": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/regex/files/1.js",
       },
     ],
   },

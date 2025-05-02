@@ -18,6 +18,8 @@ const testCases: JQueryDomXssTestCase[] = [
         start: { line: 4, column: 0 },
         end: { line: 4, column: 40 },
         tags: { "jquery-dom-xss": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/jquery-dom-xss/files/1.js",
       },
       {
         analyzerName: "jquery-dom-xss",
@@ -25,6 +27,8 @@ const testCases: JQueryDomXssTestCase[] = [
         start: { line: 2, column: 0 },
         end: { line: 2, column: 49 },
         tags: { "jquery-dom-xss": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/jquery-dom-xss/files/1.js",
       },
       {
         analyzerName: "jquery-dom-xss",
@@ -32,6 +36,8 @@ const testCases: JQueryDomXssTestCase[] = [
         start: { line: 3, column: 0 },
         end: { line: 3, column: 45 },
         tags: { "jquery-dom-xss": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/jquery-dom-xss/files/1.js",
       },
       {
         analyzerName: "jquery-dom-xss",
@@ -39,6 +45,8 @@ const testCases: JQueryDomXssTestCase[] = [
         start: { line: 5, column: 0 },
         end: { line: 5, column: 53 },
         tags: { "jquery-dom-xss": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/jquery-dom-xss/files/1.js",
       },
       {
         analyzerName: "jquery-dom-xss",
@@ -46,6 +54,8 @@ const testCases: JQueryDomXssTestCase[] = [
         start: { line: 1, column: 0 },
         end: { line: 1, column: 52 },
         tags: { "jquery-dom-xss": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/jquery-dom-xss/files/1.js",
       },
       {
         analyzerName: "jquery-dom-xss",
@@ -53,6 +63,8 @@ const testCases: JQueryDomXssTestCase[] = [
         start: { line: 6, column: 0 },
         end: { line: 6, column: 55 },
         tags: { "jquery-dom-xss": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/jquery-dom-xss/files/1.js",
       },
     ],
   },

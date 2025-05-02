@@ -31,6 +31,7 @@ const regexAnalyzerBuilder = (
       // Check if this is a regex literal
       if (node.regex) {
         const match: AnalyzerMatch = {
+          filePath: args.filePath,
           analyzerName: REGEX_ANALYZER_NAME,
           value: args.source.slice(node.start, node.end),
           start: node.loc.start,
@@ -46,6 +47,7 @@ const regexAnalyzerBuilder = (
       // Check if this is a string that looks like a regex
       else if (typeof node.value === "string" && looksLikeRegex(node.value)) {
         const match: AnalyzerMatch = {
+          filePath: args.filePath,
           analyzerName: REGEX_ANALYZER_NAME,
           value: args.source.slice(node.start, node.end),
           start: node.loc.start,
@@ -67,6 +69,7 @@ const regexAnalyzerBuilder = (
         }
 
         const match: AnalyzerMatch = {
+          filePath: args.filePath,
           analyzerName: REGEX_ANALYZER_NAME,
           value: args.source.slice(node.start, node.end),
           start: node.loc.start,

@@ -30,6 +30,7 @@ const ajaxRequestHeaderManipulationAnalyzerBuilder = (
             node.callee.object.callee.name === "XMLHttpRequest"))
       ) {
         const match: AnalyzerMatch = {
+          filePath: args.filePath,
           analyzerName: AJAX_REQUEST_HEADER_MANIPULATION_ANALYZER_NAME,
           value: args.source.slice(node.start, node.end),
           start: node.loc.start,
@@ -52,6 +53,7 @@ const ajaxRequestHeaderManipulationAnalyzerBuilder = (
           node.callee.object.name === "$")
       ) {
         const match: AnalyzerMatch = {
+          filePath: args.filePath,
           analyzerName: AJAX_REQUEST_HEADER_MANIPULATION_ANALYZER_NAME,
           value: args.source.slice(node.start, node.end),
           start: node.loc.start,

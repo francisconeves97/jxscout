@@ -23,6 +23,7 @@ const hashChangeAnalyzerBuilder = (
         }
 
         const match: AnalyzerMatch = {
+          filePath: args.filePath,
           analyzerName: HASH_CHANGE_ANALYZER_NAME,
           value: args.source.slice(node.start, node.end),
           start: node.loc.start,
@@ -52,6 +53,7 @@ const hashChangeAnalyzerBuilder = (
         }
 
         const match: AnalyzerMatch = {
+          filePath: args.filePath,
           analyzerName: HASH_CHANGE_ANALYZER_NAME,
           value: args.source.slice(node.start, node.end),
           start: node.loc.start,

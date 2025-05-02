@@ -16,6 +16,7 @@ const commonSourcesAnalyzerBuilder = (
       // Check for standalone location
       if (node.name === "location") {
         const match: AnalyzerMatch = {
+          filePath: args.filePath,
           analyzerName: COMMON_SOURCES_ANALYZER_NAME,
           value: args.source.slice(node.start, node.end),
           start: node.loc.start,
@@ -49,6 +50,7 @@ const commonSourcesAnalyzerBuilder = (
         ].includes(node.property.name)
       ) {
         const match: AnalyzerMatch = {
+          filePath: args.filePath,
           analyzerName: COMMON_SOURCES_ANALYZER_NAME,
           value: args.source.slice(node.start, node.end),
           start: node.loc.start,
@@ -69,6 +71,7 @@ const commonSourcesAnalyzerBuilder = (
         node.property.name === "name"
       ) {
         const match: AnalyzerMatch = {
+          filePath: args.filePath,
           analyzerName: COMMON_SOURCES_ANALYZER_NAME,
           value: args.source.slice(node.start, node.end),
           start: node.loc.start,
@@ -87,6 +90,7 @@ const commonSourcesAnalyzerBuilder = (
         node.object.name === "location"
       ) {
         const match: AnalyzerMatch = {
+          filePath: args.filePath,
           analyzerName: COMMON_SOURCES_ANALYZER_NAME,
           value: args.source.slice(node.start, node.end),
           start: node.loc.start,
@@ -107,6 +111,7 @@ const commonSourcesAnalyzerBuilder = (
         )
       ) {
         const match: AnalyzerMatch = {
+          filePath: args.filePath,
           analyzerName: COMMON_SOURCES_ANALYZER_NAME,
           value: args.source.slice(node.start, node.end),
           start: node.loc.start,
@@ -125,6 +130,7 @@ const commonSourcesAnalyzerBuilder = (
         ["localStorage", "sessionStorage"].includes(node.object.name)
       ) {
         const match: AnalyzerMatch = {
+          filePath: args.filePath,
           analyzerName: COMMON_SOURCES_ANALYZER_NAME,
           value: args.source.slice(node.start, node.end),
           start: node.loc.start,
@@ -152,6 +158,7 @@ const commonSourcesAnalyzerBuilder = (
         ["pushState", "replaceState"].includes(node.callee.property.name)
       ) {
         const match: AnalyzerMatch = {
+          filePath: args.filePath,
           analyzerName: COMMON_SOURCES_ANALYZER_NAME,
           value: args.source.slice(node.start, node.end),
           start: node.loc.start,
@@ -173,6 +180,7 @@ const commonSourcesAnalyzerBuilder = (
         node.callee.property.name === "setItem"
       ) {
         const match: AnalyzerMatch = {
+          filePath: args.filePath,
           analyzerName: COMMON_SOURCES_ANALYZER_NAME,
           value: args.source.slice(node.start, node.end),
           start: node.loc.start,

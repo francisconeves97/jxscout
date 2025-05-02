@@ -19,6 +19,8 @@ const testCases: HashChangeTestCase[] = [
         start: { line: 12, column: 0 },
         end: { line: 14, column: 2 },
         tags: { "hash-change": true, "event-listener": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/hash-change/files/1.js",
       },
       {
         analyzerName: "hash-change",
@@ -27,6 +29,8 @@ const testCases: HashChangeTestCase[] = [
         start: { line: 17, column: 0 },
         end: { line: 19, column: 1 },
         tags: { "hash-change": true, "direct-assignment": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/hash-change/files/1.js",
       },
       {
         analyzerName: "hash-change",
@@ -35,6 +39,8 @@ const testCases: HashChangeTestCase[] = [
         start: { line: 7, column: 0 },
         end: { line: 9, column: 2 },
         tags: { "hash-change": true, "event-listener": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/hash-change/files/1.js",
       },
       {
         analyzerName: "hash-change",
@@ -43,6 +49,8 @@ const testCases: HashChangeTestCase[] = [
         start: { line: 2, column: 0 },
         end: { line: 4, column: 1 },
         tags: { "hash-change": true, "direct-assignment": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/hash-change/files/1.js",
       },
     ],
   },

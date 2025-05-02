@@ -18,6 +18,8 @@ const testCases: RegexMatchTestCase[] = [
         start: { line: 5, column: 0 },
         end: { line: 5, column: 20 },
         tags: { "regex-match": true, "string-match": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/regex-match/files/1.js",
       },
       {
         analyzerName: "regex-match",
@@ -25,6 +27,8 @@ const testCases: RegexMatchTestCase[] = [
         start: { line: 10, column: 16 },
         end: { line: 10, column: 41 },
         tags: { "regex-match": true, "regex-exec": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/regex-match/files/1.js",
       },
       {
         analyzerName: "regex-match",
@@ -32,6 +36,8 @@ const testCases: RegexMatchTestCase[] = [
         start: { line: 9, column: 16 },
         end: { line: 9, column: 41 },
         tags: { "regex-match": true, "regex-test": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/regex-match/files/1.js",
       },
       {
         analyzerName: "regex-match",
@@ -39,6 +45,8 @@ const testCases: RegexMatchTestCase[] = [
         start: { line: 13, column: 16 },
         end: { line: 13, column: 42 },
         tags: { "regex-match": true, "regex-test": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/regex-match/files/1.js",
       },
       {
         analyzerName: "regex-match",
@@ -46,6 +54,8 @@ const testCases: RegexMatchTestCase[] = [
         start: { line: 3, column: 16 },
         end: { line: 3, column: 34 },
         tags: { "regex-match": true, "string-match": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/regex-match/files/1.js",
       },
     ],
   },

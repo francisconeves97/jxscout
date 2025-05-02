@@ -26,6 +26,7 @@ import { html5StorageManipulationAnalyzerBuilder } from "./html5-storage-manipul
 import { xpathInjectionAnalyzerBuilder } from "./xpath-injection";
 import { domDataManipulationAnalyzerBuilder } from "./dom-data-manipulation";
 import { commonSourcesAnalyzerBuilder } from "./common-sources";
+import { secretsAnalyzerBuilder } from "./secrets";
 
 export function parseFile(filePath: string): AnalyzerParams {
   const fileContent = fs.readFileSync(filePath, "utf-8");
@@ -45,7 +46,7 @@ export function parseFile(filePath: string): AnalyzerParams {
     });
   }
 
-  return { ast, source: fileContent };
+  return { ast, source: fileContent, filePath };
 }
 
 function printUsage() {
@@ -76,7 +77,8 @@ export type AnalyzerType =
   | "html5-storage-manipulation"
   | "xpath-injection"
   | "dom-data-manipulation"
-  | "common-sources";
+  | "common-sources"
+  | "secrets";
 
 export function analyzeFile(
   filePath: string,
@@ -172,6 +174,7 @@ export function analyzeFile(
     "common-sources",
     commonSourcesAnalyzerBuilder
   );
+  const secretsAnalyzer = createAnalyzer("secrets", secretsAnalyzerBuilder);
 
   traverse(args.ast, {
     Literal(node, state, ancestors) {
@@ -180,6 +183,7 @@ export function analyzeFile(
       regexAnalyzer?.Literal?.(node, state, ancestors);
       graphqlAnalyzer?.Literal?.(node, state, ancestors);
       urlsAnalyzer?.Literal?.(node, state, ancestors);
+      secretsAnalyzer?.Literal?.(node, state, ancestors);
     },
     NewExpression(node, state, ancestors) {
       regexAnalyzer?.NewExpression?.(node, state, ancestors);
@@ -190,6 +194,7 @@ export function analyzeFile(
       emailsAnalyzer?.TemplateLiteral?.(node, state, ancestors);
       graphqlAnalyzer?.TemplateLiteral?.(node, state, ancestors);
       urlsAnalyzer?.TemplateLiteral?.(node, state, ancestors);
+      secretsAnalyzer?.TemplateLiteral?.(node, state, ancestors);
     },
     CallExpression(node, state, ancestors) {
       postMessageAnalyzer?.CallExpression?.(node, state, ancestors);

@@ -18,6 +18,8 @@ const testCases: WebSocketUrlPoisoningTestCase[] = [
         start: { line: 1, column: 0 },
         end: { line: 1, column: 33 },
         tags: { "websocket-url-poisoning": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/websocket-url-poisoning/files/1.js",
       },
       {
         analyzerName: "websocket-url-poisoning",
@@ -25,6 +27,8 @@ const testCases: WebSocketUrlPoisoningTestCase[] = [
         start: { line: 2, column: 0 },
         end: { line: 2, column: 34 },
         tags: { "websocket-url-poisoning": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/websocket-url-poisoning/files/1.js",
       },
       {
         analyzerName: "websocket-url-poisoning",
@@ -32,6 +36,8 @@ const testCases: WebSocketUrlPoisoningTestCase[] = [
         start: { line: 3, column: 0 },
         end: { line: 3, column: 18 },
         tags: { "websocket-url-poisoning": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/websocket-url-poisoning/files/1.js",
       },
     ],
   },

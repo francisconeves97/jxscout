@@ -19,6 +19,7 @@ const linkManipulationAnalyzerBuilder = (
         ["href", "src", "action"].includes(node.property.name)
       ) {
         const match: AnalyzerMatch = {
+          filePath: args.filePath,
           analyzerName: LINK_MANIPULATION_ANALYZER_NAME,
           value: args.source.slice(node.start, node.end),
           start: node.loc.start,
@@ -44,6 +45,7 @@ const linkManipulationAnalyzerBuilder = (
         ["href", "src", "action"].includes(node.left.property.name)
       ) {
         const match: AnalyzerMatch = {
+          filePath: args.filePath,
           analyzerName: LINK_MANIPULATION_ANALYZER_NAME,
           value: args.source.slice(node.start, node.end),
           start: node.loc.start,

@@ -26,6 +26,7 @@ export function createRegexAnalyzer(config: RegexAnalyzerConfig): Analyzer {
         }
 
         const match: AnalyzerMatch = {
+          filePath: args.filePath,
           analyzerName: config.analyzerName,
           value: stringValue,
           start: node.loc.start,
@@ -54,6 +55,7 @@ export function createRegexAnalyzer(config: RegexAnalyzerConfig): Analyzer {
         }
 
         const match: AnalyzerMatch = {
+          filePath: args.filePath,
           analyzerName: config.analyzerName,
           value: templateValue,
           start: node.loc.start,

@@ -28,6 +28,7 @@ const openRedirectionAnalyzerBuilder = (
             node.callee.object.callee.name === "XMLHttpRequest"))
       ) {
         const match: AnalyzerMatch = {
+          filePath: args.filePath,
           analyzerName: OPEN_REDIRECTION_ANALYZER_NAME,
           value: args.source.slice(node.start, node.end),
           start: node.loc.start,
@@ -50,6 +51,7 @@ const openRedirectionAnalyzerBuilder = (
           node.callee.object.name === "$")
       ) {
         const match: AnalyzerMatch = {
+          filePath: args.filePath,
           analyzerName: OPEN_REDIRECTION_ANALYZER_NAME,
           value: args.source.slice(node.start, node.end),
           start: node.loc.start,
@@ -72,6 +74,7 @@ const openRedirectionAnalyzerBuilder = (
           node.callee.property.name === "replace")
       ) {
         const match: AnalyzerMatch = {
+          filePath: args.filePath,
           analyzerName: OPEN_REDIRECTION_ANALYZER_NAME,
           value: args.source.slice(node.start, node.end),
           start: node.loc.start,
@@ -93,6 +96,7 @@ const openRedirectionAnalyzerBuilder = (
         node.callee.property.name === "open"
       ) {
         const match: AnalyzerMatch = {
+          filePath: args.filePath,
           analyzerName: OPEN_REDIRECTION_ANALYZER_NAME,
           value: args.source.slice(node.start, node.end),
           start: node.loc.start,
@@ -121,6 +125,7 @@ const openRedirectionAnalyzerBuilder = (
         )
       ) {
         const match: AnalyzerMatch = {
+          filePath: args.filePath,
           analyzerName: OPEN_REDIRECTION_ANALYZER_NAME,
           value: args.source.slice(node.start, node.end),
           start: node.loc.start,
@@ -139,6 +144,7 @@ const openRedirectionAnalyzerBuilder = (
         node.property.name === "srcdoc"
       ) {
         const match: AnalyzerMatch = {
+          filePath: args.filePath,
           analyzerName: OPEN_REDIRECTION_ANALYZER_NAME,
           value: args.source.slice(node.start, node.end),
           start: node.loc.start,
@@ -168,6 +174,7 @@ const openRedirectionAnalyzerBuilder = (
         )
       ) {
         const match: AnalyzerMatch = {
+          filePath: args.filePath,
           analyzerName: OPEN_REDIRECTION_ANALYZER_NAME,
           value: args.source.slice(node.start, node.end),
           start: node.loc.start,
@@ -187,6 +194,7 @@ const openRedirectionAnalyzerBuilder = (
         node.left.property.name === "srcdoc"
       ) {
         const match: AnalyzerMatch = {
+          filePath: args.filePath,
           analyzerName: OPEN_REDIRECTION_ANALYZER_NAME,
           value: args.source.slice(node.start, node.end),
           start: node.loc.start,

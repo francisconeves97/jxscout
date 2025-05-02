@@ -23,6 +23,7 @@ const html5StorageManipulationAnalyzerBuilder = (
         node.callee.property.name === "setItem"
       ) {
         const match: AnalyzerMatch = {
+          filePath: args.filePath,
           analyzerName: HTML5_STORAGE_MANIPULATION_ANALYZER_NAME,
           value: args.source.slice(node.start, node.end),
           start: node.loc.start,
@@ -44,6 +45,7 @@ const html5StorageManipulationAnalyzerBuilder = (
         node.callee.property.name === "setItem"
       ) {
         const match: AnalyzerMatch = {
+          filePath: args.filePath,
           analyzerName: HTML5_STORAGE_MANIPULATION_ANALYZER_NAME,
           value: args.source.slice(node.start, node.end),
           start: node.loc.start,

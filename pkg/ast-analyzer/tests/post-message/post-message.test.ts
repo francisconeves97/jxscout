@@ -18,6 +18,8 @@ const testCases: PostMessageTestCase[] = [
         start: { line: 4, column: 0 },
         end: { line: 4, column: 55 },
         tags: { "post-message": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/post-message/files/1.js",
       },
       {
         analyzerName: "post-message",
@@ -25,6 +27,8 @@ const testCases: PostMessageTestCase[] = [
         start: { line: 3, column: 0 },
         end: { line: 3, column: 51 },
         tags: { "post-message": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/post-message/files/1.js",
       },
       {
         analyzerName: "post-message",
@@ -32,6 +36,8 @@ const testCases: PostMessageTestCase[] = [
         start: { line: 1, column: 0 },
         end: { line: 1, column: 58 },
         tags: { "post-message": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/post-message/files/1.js",
       },
       {
         analyzerName: "post-message",
@@ -40,6 +46,8 @@ const testCases: PostMessageTestCase[] = [
         start: { line: 2, column: 0 },
         end: { line: 2, column: 76 },
         tags: { "post-message": true, "cross-origin": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/post-message/files/1.js",
       },
     ],
   },

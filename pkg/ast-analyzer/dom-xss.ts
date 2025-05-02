@@ -20,6 +20,7 @@ const domXssAnalyzerBuilder = (
         node.left.property.name === "innerHTML"
       ) {
         const match: AnalyzerMatch = {
+          filePath: args.filePath,
           analyzerName: DOM_XSS_ANALYZER_NAME,
           value: args.source.slice(node.start, node.end),
           start: node.loc.start,
@@ -39,6 +40,7 @@ const domXssAnalyzerBuilder = (
         node.left.property.name === "outerHTML"
       ) {
         const match: AnalyzerMatch = {
+          filePath: args.filePath,
           analyzerName: DOM_XSS_ANALYZER_NAME,
           value: args.source.slice(node.start, node.end),
           start: node.loc.start,
@@ -60,6 +62,7 @@ const domXssAnalyzerBuilder = (
         node.left.property.name === "domain"
       ) {
         const match: AnalyzerMatch = {
+          filePath: args.filePath,
           analyzerName: DOM_XSS_ANALYZER_NAME,
           value: args.source.slice(node.start, node.end),
           start: node.loc.start,
@@ -80,6 +83,7 @@ const domXssAnalyzerBuilder = (
         (node.right.type === "Literal" || node.right.type === "TemplateLiteral")
       ) {
         const match: AnalyzerMatch = {
+          filePath: args.filePath,
           analyzerName: DOM_XSS_ANALYZER_NAME,
           value: args.source.slice(node.start, node.end),
           start: node.loc.start,
@@ -108,6 +112,7 @@ const domXssAnalyzerBuilder = (
           node.callee.property.name === "writeln")
       ) {
         const match: AnalyzerMatch = {
+          filePath: args.filePath,
           analyzerName: DOM_XSS_ANALYZER_NAME,
           value: args.source.slice(node.start, node.end),
           start: node.loc.start,
@@ -127,6 +132,7 @@ const domXssAnalyzerBuilder = (
         node.callee.property.name === "insertAdjacentHTML"
       ) {
         const match: AnalyzerMatch = {
+          filePath: args.filePath,
           analyzerName: DOM_XSS_ANALYZER_NAME,
           value: args.source.slice(node.start, node.end),
           start: node.loc.start,

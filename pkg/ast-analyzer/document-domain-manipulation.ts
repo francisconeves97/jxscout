@@ -22,6 +22,7 @@ const documentDomainManipulationAnalyzerBuilder = (
         node.property.name === "domain"
       ) {
         const match: AnalyzerMatch = {
+          filePath: args.filePath,
           analyzerName: DOCUMENT_DOMAIN_MANIPULATION_ANALYZER_NAME,
           value: args.source.slice(node.start, node.end),
           start: node.loc.start,
@@ -49,6 +50,7 @@ const documentDomainManipulationAnalyzerBuilder = (
         node.left.property.name === "domain"
       ) {
         const match: AnalyzerMatch = {
+          filePath: args.filePath,
           analyzerName: DOCUMENT_DOMAIN_MANIPULATION_ANALYZER_NAME,
           value: args.source.slice(node.start, node.end),
           start: node.loc.start,

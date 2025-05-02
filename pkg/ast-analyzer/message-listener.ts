@@ -23,6 +23,7 @@ const messageListenerAnalyzerBuilder = (
         }
 
         const match: AnalyzerMatch = {
+          filePath: args.filePath,
           analyzerName: MESSAGE_LISTENER_ANALYZER_NAME,
           value: args.source.slice(node.start, node.end),
           start: node.loc.start,
@@ -52,6 +53,7 @@ const messageListenerAnalyzerBuilder = (
         }
 
         const match: AnalyzerMatch = {
+          filePath: args.filePath,
           analyzerName: MESSAGE_LISTENER_ANALYZER_NAME,
           value: args.source.slice(node.start, node.end),
           start: node.loc.start,

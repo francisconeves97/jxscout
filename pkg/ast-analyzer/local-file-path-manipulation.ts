@@ -29,6 +29,7 @@ const localFilePathManipulationAnalyzerBuilder = (
         ].includes(node.callee.property.name)
       ) {
         const match: AnalyzerMatch = {
+          filePath: args.filePath,
           analyzerName: LOCAL_FILE_PATH_MANIPULATION_ANALYZER_NAME,
           value: args.source.slice(node.start, node.end),
           start: node.loc.start,
@@ -53,6 +54,7 @@ const localFilePathManipulationAnalyzerBuilder = (
         node.callee.property.name === "getFile"
       ) {
         const match: AnalyzerMatch = {
+          filePath: args.filePath,
           analyzerName: LOCAL_FILE_PATH_MANIPULATION_ANALYZER_NAME,
           value: args.source.slice(node.start, node.end),
           start: node.loc.start,

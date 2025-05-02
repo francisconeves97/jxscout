@@ -18,6 +18,10 @@ const testCases: UrlsTestCase[] = [
         start: { line: 4, column: 15 },
         end: { line: 4, column: 49 },
         tags: { ftp: true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/urls/files/1.js",
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/urls/files/1.js",
       },
       {
         analyzerName: "urls",
@@ -25,6 +29,8 @@ const testCases: UrlsTestCase[] = [
         start: { line: 2, column: 16 },
         end: { line: 2, column: 36 },
         tags: { http: true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/urls/files/1.js",
       },
       {
         analyzerName: "urls",
@@ -32,6 +38,8 @@ const testCases: UrlsTestCase[] = [
         start: { line: 3, column: 17 },
         end: { line: 3, column: 51 },
         tags: { https: true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/urls/files/1.js",
       },
       {
         analyzerName: "urls",
@@ -39,6 +47,8 @@ const testCases: UrlsTestCase[] = [
         start: { line: 11, column: 16 },
         end: { line: 11, column: 50 },
         tags: { https: true, fragment: true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/urls/files/1.js",
       },
       {
         analyzerName: "urls",
@@ -46,6 +56,8 @@ const testCases: UrlsTestCase[] = [
         start: { line: 8, column: 18 },
         end: { line: 8, column: 53 },
         tags: { https: true, query: true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/urls/files/1.js",
       },
       {
         analyzerName: "urls",
@@ -53,6 +65,8 @@ const testCases: UrlsTestCase[] = [
         start: { line: 17, column: 16 },
         end: { line: 17, column: 52 },
         tags: { sftp: true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/urls/files/1.js",
       },
       {
         analyzerName: "urls",
@@ -60,6 +74,8 @@ const testCases: UrlsTestCase[] = [
         start: { line: 5, column: 14 },
         end: { line: 5, column: 37 },
         tags: { ws: true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/urls/files/1.js",
       },
     ],
   },

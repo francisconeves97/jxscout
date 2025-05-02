@@ -18,6 +18,8 @@ const testCases: LocalFilePathManipulationTestCase[] = [
         start: { line: 1, column: 0 },
         end: { line: 1, column: 34 },
         tags: { "local-file-path-manipulation": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/local-file-path-manipulation/files/1.js",
       },
       {
         analyzerName: "local-file-path-manipulation",
@@ -25,6 +27,8 @@ const testCases: LocalFilePathManipulationTestCase[] = [
         start: { line: 2, column: 0 },
         end: { line: 2, column: 35 },
         tags: { "local-file-path-manipulation": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/local-file-path-manipulation/files/1.js",
       },
       {
         analyzerName: "local-file-path-manipulation",
@@ -32,6 +36,8 @@ const testCases: LocalFilePathManipulationTestCase[] = [
         start: { line: 3, column: 0 },
         end: { line: 3, column: 30 },
         tags: { "local-file-path-manipulation": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/local-file-path-manipulation/files/1.js",
       },
       {
         analyzerName: "local-file-path-manipulation",
@@ -39,6 +45,8 @@ const testCases: LocalFilePathManipulationTestCase[] = [
         start: { line: 5, column: 0 },
         end: { line: 5, column: 27 },
         tags: { "local-file-path-manipulation": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/local-file-path-manipulation/files/1.js",
       },
       {
         analyzerName: "local-file-path-manipulation",
@@ -46,6 +54,8 @@ const testCases: LocalFilePathManipulationTestCase[] = [
         start: { line: 4, column: 0 },
         end: { line: 4, column: 27 },
         tags: { "local-file-path-manipulation": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/local-file-path-manipulation/files/1.js",
       },
       {
         analyzerName: "local-file-path-manipulation",
@@ -53,6 +63,8 @@ const testCases: LocalFilePathManipulationTestCase[] = [
         start: { line: 6, column: 0 },
         end: { line: 6, column: 29 },
         tags: { "local-file-path-manipulation": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/local-file-path-manipulation/files/1.js",
       },
     ],
   },

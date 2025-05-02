@@ -18,6 +18,8 @@ const testCases: PathsTestCase[] = [
         start: { line: 37, column: 10 },
         end: { line: 37, column: 23 },
         tags: { api: true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/paths/files/1.js",
       },
       {
         analyzerName: "paths",
@@ -25,6 +27,8 @@ const testCases: PathsTestCase[] = [
         start: { line: 36, column: 12 },
         end: { line: 36, column: 27 },
         tags: { api: true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/paths/files/1.js",
       },
       {
         analyzerName: "paths",
@@ -32,6 +36,8 @@ const testCases: PathsTestCase[] = [
         start: { line: 35, column: 9 },
         end: { line: 35, column: 21 },
         tags: { api: true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/paths/files/1.js",
       },
       {
         analyzerName: "paths",
@@ -39,6 +45,8 @@ const testCases: PathsTestCase[] = [
         start: { line: 45, column: 2 },
         end: { line: 45, column: 11 },
         tags: { api: true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/paths/files/1.js",
       },
       {
         analyzerName: "paths",
@@ -47,6 +55,8 @@ const testCases: PathsTestCase[] = [
         start: { line: 14, column: 2 },
         end: { line: 14, column: 75 },
         tags: { api: true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/paths/files/1.js",
       },
       {
         analyzerName: "paths",
@@ -55,6 +65,8 @@ const testCases: PathsTestCase[] = [
         start: { line: 25, column: 2 },
         end: { line: 25, column: 97 },
         tags: { api: true, query: true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/paths/files/1.js",
       },
       {
         analyzerName: "paths",
@@ -62,6 +74,8 @@ const testCases: PathsTestCase[] = [
         start: { line: 46, column: 2 },
         end: { line: 46, column: 11 },
         tags: { api: true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/paths/files/1.js",
       },
       {
         analyzerName: "paths",
@@ -69,6 +83,8 @@ const testCases: PathsTestCase[] = [
         start: { line: 23, column: 34 },
         end: { line: 23, column: 75 },
         tags: { query: true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/paths/files/1.js",
       },
       {
         analyzerName: "paths",
@@ -76,6 +92,8 @@ const testCases: PathsTestCase[] = [
         start: { line: 18, column: 32 },
         end: { line: 18, column: 57 },
         tags: {},
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/paths/files/1.js",
       },
       {
         analyzerName: "paths",
@@ -83,6 +101,8 @@ const testCases: PathsTestCase[] = [
         start: { line: 17, column: 33 },
         end: { line: 17, column: 59 },
         tags: {},
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/paths/files/1.js",
       },
       {
         analyzerName: "paths",
@@ -90,6 +110,8 @@ const testCases: PathsTestCase[] = [
         start: { line: 12, column: 26 },
         end: { line: 12, column: 39 },
         tags: {},
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/paths/files/1.js",
       },
       {
         analyzerName: "paths",
@@ -97,6 +119,8 @@ const testCases: PathsTestCase[] = [
         start: { line: 22, column: 34 },
         end: { line: 22, column: 65 },
         tags: { query: true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/paths/files/1.js",
       },
       {
         analyzerName: "paths",
@@ -104,6 +128,8 @@ const testCases: PathsTestCase[] = [
         start: { line: 10, column: 25 },
         end: { line: 10, column: 33 },
         tags: {},
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/paths/files/1.js",
       },
       {
         analyzerName: "paths",
@@ -111,6 +137,8 @@ const testCases: PathsTestCase[] = [
         start: { line: 56, column: 15 },
         end: { line: 56, column: 56 },
         tags: { api: true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/paths/files/1.js",
       },
       {
         analyzerName: "paths",
@@ -118,6 +146,8 @@ const testCases: PathsTestCase[] = [
         start: { line: 60, column: 15 },
         end: { line: 60, column: 68 },
         tags: { api: true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/paths/files/1.js",
       },
       {
         analyzerName: "paths",
@@ -125,6 +155,8 @@ const testCases: PathsTestCase[] = [
         start: { line: 52, column: 15 },
         end: { line: 52, column: 59 },
         tags: { api: true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/paths/files/1.js",
       },
       {
         analyzerName: "paths",
@@ -132,6 +164,8 @@ const testCases: PathsTestCase[] = [
         start: { line: 11, column: 28 },
         end: { line: 11, column: 49 },
         tags: { api: true, fragment: true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/paths/files/1.js",
       },
       {
         analyzerName: "paths",
@@ -139,6 +173,8 @@ const testCases: PathsTestCase[] = [
         start: { line: 47, column: 2 },
         end: { line: 47, column: 10 },
         tags: { api: true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/paths/files/1.js",
       },
       {
         analyzerName: "paths",
@@ -146,6 +182,8 @@ const testCases: PathsTestCase[] = [
         start: { line: 3, column: 7 },
         end: { line: 3, column: 16 },
         tags: {},
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/paths/files/1.js",
       },
       {
         analyzerName: "paths",
@@ -153,6 +191,8 @@ const testCases: PathsTestCase[] = [
         start: { line: 19, column: 33 },
         end: { line: 19, column: 61 },
         tags: {},
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/paths/files/1.js",
       },
     ],
   },

@@ -34,6 +34,7 @@ const postMessageAnalyzerBuilder = (
         }
 
         const match: AnalyzerMatch = {
+          filePath: args.filePath,
           analyzerName: POST_MESSAGE_ANALYZER_NAME,
           value: args.source.slice(node.start, node.end),
           start: node.loc.start,

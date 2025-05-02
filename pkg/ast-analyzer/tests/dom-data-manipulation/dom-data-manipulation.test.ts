@@ -18,6 +18,8 @@ const testCases: DomDataManipulationTestCase[] = [
         start: { line: 19, column: 0 },
         end: { line: 19, column: 14 },
         tags: { "dom-data-manipulation": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/dom-data-manipulation/files/1.js",
       },
       {
         analyzerName: "dom-data-manipulation",
@@ -25,6 +27,8 @@ const testCases: DomDataManipulationTestCase[] = [
         start: { line: 16, column: 0 },
         end: { line: 16, column: 23 },
         tags: { "dom-data-manipulation": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/dom-data-manipulation/files/1.js",
       },
       {
         analyzerName: "dom-data-manipulation",
@@ -32,6 +36,8 @@ const testCases: DomDataManipulationTestCase[] = [
         start: { line: 18, column: 0 },
         end: { line: 18, column: 16 },
         tags: { "dom-data-manipulation": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/dom-data-manipulation/files/1.js",
       },
       {
         analyzerName: "dom-data-manipulation",
@@ -39,6 +45,8 @@ const testCases: DomDataManipulationTestCase[] = [
         start: { line: 17, column: 0 },
         end: { line: 17, column: 15 },
         tags: { "dom-data-manipulation": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/dom-data-manipulation/files/1.js",
       },
       {
         analyzerName: "dom-data-manipulation",
@@ -46,6 +54,8 @@ const testCases: DomDataManipulationTestCase[] = [
         start: { line: 9, column: 0 },
         end: { line: 9, column: 17 },
         tags: { "dom-data-manipulation": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/dom-data-manipulation/files/1.js",
       },
       {
         analyzerName: "dom-data-manipulation",
@@ -53,6 +63,8 @@ const testCases: DomDataManipulationTestCase[] = [
         start: { line: 14, column: 0 },
         end: { line: 14, column: 14 },
         tags: { "dom-data-manipulation": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/dom-data-manipulation/files/1.js",
       },
       {
         analyzerName: "dom-data-manipulation",
@@ -60,6 +72,8 @@ const testCases: DomDataManipulationTestCase[] = [
         start: { line: 12, column: 0 },
         end: { line: 12, column: 12 },
         tags: { "dom-data-manipulation": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/dom-data-manipulation/files/1.js",
       },
       {
         analyzerName: "dom-data-manipulation",
@@ -67,6 +81,8 @@ const testCases: DomDataManipulationTestCase[] = [
         start: { line: 10, column: 0 },
         end: { line: 10, column: 17 },
         tags: { "dom-data-manipulation": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/dom-data-manipulation/files/1.js",
       },
       {
         analyzerName: "dom-data-manipulation",
@@ -74,6 +90,8 @@ const testCases: DomDataManipulationTestCase[] = [
         start: { line: 6, column: 0 },
         end: { line: 6, column: 14 },
         tags: { "dom-data-manipulation": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/dom-data-manipulation/files/1.js",
       },
       {
         analyzerName: "dom-data-manipulation",
@@ -81,6 +99,8 @@ const testCases: DomDataManipulationTestCase[] = [
         start: { line: 13, column: 0 },
         end: { line: 13, column: 14 },
         tags: { "dom-data-manipulation": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/dom-data-manipulation/files/1.js",
       },
       {
         analyzerName: "dom-data-manipulation",
@@ -88,6 +108,8 @@ const testCases: DomDataManipulationTestCase[] = [
         start: { line: 7, column: 0 },
         end: { line: 7, column: 12 },
         tags: { "dom-data-manipulation": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/dom-data-manipulation/files/1.js",
       },
       {
         analyzerName: "dom-data-manipulation",
@@ -95,6 +117,8 @@ const testCases: DomDataManipulationTestCase[] = [
         start: { line: 8, column: 0 },
         end: { line: 8, column: 19 },
         tags: { "dom-data-manipulation": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/dom-data-manipulation/files/1.js",
       },
       {
         analyzerName: "dom-data-manipulation",
@@ -102,6 +126,8 @@ const testCases: DomDataManipulationTestCase[] = [
         start: { line: 15, column: 0 },
         end: { line: 15, column: 12 },
         tags: { "dom-data-manipulation": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/dom-data-manipulation/files/1.js",
       },
       {
         analyzerName: "dom-data-manipulation",
@@ -109,6 +135,8 @@ const testCases: DomDataManipulationTestCase[] = [
         start: { line: 11, column: 0 },
         end: { line: 11, column: 13 },
         tags: { "dom-data-manipulation": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/dom-data-manipulation/files/1.js",
       },
       {
         analyzerName: "dom-data-manipulation",
@@ -116,6 +144,8 @@ const testCases: DomDataManipulationTestCase[] = [
         start: { line: 5, column: 0 },
         end: { line: 5, column: 16 },
         tags: { "dom-data-manipulation": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/dom-data-manipulation/files/1.js",
       },
       {
         analyzerName: "dom-data-manipulation",
@@ -123,6 +153,8 @@ const testCases: DomDataManipulationTestCase[] = [
         start: { line: 5, column: 0 },
         end: { line: 5, column: 16 },
         tags: { "dom-data-manipulation": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/dom-data-manipulation/files/1.js",
       },
       {
         analyzerName: "dom-data-manipulation",
@@ -130,6 +162,8 @@ const testCases: DomDataManipulationTestCase[] = [
         start: { line: 2, column: 0 },
         end: { line: 2, column: 10 },
         tags: { "dom-data-manipulation": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/dom-data-manipulation/files/1.js",
       },
       {
         analyzerName: "dom-data-manipulation",
@@ -137,6 +171,8 @@ const testCases: DomDataManipulationTestCase[] = [
         start: { line: 3, column: 0 },
         end: { line: 3, column: 11 },
         tags: { "dom-data-manipulation": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/dom-data-manipulation/files/1.js",
       },
       {
         analyzerName: "dom-data-manipulation",
@@ -144,6 +180,8 @@ const testCases: DomDataManipulationTestCase[] = [
         start: { line: 3, column: 0 },
         end: { line: 3, column: 11 },
         tags: { "dom-data-manipulation": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/dom-data-manipulation/files/1.js",
       },
       {
         analyzerName: "dom-data-manipulation",
@@ -151,6 +189,8 @@ const testCases: DomDataManipulationTestCase[] = [
         start: { line: 4, column: 0 },
         end: { line: 4, column: 18 },
         tags: { "dom-data-manipulation": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/dom-data-manipulation/files/1.js",
       },
       {
         analyzerName: "dom-data-manipulation",
@@ -158,6 +198,8 @@ const testCases: DomDataManipulationTestCase[] = [
         start: { line: 4, column: 0 },
         end: { line: 4, column: 18 },
         tags: { "dom-data-manipulation": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/dom-data-manipulation/files/1.js",
       },
     ],
   },

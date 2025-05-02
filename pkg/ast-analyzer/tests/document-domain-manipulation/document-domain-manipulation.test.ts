@@ -18,6 +18,8 @@ const testCases: DocumentDomainManipulationTestCase[] = [
         start: { line: 1, column: 0 },
         end: { line: 1, column: 15 },
         tags: { "document-domain-manipulation": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/document-domain-manipulation/files/1.js",
       },
       {
         analyzerName: "document-domain-manipulation",
@@ -25,6 +27,8 @@ const testCases: DocumentDomainManipulationTestCase[] = [
         start: { line: 2, column: 0 },
         end: { line: 2, column: 15 },
         tags: { "document-domain-manipulation": true },
+        filePath:
+          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/document-domain-manipulation/files/1.js",
       },
     ],
   },

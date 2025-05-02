@@ -19,6 +19,7 @@ const websocketUrlPoisoningAnalyzerBuilder = (
         node.callee.name === "WebSocket"
       ) {
         const match: AnalyzerMatch = {
+          filePath: args.filePath,
           analyzerName: WEBSOCKET_URL_POISONING_ANALYZER_NAME,
           value: args.source.slice(node.start, node.end),
           start: node.loc.start,
