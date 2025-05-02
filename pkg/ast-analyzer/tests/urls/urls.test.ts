@@ -20,8 +20,6 @@ const testCases: UrlsTestCase[] = [
         tags: { ftp: true },
         filePath:
           "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/urls/files/1.js",
-        filePath:
-          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/urls/files/1.js",
       },
       {
         analyzerName: "urls",

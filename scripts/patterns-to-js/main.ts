@@ -42,7 +42,7 @@ async function main(inputYamlPath: string) {
       const randexp = new RandExp(new RegExp(regex));
       example = randexp.gen();
     } catch (e) {
-      console.warn(`⚠️ Could not generate example for ${name}: ${regex}`);
+      console.warn(`⚠️ Could not generate example for ${name}: ${regex}`, e);
     }
 
     // Use JSON.stringify to escape any special characters in the generated value

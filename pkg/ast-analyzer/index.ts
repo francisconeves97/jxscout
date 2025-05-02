@@ -27,6 +27,7 @@ import { xpathInjectionAnalyzerBuilder } from "./xpath-injection";
 import { domDataManipulationAnalyzerBuilder } from "./dom-data-manipulation";
 import { commonSourcesAnalyzerBuilder } from "./common-sources";
 import { secretsAnalyzerBuilder } from "./secrets";
+import { piiAnalyzerBuilder } from "./pii";
 
 export function parseFile(filePath: string): AnalyzerParams {
   const fileContent = fs.readFileSync(filePath, "utf-8");
@@ -78,7 +79,8 @@ export type AnalyzerType =
   | "xpath-injection"
   | "dom-data-manipulation"
   | "common-sources"
-  | "secrets";
+  | "secrets"
+  | "pii";
 
 export function analyzeFile(
   filePath: string,
@@ -175,6 +177,7 @@ export function analyzeFile(
     commonSourcesAnalyzerBuilder
   );
   const secretsAnalyzer = createAnalyzer("secrets", secretsAnalyzerBuilder);
+  const piiAnalyzer = createAnalyzer("pii", piiAnalyzerBuilder);
 
   traverse(args.ast, {
     Literal(node, state, ancestors) {
@@ -184,6 +187,7 @@ export function analyzeFile(
       graphqlAnalyzer?.Literal?.(node, state, ancestors);
       urlsAnalyzer?.Literal?.(node, state, ancestors);
       secretsAnalyzer?.Literal?.(node, state, ancestors);
+      piiAnalyzer?.Literal?.(node, state, ancestors);
     },
     NewExpression(node, state, ancestors) {
       regexAnalyzer?.NewExpression?.(node, state, ancestors);
@@ -195,6 +199,7 @@ export function analyzeFile(
       graphqlAnalyzer?.TemplateLiteral?.(node, state, ancestors);
       urlsAnalyzer?.TemplateLiteral?.(node, state, ancestors);
       secretsAnalyzer?.TemplateLiteral?.(node, state, ancestors);
+      piiAnalyzer?.TemplateLiteral?.(node, state, ancestors);
     },
     CallExpression(node, state, ancestors) {
       postMessageAnalyzer?.CallExpression?.(node, state, ancestors);

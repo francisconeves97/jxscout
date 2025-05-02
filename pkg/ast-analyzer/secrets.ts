@@ -1,6 +1,8 @@
 import { createRegexAnalyzer } from "./regex-analyzer";
 
 // Define the patterns for secrets detection
+
+// All taken from https://github.com/mazen160/secrets-patterns-db - all credits to them
 const SECRET_PATTERNS = [
   {
     name: "AWS API Gateway",
