@@ -1,6 +1,8 @@
 package astanalyzer
 
 import (
+	"strings"
+
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )
@@ -65,25 +67,166 @@ func formatMatchesV1(matches []AnalyzerMatch) ASTAnalyzerTreeNode {
 		}
 	}
 
-	// Create root node
-	root := ASTAnalyzerTreeNode{
-		Label:    "String",
-		IconName: "folder",
-		Type:     ASTAnalyzerTreeNodeTypeNavigation,
+	// Define the main categories and their subcategories
+	categories := map[string][]string{
+		"iframe-communication": {"post-message", "message-listener"},
+		"storage":              {"cookie-manipulation", "session-storage", "local-storage", "local-file-path-manipulation"},
+		"sources":              {"common-sources"},
+		"behavior":             {"hash-change", "open-redirection"},
+		"data":                 {"paths", "urls", "extension", "graphql", "secret", "pii"},
 	}
 
-	// Define the primary tags that should be at level 2
-	primaryTags := []string{"paths", "urls", "extension", "graphql", "secret", "pii"}
+	// Create root nodes for each category
+	var rootNodes []ASTAnalyzerTreeNode
 
-	// Build the tree
-	for _, tag := range primaryTags {
+	// Handle iframe communication
+	if hasAnyMatches(matchesByTag, categories["iframe-communication"]) {
+		iframeNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
+			Label:    "Iframe Communication",
+			IconName: "folder",
+		})
+		addSubcategories(&iframeNode, matchesByTag, categories["iframe-communication"])
+		rootNodes = append(rootNodes, iframeNode)
+	}
+
+	// Handle storage
+	if hasAnyMatches(matchesByTag, categories["storage"]) {
+		storageNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
+			Label:    "Storage",
+			IconName: "folder",
+		})
+		addSubcategories(&storageNode, matchesByTag, categories["storage"])
+		rootNodes = append(rootNodes, storageNode)
+	}
+
+	// Handle sources
+	if hasAnyMatches(matchesByTag, categories["sources"]) {
+		sourcesNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
+			Label:    "Sources",
+			IconName: "folder",
+		})
+		addSubcategories(&sourcesNode, matchesByTag, categories["sources"])
+		rootNodes = append(rootNodes, sourcesNode)
+	}
+
+	// Handle behavior
+	if hasAnyMatches(matchesByTag, categories["behavior"]) || hasMiscMatches(matchesByTag) {
+		behaviorNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
+			Label:    "Behavior",
+			IconName: "folder",
+		})
+
+		// Add hash-change and location assignment
+		addSubcategories(&behaviorNode, matchesByTag, categories["behavior"])
+
+		// Add misc matches directly
+		if hasMiscMatches(matchesByTag) {
+			miscNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
+				Label:    "Misc",
+				IconName: "folder",
+			})
+			addMiscMatches(&miscNode, matchesByTag)
+			behaviorNode.Children = append(behaviorNode.Children, miscNode)
+		}
+
+		rootNodes = append(rootNodes, behaviorNode)
+	}
+
+	// Handle data
+	if hasAnyMatches(matchesByTag, categories["data"]) {
+		dataNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
+			Label:    "Data",
+			IconName: "folder",
+		})
+		addDataSubcategories(&dataNode, matchesByTag, categories["data"])
+		rootNodes = append(rootNodes, dataNode)
+	}
+
+	// Only return if we have nodes
+	if len(rootNodes) > 0 {
+		return ASTAnalyzerTreeNode{
+			Children: rootNodes,
+		}
+	}
+
+	return ASTAnalyzerTreeNode{}
+}
+
+// Helper functions
+func hasAnyMatches(matchesByTag map[string][]AnalyzerMatch, tags []string) bool {
+	for _, tag := range tags {
+		if len(matchesByTag[tag]) > 0 {
+			return true
+		}
+	}
+	return false
+}
+
+func hasMatches(matchesByTag map[string][]AnalyzerMatch, tag string) bool {
+	return len(matchesByTag[tag]) > 0
+}
+
+func hasMiscMatches(matchesByTag map[string][]AnalyzerMatch) bool {
+	miscTags := []string{
+		"dom-xss", "jquery-dom-xss", "dom-data-manipulation",
+		"link-manipulation", "javascript-injection", "websocket-url-poisoning",
+		"document-domain-manipulation", "ajax-request-header-manipulation",
+		"xpath-injection",
+	}
+	return hasAnyMatches(matchesByTag, miscTags)
+}
+
+func addSubcategories(parent *ASTAnalyzerTreeNode, matchesByTag map[string][]AnalyzerMatch, tags []string) {
+	for _, tag := range tags {
 		if matches, exists := matchesByTag[tag]; exists && len(matches) > 0 {
-			primaryNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-				Label:    cases.Title(language.English).String(tag),
+			label := strings.ReplaceAll(cases.Title(language.English).String(tag), "-", " ")
+			if tag == "open-redirection" {
+				label = "Location Assignment"
+			}
+			subNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
+				Label:    label,
+				IconName: "folder",
+			})
+			for _, match := range matches {
+				matchNode := matchToTreeNode(match)
+				matchNode.Label = match.Value
+				matchNode.Description = match.FilePath
+				subNode.Children = append(subNode.Children, matchNode)
+			}
+			parent.Children = append(parent.Children, subNode)
+		}
+	}
+}
+
+func addMiscMatches(parent *ASTAnalyzerTreeNode, matchesByTag map[string][]AnalyzerMatch) {
+	miscTags := []string{
+		"dom-xss", "jquery-dom-xss", "dom-data-manipulation",
+		"link-manipulation", "javascript-injection", "websocket-url-poisoning",
+		"document-domain-manipulation", "ajax-request-header-manipulation",
+		"xpath-injection",
+	}
+
+	for _, tag := range miscTags {
+		if matches, exists := matchesByTag[tag]; exists && len(matches) > 0 {
+			for _, match := range matches {
+				matchNode := matchToTreeNode(match)
+				matchNode.Label = match.Value
+				matchNode.Description = match.FilePath
+				parent.Children = append(parent.Children, matchNode)
+			}
+		}
+	}
+}
+
+func addDataSubcategories(parent *ASTAnalyzerTreeNode, matchesByTag map[string][]AnalyzerMatch, tags []string) {
+	for _, tag := range tags {
+		if matches, exists := matchesByTag[tag]; exists && len(matches) > 0 {
+			label := strings.ReplaceAll(cases.Title(language.English).String(tag), "-", " ")
+			subNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
+				Label:    label,
 				IconName: "folder",
 			})
 
-			// For extension, secret, and pii, we need to look for other tags
 			if tag == "extension" || tag == "secret" || tag == "pii" {
 				// Create a map to group matches by their other tags
 				matchesByOtherTag := make(map[string][]AnalyzerMatch)
@@ -98,39 +241,30 @@ func formatMatchesV1(matches []AnalyzerMatch) ASTAnalyzerTreeNode {
 				// Create sub-nodes for each other tag
 				for otherTag, subMatches := range matchesByOtherTag {
 					if len(subMatches) > 0 {
-						subNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-							Label:    cases.Title(language.English).String(otherTag),
+						otherLabel := strings.ReplaceAll(cases.Title(language.English).String(otherTag), "-", " ")
+						otherNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
+							Label:    otherLabel,
 							IconName: "folder",
 						})
-
 						for _, match := range subMatches {
-							treeNode := matchToTreeNode(match)
-							treeNode.Label = match.Value
-							treeNode.Description = match.FilePath
-							subNode.Children = append(subNode.Children, treeNode)
+							matchNode := matchToTreeNode(match)
+							matchNode.Label = match.Value
+							matchNode.Description = match.FilePath
+							otherNode.Children = append(otherNode.Children, matchNode)
 						}
-
-						primaryNode.Children = append(primaryNode.Children, subNode)
+						subNode.Children = append(subNode.Children, otherNode)
 					}
 				}
 			} else {
-				// For other tags, add matches directly
 				for _, match := range matches {
-					treeNode := matchToTreeNode(match)
-					treeNode.Label = match.Value
-					treeNode.Description = match.FilePath
-					primaryNode.Children = append(primaryNode.Children, treeNode)
+					matchNode := matchToTreeNode(match)
+					matchNode.Label = match.Value
+					matchNode.Description = match.FilePath
+					subNode.Children = append(subNode.Children, matchNode)
 				}
 			}
 
-			root.Children = append(root.Children, primaryNode)
+			parent.Children = append(parent.Children, subNode)
 		}
 	}
-
-	// Only return the root if it has children
-	if len(root.Children) > 0 {
-		return root
-	}
-
-	return ASTAnalyzerTreeNode{}
 }
