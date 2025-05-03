@@ -18,7 +18,7 @@ const testCases: HashChangeTestCase[] = [
           'document.addEventListener("hashchange", function(event) {\n  console.log(window.location.hash);\n})',
         start: { line: 12, column: 0 },
         end: { line: 14, column: 2 },
-        tags: { "hash-change": true, "event-listener": true },
+        tags: { "hash-change": true },
         filePath:
           "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/hash-change/files/1.js",
       },
@@ -28,7 +28,7 @@ const testCases: HashChangeTestCase[] = [
           "onhashchange = function(event) {\n  console.log(window.location.hash);\n}",
         start: { line: 17, column: 0 },
         end: { line: 19, column: 1 },
-        tags: { "hash-change": true, "direct-assignment": true },
+        tags: { "hash-change": true },
         filePath:
           "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/hash-change/files/1.js",
       },
@@ -38,7 +38,7 @@ const testCases: HashChangeTestCase[] = [
           'window.addEventListener("hashchange", function(event) {\n  console.log(window.location.hash);\n})',
         start: { line: 7, column: 0 },
         end: { line: 9, column: 2 },
-        tags: { "hash-change": true, "event-listener": true },
+        tags: { "hash-change": true },
         filePath:
           "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/hash-change/files/1.js",
       },
@@ -48,7 +48,7 @@ const testCases: HashChangeTestCase[] = [
           "window.onhashchange = function(event) {\n  console.log(window.location.hash);\n}",
         start: { line: 2, column: 0 },
         end: { line: 4, column: 1 },
-        tags: { "hash-change": true, "direct-assignment": true },
+        tags: { "hash-change": true },
         filePath:
           "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/hash-change/files/1.js",
       },

@@ -30,7 +30,6 @@ const hashChangeAnalyzerBuilder = (
           end: node.loc.end,
           tags: {
             "hash-change": true,
-            "direct-assignment": true,
           },
         };
 
@@ -60,7 +59,6 @@ const hashChangeAnalyzerBuilder = (
           end: node.loc.end,
           tags: {
             "hash-change": true,
-            "event-listener": true,
           },
         };
 

@@ -29,7 +29,7 @@ const html5StorageManipulationAnalyzerBuilder = (
           start: node.loc.start,
           end: node.loc.end,
           tags: {
-            "html5-storage-manipulation": true,
+            "session-storage": true,
           },
         };
 
@@ -51,7 +51,7 @@ const html5StorageManipulationAnalyzerBuilder = (
           start: node.loc.start,
           end: node.loc.end,
           tags: {
-            "html5-storage-manipulation": true,
+            "local-storage": true,
           },
         };
 

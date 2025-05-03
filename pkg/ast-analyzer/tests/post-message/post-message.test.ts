@@ -45,7 +45,7 @@ const testCases: PostMessageTestCase[] = [
           'window.postMessage({ type: "data", payload: "test" }, "https://example.com")',
         start: { line: 2, column: 0 },
         end: { line: 2, column: 76 },
-        tags: { "post-message": true, "cross-origin": true },
+        tags: { "post-message": true },
         filePath:
           "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/post-message/files/1.js",
       },

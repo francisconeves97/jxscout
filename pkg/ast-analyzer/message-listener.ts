@@ -30,7 +30,6 @@ const messageListenerAnalyzerBuilder = (
           end: node.loc.end,
           tags: {
             "message-listener": true,
-            "direct-assignment": true,
           },
         };
 
@@ -60,7 +59,6 @@ const messageListenerAnalyzerBuilder = (
           end: node.loc.end,
           tags: {
             "message-listener": true,
-            "event-listener": true,
           },
         };
 

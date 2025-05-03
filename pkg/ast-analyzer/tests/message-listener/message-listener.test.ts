@@ -18,7 +18,7 @@ const testCases: MessageListenerTestCase[] = [
           'document.addEventListener("message", function(event) {\n  console.log(event.data);\n})',
         start: { line: 9, column: 0 },
         end: { line: 11, column: 2 },
-        tags: { "message-listener": true, "event-listener": true },
+        tags: { "message-listener": true },
         filePath:
           "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/message-listener/files/1.js",
       },
@@ -27,7 +27,7 @@ const testCases: MessageListenerTestCase[] = [
         value: "onmessage = function(event) {\n  console.log(event.data);\n}",
         start: { line: 18, column: 0 },
         end: { line: 20, column: 1 },
-        tags: { "message-listener": true, "direct-assignment": true },
+        tags: { "message-listener": true },
         filePath:
           "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/message-listener/files/1.js",
       },
@@ -37,7 +37,7 @@ const testCases: MessageListenerTestCase[] = [
           'window.addEventListener("message", function(event) {\n  console.log(event.data);\n})',
         start: { line: 5, column: 0 },
         end: { line: 7, column: 2 },
-        tags: { "message-listener": true, "event-listener": true },
+        tags: { "message-listener": true },
         filePath:
           "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/message-listener/files/1.js",
       },
@@ -47,7 +47,7 @@ const testCases: MessageListenerTestCase[] = [
           "window.onmessage = function(event) {\n  console.log(event.data);\n}",
         start: { line: 1, column: 0 },
         end: { line: 3, column: 1 },
-        tags: { "message-listener": true, "direct-assignment": true },
+        tags: { "message-listener": true },
         filePath:
           "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/message-listener/files/1.js",
       },

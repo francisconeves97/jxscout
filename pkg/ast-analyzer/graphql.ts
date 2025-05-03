@@ -69,26 +69,7 @@ const graphqlAnalyzerBuilder = createRegexAnalyzer({
     const tags: Record<string, true> = {};
     const cleanValue = value.replace(/^`|`$/g, "").trim();
 
-    if (cleanValue.startsWith("query")) {
-      tags.query = true;
-    }
-
-    if (cleanValue.startsWith("mutation")) {
-      tags.mutation = true;
-    }
-
-    // Check for common GraphQL patterns
-    if (cleanValue.includes("@")) {
-      tags.directive = true;
-    }
-
-    if (cleanValue.includes("...")) {
-      tags.fragment = true;
-    }
-
-    if (cleanValue.includes("$")) {
-      tags.variable = true;
-    }
+    tags.graphql = true;
 
     return tags;
   },

@@ -7,11 +7,12 @@ const (
 )
 
 type AnalyzerMatch struct {
-	FilePath     string   `json:"filePath"`
-	AnalyzerName string   `json:"analyzerName"`
-	Value        string   `json:"value"`
-	Start        Position `json:"start"`
-	End          Position `json:"end"`
+	FilePath     string          `json:"filePath"`
+	AnalyzerName string          `json:"analyzerName"`
+	Value        string          `json:"value"`
+	Start        Position        `json:"start"`
+	End          Position        `json:"end"`
+	Tags         map[string]bool `json:"tags"`
 }
 
 type TreeNode[T any] struct {

@@ -29,10 +29,6 @@ const postMessageAnalyzerBuilder = (
           "post-message": true,
         };
 
-        if (targetOriginArg?.value !== "*") {
-          tags["cross-origin"] = true;
-        }
-
         const match: AnalyzerMatch = {
           filePath: args.filePath,
           analyzerName: POST_MESSAGE_ANALYZER_NAME,

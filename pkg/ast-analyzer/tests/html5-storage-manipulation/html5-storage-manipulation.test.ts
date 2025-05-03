@@ -17,7 +17,7 @@ const testCases: Html5StorageManipulationTestCase[] = [
         value: 'localStorage.setItem("key", "value")',
         start: { line: 1, column: 0 },
         end: { line: 1, column: 36 },
-        tags: { "html5-storage-manipulation": true },
+        tags: { "local-storage": true },
         filePath:
           "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/html5-storage-manipulation/files/1.js",
       },
@@ -26,7 +26,7 @@ const testCases: Html5StorageManipulationTestCase[] = [
         value: 'sessionStorage.setItem("key", "value")',
         start: { line: 2, column: 0 },
         end: { line: 2, column: 38 },
-        tags: { "html5-storage-manipulation": true },
+        tags: { "session-storage": true },
         filePath:
           "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/html5-storage-manipulation/files/1.js",
       },

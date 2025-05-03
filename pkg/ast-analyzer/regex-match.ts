@@ -33,7 +33,6 @@ const regexMatchAnalyzerBuilder = (
           end: node.loc.end,
           tags: {
             "regex-match": true,
-            "string-match": true,
           },
         };
 
@@ -61,7 +60,6 @@ const regexMatchAnalyzerBuilder = (
           end: node.loc.end,
           tags: {
             "regex-match": true,
-            "regex-test": true,
           },
         };
 
@@ -89,7 +87,6 @@ const regexMatchAnalyzerBuilder = (
           end: node.loc.end,
           tags: {
             "regex-match": true,
-            "regex-exec": true,
           },
         };
 
