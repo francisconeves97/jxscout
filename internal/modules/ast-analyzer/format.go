@@ -5,10 +5,6 @@ import (
 	"golang.org/x/text/language"
 )
 
-const (
-	pathsAnalyzer = "paths"
-)
-
 type AnalyzerMatch struct {
 	FilePath     string          `json:"filePath"`
 	AnalyzerName string          `json:"analyzerName"`
