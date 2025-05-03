@@ -73,7 +73,7 @@ func formatMatchesV1(matches []AnalyzerMatch) []ASTAnalyzerTreeNode {
 		"storage":              {"cookie-manipulation", "session-storage", "local-storage", "local-file-path-manipulation"},
 		"sources":              {"common-sources"},
 		"behavior":             {"hash-change", "open-redirection"},
-		"data":                 {"path", "urls", "extension", "graphql", "secret", "pii", "regex", "regex-literal", "regex-constructor", "regex-match", "https", "http", "api"},
+		"data":                 {"path", "urls", "extension", "graphql", "secret", "pii", "regex", "https", "http", "api"},
 	}
 
 	// Create root nodes for each category
