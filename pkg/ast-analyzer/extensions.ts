@@ -18,7 +18,12 @@ const fileExtensionsAnalyzerBuilder = createRegexAnalyzer({
       return {};
     }
 
-    return { [extensionMatch[1].toLowerCase()]: true };
+    const tags: Record<string, true> = {};
+
+    tags[extensionMatch[1].toLowerCase()] = true;
+    tags.extension = true;
+
+    return tags;
   },
 });
 

@@ -1,6 +1,9 @@
 package astanalyzer
 
-import "strings"
+import (
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
+)
 
 const (
 	pathsAnalyzer = "paths"
@@ -58,75 +61,80 @@ func matchToTreeNode(match AnalyzerMatch) ASTAnalyzerTreeNode {
 }
 
 func formatMatchesV1(matches []AnalyzerMatch) ASTAnalyzerTreeNode {
-	pathsNode := formatPaths(matches)
-
-	// Only include paths if it's not empty
-	if pathsNode.Type != "" || len(pathsNode.Children) > 0 {
-		return ASTAnalyzerTreeNode{
-			Children: []ASTAnalyzerTreeNode{pathsNode},
+	// Group matches by their tags
+	matchesByTag := make(map[string][]AnalyzerMatch)
+	for _, match := range matches {
+		for tag := range match.Tags {
+			matchesByTag[tag] = append(matchesByTag[tag], match)
 		}
+	}
+
+	// Create root node
+	root := ASTAnalyzerTreeNode{
+		Label:    "String",
+		IconName: "folder",
+		Type:     ASTAnalyzerTreeNodeTypeNavigation,
+	}
+
+	// Define the primary tags that should be at level 2
+	primaryTags := []string{"paths", "urls", "extension", "graphql", "secret", "pii"}
+
+	// Build the tree
+	for _, tag := range primaryTags {
+		if matches, exists := matchesByTag[tag]; exists && len(matches) > 0 {
+			primaryNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
+				Label:    cases.Title(language.English).String(tag),
+				IconName: "folder",
+			})
+
+			// For extension, secret, and pii, we need to look for other tags
+			if tag == "extension" || tag == "secret" || tag == "pii" {
+				// Create a map to group matches by their other tags
+				matchesByOtherTag := make(map[string][]AnalyzerMatch)
+				for _, match := range matches {
+					for otherTag := range match.Tags {
+						if otherTag != tag {
+							matchesByOtherTag[otherTag] = append(matchesByOtherTag[otherTag], match)
+						}
+					}
+				}
+
+				// Create sub-nodes for each other tag
+				for otherTag, subMatches := range matchesByOtherTag {
+					if len(subMatches) > 0 {
+						subNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
+							Label:    cases.Title(language.English).String(otherTag),
+							IconName: "folder",
+						})
+
+						for _, match := range subMatches {
+							treeNode := matchToTreeNode(match)
+							treeNode.Label = match.Value
+							treeNode.Description = match.FilePath
+							subNode.Children = append(subNode.Children, treeNode)
+						}
+
+						primaryNode.Children = append(primaryNode.Children, subNode)
+					}
+				}
+			} else {
+				// For other tags, add matches directly
+				for _, match := range matches {
+					treeNode := matchToTreeNode(match)
+					treeNode.Label = match.Value
+					treeNode.Description = match.FilePath
+					primaryNode.Children = append(primaryNode.Children, treeNode)
+				}
+			}
+
+			root.Children = append(root.Children, primaryNode)
+		}
+	}
+
+	// Only return the root if it has children
+	if len(root.Children) > 0 {
+		return root
 	}
 
 	return ASTAnalyzerTreeNode{}
-}
-
-func formatPaths(matches []AnalyzerMatch) ASTAnalyzerTreeNode {
-	paths := []ASTAnalyzerTreeNode{}
-	api := []ASTAnalyzerTreeNode{}
-	queryParams := []ASTAnalyzerTreeNode{}
-
-	for _, match := range matches {
-		if match.AnalyzerName != pathsAnalyzer {
-			continue
-		}
-
-		treeNode := matchToTreeNode(match)
-		treeNode.Label = match.Value
-		treeNode.Description = match.FilePath
-
-		paths = append(paths, treeNode)
-
-		if strings.Contains(match.Value, "api") {
-			api = append(api, treeNode)
-		}
-
-		// really dumb version
-		if strings.Contains(match.Value, "?") {
-			queryParams = append(queryParams, treeNode)
-		}
-	}
-
-	children := []ASTAnalyzerTreeNode{}
-
-	if len(paths) > 0 {
-		children = append(children, createNavigationTreeNode(ASTAnalyzerTreeNode{
-			Label:    "All",
-			Children: paths,
-		}))
-	}
-
-	if len(api) > 0 {
-		children = append(children, createNavigationTreeNode(ASTAnalyzerTreeNode{
-			Label:    "API",
-			Children: api,
-		}))
-	}
-
-	if len(queryParams) > 0 {
-		children = append(children, createNavigationTreeNode(ASTAnalyzerTreeNode{
-			Label:    "Query Params",
-			Children: queryParams,
-		}))
-	}
-
-	// If no children, return empty node
-	if len(children) == 0 {
-		return ASTAnalyzerTreeNode{}
-	}
-
-	return createNavigationTreeNode(ASTAnalyzerTreeNode{
-		Label:    "Paths",
-		Children: children,
-		IconName: "folder",
-	})
 }
