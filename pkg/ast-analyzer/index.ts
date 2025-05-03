@@ -97,6 +97,15 @@ export function analyzeFile(
     type: AnalyzerType,
     builder: (args: AnalyzerParams, results: AnalyzerMatch[]) => T
   ): T | null => {
+    // don't include emails analyzer for now
+    if (
+      (type === "emails" && !analyzersToRun?.includes("emails")) ||
+      (type === "link-manipulation" &&
+        !analyzersToRun?.includes("link-manipulation"))
+    ) {
+      return null;
+    }
+
     return !analyzersToRun || analyzersToRun.includes(type)
       ? builder(args, results)
       : null;
@@ -249,9 +258,6 @@ export function analyzeFile(
       linkManipulationAnalyzer?.MemberExpression?.(node, state, ancestors);
       domDataManipulationAnalyzer?.MemberExpression?.(node, state, ancestors);
       commonSourcesAnalyzer?.MemberExpression?.(node, state, ancestors);
-    },
-    Identifier(node, state, ancestors) {
-      commonSourcesAnalyzer?.Identifier?.(node, state, ancestors);
     },
   });
 

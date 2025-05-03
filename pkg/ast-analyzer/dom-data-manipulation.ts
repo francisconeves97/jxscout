@@ -108,39 +108,6 @@ const domDataManipulationAnalyzerBuilder = (
         matchesReturn.push(match);
       }
 
-      // Check for element properties
-      if (
-        node.property.type === "Identifier" &&
-        [
-          "search",
-          "text",
-          "textContent",
-          "innerText",
-          "outerText",
-          "value",
-          "name",
-          "target",
-          "method",
-          "type",
-          "backgroundImage",
-          "cssText",
-          "codebase",
-        ].includes(node.property.name)
-      ) {
-        const match: AnalyzerMatch = {
-          filePath: args.filePath,
-          analyzerName: DOM_DATA_MANIPULATION_ANALYZER_NAME,
-          value: args.source.slice(node.start, node.end),
-          start: node.loc.start,
-          end: node.loc.end,
-          tags: {
-            "dom-data-manipulation": true,
-          },
-        };
-
-        matchesReturn.push(match);
-      }
-
       // Check for document.title
       if (
         node.object.type === "Identifier" &&

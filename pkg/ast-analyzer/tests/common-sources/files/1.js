@@ -14,6 +14,12 @@ mozIndexedDB.open("database", 1);
 webkitIndexedDB.open("database", 1);
 msIndexedDB.open("database", 1); 
 
+localStorage.setItem('key', 'value');
+sessionStorage.setItem('key', 'value');
+
+location = "asd"
+location.href = "asd"
+
 const a = "asd" + location.search;
 const b = "asd" + location.hash;
 const c = "asd" + location.pathname;

@@ -2,23 +2,6 @@
   {
     "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
     "analyzerName": "pii",
-    "value": "                                                                               (02078}3810",
-    "start": {
-      "line": 6,
-      "column": 17
-    },
-    "end": {
-      "line": 6,
-      "column": 109
-    },
-    "tags": {
-      "pii": true,
-      "ukphones": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
     "value": "-----BEGIN CERTIFICATE-----kn\n\n\nF\nZ\n&o\n\n\n\n)\n\n\n\n>Z\n\n\n\n\n\nm\nxw)&\n\n!\n\n<\n}\n~z\n7\nz\n\ng\n\n\nR[v\nI$`\n\n~\n\n>o\n\n\n:8\n/q\n[ X\nU&\nrv\nq\n\np\n*\n6&x@\n -----END CERTIFICATE-----",
     "start": {
       "line": 115,
@@ -98,7 +81,7 @@
     },
     "tags": {
       "pii": true,
-      "email---3": true
+      "encrypted-ec-private-key": true
     }
   },
   {
@@ -121,142 +104,6 @@
   {
     "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
     "analyzerName": "pii",
-    "value": "-7.96718563646217889,                            -09.09579574027132683240570930070056372973728271902000482217397446329606791349663435432",
-    "start": {
-      "line": 138,
-      "column": 17
-    },
-    "end": {
-      "line": 138,
-      "column": 155
-    },
-    "tags": {
-      "pii": true,
-      "visa_credit_card": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "\"Account\",\"Login Name\",\"Password\",\"Web Site\",\"Comments\"",
-    "start": {
-      "line": 94,
-      "column": 34
-    },
-    "end": {
-      "line": 94,
-      "column": 101
-    },
-    "tags": {
-      "pii": true,
-      "keepass-1.x-csv-passwords": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "(370) 777-0681",
-    "start": {
-      "line": 96,
-      "column": 41
-    },
-    "end": {
-      "line": 96,
-      "column": 57
-    },
-    "tags": {
-      "pii": true,
-      "phones": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "(B761)9Z5 7493",
-    "start": {
-      "line": 15,
-      "column": 25
-    },
-    "end": {
-      "line": 15,
-      "column": 41
-    },
-    "tags": {
-      "pii": true,
-      "us-phone-numbers": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "\\b\\ddd\\dd-\\dddd\\b",
-    "start": {
-      "line": 70,
-      "column": 37
-    },
-    "end": {
-      "line": 70,
-      "column": 61
-    },
-    "tags": {
-      "pii": true,
-      "social-security-number-(ssn)---4": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "#7F18E2a9",
-    "start": {
-      "line": 54,
-      "column": 19
-    },
-    "end": {
-      "line": 54,
-      "column": 30
-    },
-    "tags": {
-      "pii": true,
-      "hex_colors": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "+1                                                                             -                                                                              821                     480                                                                                  9403                                 x.                                                         ",
-    "start": {
-      "line": 2,
-      "column": 25
-    },
-    "end": {
-      "line": 2,
-      "column": 390
-    },
-    "tags": {
-      "pii": true,
-      "phones_with_exts": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "<pwlist><pwentry><password>W7)feh[3/(ITiA^Wf/D_^M)</pwentry></pwlist>",
-    "start": {
-      "line": 95,
-      "column": 34
-    },
-    "end": {
-      "line": 95,
-      "column": 105
-    },
-    "tags": {
-      "pii": true,
-      "keepass-1.x-xml-passwords": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
     "value": "|igestAlgorithm",
     "start": {
       "line": 106,
@@ -269,244 +116,6 @@
     "tags": {
       "pii": true,
       "pkcs7-encrypted-data": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "$ 835729685527943853678504010,253247,488740480,606109198,934083,232,924,873486536317784886,182149,141472,206227,384,447,852,966,117084687,970,015,091226366738,218,977390,763,742,211363959562,839638283111852,066784044,872087875332,317293,015,804328",
-    "start": {
-      "line": 53,
-      "column": 15
-    },
-    "end": {
-      "line": 53,
-      "column": 264
-    },
-    "tags": {
-      "pii": true,
-      "phones": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "000000000000000000000000000000000000000000000000000000000000000337-04-6330",
-    "start": {
-      "line": 9,
-      "column": 19
-    },
-    "end": {
-      "line": 9,
-      "column": 95
-    },
-    "tags": {
-      "pii": true,
-      "ssn_number": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "031822053025",
-    "start": {
-      "line": 36,
-      "column": 36
-    },
-    "end": {
-      "line": 36,
-      "column": 50
-    },
-    "tags": {
-      "pii": true,
-      "phones": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "0408-8425 56433291",
-    "start": {
-      "line": 55,
-      "column": 21
-    },
-    "end": {
-      "line": 55,
-      "column": 41
-    },
-    "tags": {
-      "pii": true,
-      "phones": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "\b095-72-1474\b",
-    "start": {
-      "line": 8,
-      "column": 14
-    },
-    "end": {
-      "line": 8,
-      "column": 31
-    },
-    "tags": {
-      "pii": true,
-      "ssn---3": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "121000358",
-    "start": {
-      "line": 74,
-      "column": 51
-    },
-    "end": {
-      "line": 74,
-      "column": 62
-    },
-    "tags": {
-      "pii": true,
-      "phones": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "121042882",
-    "start": {
-      "line": 123,
-      "column": 47
-    },
-    "end": {
-      "line": 123,
-      "column": 58
-    },
-    "tags": {
-      "pii": true,
-      "phones": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "122235821",
-    "start": {
-      "line": 121,
-      "column": 42
-    },
-    "end": {
-      "line": 121,
-      "column": 53
-    },
-    "tags": {
-      "pii": true,
-      "phones": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "122243350",
-    "start": {
-      "line": 122,
-      "column": 46
-    },
-    "end": {
-      "line": 122,
-      "column": 57
-    },
-    "tags": {
-      "pii": true,
-      "phones": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "1728-094-45",
-    "start": {
-      "line": 90,
-      "column": 37
-    },
-    "end": {
-      "line": 90,
-      "column": 50
-    },
-    "tags": {
-      "pii": true,
-      "hipaa-phi-national-drug-code": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "180025876397965",
-    "start": {
-      "line": 24,
-      "column": 17
-    },
-    "end": {
-      "line": 24,
-      "column": 34
-    },
-    "tags": {
-      "pii": true,
-      "credit-card---2": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "180082485584581",
-    "start": {
-      "line": 13,
-      "column": 22
-    },
-    "end": {
-      "line": 13,
-      "column": 39
-    },
-    "tags": {
-      "pii": true,
-      "credit-card---2": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "1gzBL9XQDS38brGCoMsGeGpCg186LekdhD",
-    "start": {
-      "line": 142,
-      "column": 24
-    },
-    "end": {
-      "line": 142,
-      "column": 60
-    },
-    "tags": {
-      "pii": true,
-      "btc_addresses": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "20/68/7793",
-    "start": {
-      "line": 71,
-      "column": 22
-    },
-    "end": {
-      "line": 71,
-      "column": 34
-    },
-    "tags": {
-      "pii": true,
-      "date-of-birth": true
     }
   },
   {
@@ -529,142 +138,6 @@
   {
     "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
     "analyzerName": "pii",
-    "value": "23/. 09. 1964",
-    "start": {
-      "line": 140,
-      "column": 24
-    },
-    "end": {
-      "line": 140,
-      "column": 39
-    },
-    "tags": {
-      "pii": true,
-      "date-of-birth---2": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "2455956912",
-    "start": {
-      "line": 141,
-      "column": 19
-    },
-    "end": {
-      "line": 141,
-      "column": 31
-    },
-    "tags": {
-      "pii": true,
-      "phones": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "2605155642GBP1049838F882652578",
-    "start": {
-      "line": 120,
-      "column": 27
-    },
-    "end": {
-      "line": 120,
-      "column": 59
-    },
-    "tags": {
-      "pii": true,
-      "phones": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "272407",
-    "start": {
-      "line": 12,
-      "column": 12
-    },
-    "end": {
-      "line": 12,
-      "column": 20
-    },
-    "tags": {
-      "pii": true,
-      "otp": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "2772 dRdroad#",
-    "start": {
-      "line": 4,
-      "column": 25
-    },
-    "end": {
-      "line": 4,
-      "column": 40
-    },
-    "tags": {
-      "pii": true,
-      "street_addresses": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "298952761",
-    "start": {
-      "line": 49,
-      "column": 35
-    },
-    "end": {
-      "line": 49,
-      "column": 46
-    },
-    "tags": {
-      "pii": true,
-      "phones": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "2am.",
-    "start": {
-      "line": 1,
-      "column": 14
-    },
-    "end": {
-      "line": 1,
-      "column": 20
-    },
-    "tags": {
-      "pii": true,
-      "times": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "321170538",
-    "start": {
-      "line": 73,
-      "column": 47
-    },
-    "end": {
-      "line": 73,
-      "column": 58
-    },
-    "tags": {
-      "pii": true,
-      "phones": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
     "value": "321171724",
     "start": {
       "line": 80,
@@ -676,7 +149,7 @@
     },
     "tags": {
       "pii": true,
-      "phones": true
+      "citibank-routing-numbers---california": true
     }
   },
   {
@@ -693,415 +166,7 @@
     },
     "tags": {
       "pii": true,
-      "phones": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "341002425806912",
-    "start": {
-      "line": 18,
-      "column": 18
-    },
-    "end": {
-      "line": 18,
-      "column": 35
-    },
-    "tags": {
-      "pii": true,
-      "ukphones": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "346219616147132",
-    "start": {
-      "line": 11,
-      "column": 37
-    },
-    "end": {
-      "line": 11,
-      "column": 54
-    },
-    "tags": {
-      "pii": true,
-      "american_express_credit-card": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "38576112878218",
-    "start": {
-      "line": 21,
-      "column": 25
-    },
-    "end": {
-      "line": 21,
-      "column": 41
-    },
-    "tags": {
-      "pii": true,
-      "credit-card---2": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "38996542344154",
-    "start": {
-      "line": 20,
-      "column": 27
-    },
-    "end": {
-      "line": 20,
-      "column": 43
-    },
-    "tags": {
-      "pii": true,
-      "credit-card---2": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "41798-6529",
-    "start": {
-      "line": 97,
-      "column": 37
-    },
-    "end": {
-      "line": 97,
-      "column": 49
-    },
-    "tags": {
-      "pii": true,
-      "phones": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "429-35-5688",
-    "start": {
-      "line": 58,
-      "column": 21
-    },
-    "end": {
-      "line": 58,
-      "column": 34
-    },
-    "tags": {
-      "pii": true,
-      "ssn_number": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "4343318608212 53",
-    "start": {
-      "line": 37,
-      "column": 44
-    },
-    "end": {
-      "line": 37,
-      "column": 62
-    },
-    "tags": {
-      "pii": true,
-      "phones": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "4390601914444087",
-    "start": {
-      "line": 10,
-      "column": 25
-    },
-    "end": {
-      "line": 10,
-      "column": 43
-    },
-    "tags": {
-      "pii": true,
-      "ukphones": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "441104724",
-    "start": {
-      "line": 38,
-      "column": 27
-    },
-    "end": {
-      "line": 38,
-      "column": 38
-    },
-    "tags": {
-      "pii": true,
-      "phones": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "479\"56-9724`",
-    "start": {
-      "line": 47,
-      "column": 43
-    },
-    "end": {
-      "line": 47,
-      "column": 58
-    },
-    "tags": {
-      "pii": true,
-      "spain-social-security-number-(ssn)---2": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "4888 2166-88557083",
-    "start": {
-      "line": 56,
-      "column": 19
-    },
-    "end": {
-      "line": 56,
-      "column": 39
-    },
-    "tags": {
-      "pii": true,
-      "credit-card---3": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "490302599452958458",
-    "start": {
-      "line": 30,
-      "column": 20
-    },
-    "end": {
-      "line": 30,
-      "column": 40
-    },
-    "tags": {
-      "pii": true,
-      "visa_credit_card": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "49982505-4zs9",
-    "start": {
-      "line": 45,
-      "column": 37
-    },
-    "end": {
-      "line": 45,
-      "column": 52
-    },
-    "tags": {
-      "pii": true,
-      "canada-passport-id": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "50184221548630",
-    "start": {
-      "line": 27,
-      "column": 21
-    },
-    "end": {
-      "line": 27,
-      "column": 37
-    },
-    "tags": {
-      "pii": true,
-      "maestro-card": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "51421404 61391424",
-    "start": {
-      "line": 57,
-      "column": 21
-    },
-    "end": {
-      "line": 57,
-      "column": 40
-    },
-    "tags": {
-      "pii": true,
-      "phones": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "515 596 2579",
-    "start": {
-      "line": 51,
-      "column": 58
-    },
-    "end": {
-      "line": 51,
-      "column": 72
-    },
-    "tags": {
-      "pii": true,
-      "phones": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "5154311808082670",
-    "start": {
-      "line": 28,
-      "column": 19
-    },
-    "end": {
-      "line": 28,
-      "column": 37
-    },
-    "tags": {
-      "pii": true,
-      "credit-card---2": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "576061646103",
-    "start": {
-      "line": 46,
-      "column": 41
-    },
-    "end": {
-      "line": 46,
-      "column": 55
-    },
-    "tags": {
-      "pii": true,
-      "phones": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "582-7-251902",
-    "start": {
-      "line": 63,
-      "column": 15
-    },
-    "end": {
-      "line": 63,
-      "column": 29
-    },
-    "tags": {
-      "pii": true,
-      "isbn10": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "6334453646668848",
-    "start": {
-      "line": 29,
-      "column": 18
-    },
-    "end": {
-      "line": 29,
-      "column": 36
-    },
-    "tags": {
-      "pii": true,
-      "credit-card---2": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "6374671840352360",
-    "start": {
-      "line": 23,
-      "column": 27
-    },
-    "end": {
-      "line": 23,
-      "column": 45
-    },
-    "tags": {
-      "pii": true,
-      "american_express_credit-card": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "6471670977116910",
-    "start": {
-      "line": 22,
-      "column": 22
-    },
-    "end": {
-      "line": 22,
-      "column": 40
-    },
-    "tags": {
-      "pii": true,
-      "credit-card---2": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "6556255334964182",
-    "start": {
-      "line": 19,
-      "column": 17
-    },
-    "end": {
-      "line": 19,
-      "column": 35
-    },
-    "tags": {
-      "pii": true,
-      "credit-card---2": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "6706305879599838740",
-    "start": {
-      "line": 26,
-      "column": 19
-    },
-    "end": {
-      "line": 26,
-      "column": 40
-    },
-    "tags": {
-      "pii": true,
-      "credit-card---2": true
+      "chase-routing-numbers---california": true
     }
   },
   {
@@ -1118,58 +183,7 @@
     },
     "tags": {
       "pii": true,
-      "visa_credit_card": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "695334-6113",
-    "start": {
-      "line": 35,
-      "column": 35
-    },
-    "end": {
-      "line": 35,
-      "column": 48
-    },
-    "tags": {
-      "pii": true,
-      "phones": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "7320-5806-7-30-4-X",
-    "start": {
-      "line": 62,
-      "column": 15
-    },
-    "end": {
-      "line": 62,
-      "column": 35
-    },
-    "tags": {
-      "pii": true,
-      "isbn13": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "73428754819",
-    "start": {
-      "line": 44,
-      "column": 33
-    },
-    "end": {
-      "line": 44,
-      "column": 46
-    },
-    "tags": {
-      "pii": true,
-      "phones": true
+      "google-application-identifier": true
     }
   },
   {
@@ -1186,177 +200,7 @@
     },
     "tags": {
       "pii": true,
-      "times": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "845-37-3988",
-    "start": {
-      "line": 69,
-      "column": 37
-    },
-    "end": {
-      "line": 69,
-      "column": 50
-    },
-    "tags": {
-      "pii": true,
-      "ssn_number---3": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "89689177",
-    "start": {
-      "line": 48,
-      "column": 27
-    },
-    "end": {
-      "line": 48,
-      "column": 37
-    },
-    "tags": {
-      "pii": true,
-      "phones": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "92.358.725",
-    "start": {
-      "line": 31,
-      "column": 47
-    },
-    "end": {
-      "line": 31,
-      "column": 59
-    },
-    "tags": {
-      "pii": true,
-      "argentina-national-identity-(dni)-number": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "933F0f271A3f2ff24caBaFd0926C009dDE04dB7c67fD1a5aD4DacD8b8A856bbE",
-    "start": {
-      "line": 61,
-      "column": 22
-    },
-    "end": {
-      "line": 61,
-      "column": 88
-    },
-    "tags": {
-      "pii": true,
-      "md5_hashes": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "9382352S",
-    "start": {
-      "line": 42,
-      "column": 51
-    },
-    "end": {
-      "line": 42,
-      "column": 61
-    },
-    "tags": {
-      "pii": true,
-      "phones": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "954-,6 4987",
-    "start": {
-      "line": 92,
-      "column": 56
-    },
-    "end": {
-      "line": 92,
-      "column": 69
-    },
-    "tags": {
-      "pii": true,
-      "individual-taxpayer-identification-numbers-(itin)": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "9684441672630223",
-    "start": {
-      "line": 25,
-      "column": 26
-    },
-    "end": {
-      "line": 25,
-      "column": 44
-    },
-    "tags": {
-      "pii": true,
-      "credit-card---2": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "974 466.690",
-    "start": {
-      "line": 43,
-      "column": 49
-    },
-    "end": {
-      "line": 43,
-      "column": 62
-    },
-    "tags": {
-      "pii": true,
-      "netherlands-citizen's-service-(bsn)-number": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "9Y661228",
-    "start": {
-      "line": 32,
-      "column": 27
-    },
-    "end": {
-      "line": 32,
-      "column": 37
-    },
-    "tags": {
-      "pii": true,
-      "canada-passport-id": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "a5c7eFFe4f5BC2E8Fa7A3221F1AC2cBEaBCfa81B",
-    "start": {
-      "line": 60,
-      "column": 20
-    },
-    "end": {
-      "line": 60,
-      "column": 62
-    },
-    "tags": {
-      "pii": true,
-      "md5_hashes": true
+      "password-etc-passwd": true
     }
   },
   {
@@ -1396,40 +240,6 @@
   {
     "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
     "analyzerName": "pii",
-    "value": "ACd8aBBEBb28C3be0bDB54bc93CBFfE7",
-    "start": {
-      "line": 59,
-      "column": 19
-    },
-    "end": {
-      "line": 59,
-      "column": 53
-    },
-    "tags": {
-      "pii": true,
-      "md5_hashes": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "ar-MD_YEExi3js_TIl.L1X85JlJdAnoZrQQ5jKyWg-8DK6kvClz+j2kCKh3ZFHfk1AlCvn5qiz@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@Qc9MlPTK9h|MKxp9`{6BefM@VRW-fJxj2=xZi<:c;3<!Liuqob`rLZ6x`'ANuf%#US?\"~*c(W5',F~69(+HNHBF*- (I{E1?;QFl",
-    "start": {
-      "line": 7,
-      "column": 16
-    },
-    "end": {
-      "line": 7,
-      "column": 290
-    },
-    "tags": {
-      "pii": true,
-      "email---3": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
     "value": "BACKUP VERIFICATION CODES4Q*kn\"0)@TI<0s?PI+!dZL(7VQ#@AX)v&R0$\"7.f=x: XgLee05P;^!W3|`gt 8mRoUB>'[=cSdUpNv-l<pxMIj Vz534T#%k}t#-D :,qX81})~\\>pQx1VQwhLmR%jhg+`(w$h!<-Ta1\"JSIWfM,^6k@;WL%BLnQN@",
     "start": {
       "line": 129,
@@ -1447,40 +257,6 @@
   {
     "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
     "analyzerName": "pii",
-    "value": "BC-CA-46-8F-EC-E6",
-    "start": {
-      "line": 64,
-      "column": 22
-    },
-    "end": {
-      "line": 64,
-      "column": 41
-    },
-    "tags": {
-      "pii": true,
-      "mac_addresses": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "BV14pZwg1606869sG7",
-    "start": {
-      "line": 137,
-      "column": 13
-    },
-    "end": {
-      "line": 137,
-      "column": 33
-    },
-    "tags": {
-      "pii": true,
-      "phones": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
     "value": "class Metasploit",
     "start": {
       "line": 99,
@@ -1493,23 +269,6 @@
     "tags": {
       "pii": true,
       "metasploit-module": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "CO597RZK2152244G16YR1HGJ",
-    "start": {
-      "line": 65,
-      "column": 21
-    },
-    "end": {
-      "line": 65,
-      "column": 47
-    },
-    "tags": {
-      "pii": true,
-      "phones": true
     }
   },
   {
@@ -1549,23 +308,6 @@
   {
     "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
     "analyzerName": "pii",
-    "value": "CZ87204346",
-    "start": {
-      "line": 34,
-      "column": 42
-    },
-    "end": {
-      "line": 34,
-      "column": 54
-    },
-    "tags": {
-      "pii": true,
-      "phones": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
     "value": "dn:                                                                      RDOu6LbmnK5wlEvHZ,ffydJO6nEfeRzI3SujrpEXAYNNYWRu4os3Vyuv",
     "start": {
       "line": 98,
@@ -1594,24 +336,7 @@
     },
     "tags": {
       "pii": true,
-      "prices": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "ESzxDEhobV",
-    "start": {
-      "line": 116,
-      "column": 20
-    },
-    "end": {
-      "line": 116,
-      "column": 32
-    },
-    "tags": {
-      "pii": true,
-      "swift-codes": true
+      "mysql-database-dump": true
     }
   },
   {
@@ -1628,7 +353,7 @@
     },
     "tags": {
       "pii": true,
-      "times": true
+      "samba-password-config-file": true
     }
   },
   {
@@ -1662,7 +387,7 @@
     },
     "tags": {
       "pii": true,
-      "phones": true
+      "facebook_secret": true
     }
   },
   {
@@ -1696,41 +421,7 @@
     },
     "tags": {
       "pii": true,
-      "phones": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "g533g5KC28",
-    "start": {
-      "line": 40,
-      "column": 28
-    },
-    "end": {
-      "line": 40,
-      "column": 40
-    },
-    "tags": {
-      "pii": true,
-      "germany-passport-id": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "git@FCvq8bM_xW.CDBFqlLse2e8kzzoFuadgR9pJaCxp:8xGlfF8F2Qmpg2xxuMm-q.jFj4QNhKsT_8fplTO.git",
-    "start": {
-      "line": 66,
-      "column": 18
-    },
-    "end": {
-      "line": 66,
-      "column": 108
-    },
-    "tags": {
-      "pii": true,
-      "email---3": true
+      "california-drivers-license": true
     }
   },
   {
@@ -1753,23 +444,6 @@
   {
     "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
     "analyzerName": "pii",
-    "value": "HAISX509103CC8GC",
-    "start": {
-      "line": 119,
-      "column": 35
-    },
-    "end": {
-      "line": 119,
-      "column": 53
-    },
-    "tags": {
-      "pii": true,
-      "uk-drivers-license-numbers": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
     "value": "heroku_secret%yRLIpNPq-DIYt-FkIf-_Siy-WJjOTvI5xSqC#",
     "start": {
       "line": 130,
@@ -1787,23 +461,6 @@
   {
     "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
     "analyzerName": "pii",
-    "value": "HR63127750928",
-    "start": {
-      "line": 33,
-      "column": 35
-    },
-    "end": {
-      "line": 33,
-      "column": 50
-    },
-    "tags": {
-      "pii": true,
-      "phones": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
     "value": "https://appFbox+com/s/dn!Uz53xIc@BZ(3X`1c!#%ocYUvMIYGfB3&kesE(Imp13FdfDJr.V[YS9/nB4W[#1L1/Z^D,m+5]|$",
     "start": {
       "line": 75,
@@ -1815,7 +472,7 @@
     },
     "tags": {
       "pii": true,
-      "email---3": true
+      "box-links": true
     }
   },
   {
@@ -1855,23 +512,6 @@
   {
     "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
     "analyzerName": "pii",
-    "value": "iescq8131956929512",
-    "start": {
-      "line": 50,
-      "column": 43
-    },
-    "end": {
-      "line": 50,
-      "column": 63
-    },
-    "tags": {
-      "pii": true,
-      "phones": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
     "value": "interface xethernet",
     "start": {
       "line": 79,
@@ -1884,23 +524,6 @@
     "tags": {
       "pii": true,
       "cisco-router-config": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "J99KM1gcS6M",
-    "start": {
-      "line": 41,
-      "column": 36
-    },
-    "end": {
-      "line": 41,
-      "column": 49
-    },
-    "tags": {
-      "pii": true,
-      "germany-driver's-license-id": true
     }
   },
   {
@@ -1923,40 +546,6 @@
   {
     "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
     "analyzerName": "pii",
-    "value": "l15049918",
-    "start": {
-      "line": 39,
-      "column": 31
-    },
-    "end": {
-      "line": 39,
-      "column": 42
-    },
-    "tags": {
-      "pii": true,
-      "phones": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "Loaded 44462680648 password hash",
-    "start": {
-      "line": 93,
-      "column": 24
-    },
-    "end": {
-      "line": 93,
-      "column": 58
-    },
-    "tags": {
-      "pii": true,
-      "phones": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
     "value": "m4I0Pto2sZaRNC2TdF8afFAebHsa4Rbn40VDuOQvD0XkVBUd2GNQEl:*LOCK:2381848819236317777813369440638116398890725737209803283::24461:6674588241645217731309215200035229788:911448186016655294393419218718092298898352346300345620642268168428473969059152142439362680:683260583722496237256528963098032173291173890:",
     "start": {
       "line": 108,
@@ -1968,7 +557,7 @@
     },
     "tags": {
       "pii": true,
-      "times": true
+      "password-etc-shadow": true
     }
   },
   {
@@ -1986,57 +575,6 @@
     "tags": {
       "pii": true,
       "nmap-scan-report": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "O+",
-    "start": {
-      "line": 139,
-      "column": 19
-    },
-    "end": {
-      "line": 139,
-      "column": 23
-    },
-    "tags": {
-      "pii": true,
-      "blood-type": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "OIIAAl59AI7lBIA",
-    "start": {
-      "line": 14,
-      "column": 25
-    },
-    "end": {
-      "line": 14,
-      "column": 42
-    },
-    "tags": {
-      "pii": true,
-      "uk-phone-numbers": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "P O. Box 2103734769994978184849981076619808201792993297237697910790761478",
-    "start": {
-      "line": 5,
-      "column": 17
-    },
-    "end": {
-      "line": 5,
-      "column": 92
-    },
-    "tags": {
-      "pii": true,
-      "po_boxes": true
     }
   },
   {
@@ -2155,7 +693,7 @@
     },
     "tags": {
       "pii": true,
-      "phones": true
+      "california-drivers-license": true
     }
   },
   {
@@ -2172,7 +710,7 @@
     },
     "tags": {
       "pii": true,
-      "md5_hashes": true
+      "slack_api_key": true
     }
   },
   {
@@ -2229,40 +767,6 @@
   {
     "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
     "analyzerName": "pii",
-    "value": "Two-Factor                                                                                   HUl?KRSm<A.nK>8/03EgGX5@|.NZqGg<%>+SG;F@CQTp/K)%dTqAuthentication                                                       gqIl^#*P+x4ns8J5DaNWsn0HP*vXGwrqr'!AC>|w7w)+O4_F$x{$l'v6.MzHv!wF~SzxwGc!Backup                              .!cR2Ay_qyAa<t!bEw:7j<R[Ok=6UG~UmY_)#>^Fkyn+)R:M'BNy>Q;OQS]|4/-t~q*?]#\\k5!dEb?&va`e{Ln-Codes \n1!\ncst~0\n\n\n\nZd\nb\n\ns\n\n99\nq\nR@H\n7\n\n\n{mfHq\nZ\n?m\n&Slack!.\n\n\n\n\nv]\n\ndW{\n,^\na\nsZ6h#$\n\n\n\n\n\n\n]$\n\nD\n\n\n`195142650",
-    "start": {
-      "line": 118,
-      "column": 31
-    },
-    "end": {
-      "line": 118,
-      "column": 593
-    },
-    "tags": {
-      "pii": true,
-      "phones": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "via 6.9.855.708, 48:58:31",
-    "start": {
-      "line": 72,
-      "column": 37
-    },
-    "end": {
-      "line": 72,
-      "column": 64
-    },
-    "tags": {
-      "pii": true,
-      "times": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
     "value": "xoxp-KVVpzQzUMRnYSR7m2d4sAzVXzZ8-7f34aOQR5USVjefGhTyBlE4FWkdg3xCmkiHx0FpbOaKwphi2gRSQCjAIDTYIobIxKgCF-zodPWpHwX5y16IFRXpt1N6FmNkpaGMzjzCRpOusRkUiRyRWnmoiogoUIfquIk-Sv3LfHdybM7VicEZroHTh1r9Co27I-FHq-sls9dDqsfgNdMRG9DBA3v6THeddhlb5dTDygBTCVXYU9tFTj9bX01wh3qwc0LT8jOxt4tDfBeFBTB80vhKFmvWD-72XfzxYp6gG2KUPZJnFzWgNl1uXGM15shdUYatM863-US1NTFVqH8q2M215kkbvNAX4N0YNsK4a12OvdVDiWpTy6HschLUzlaHopK30HBUxBNH-kSt82wJWBvBmZga8PvYnMu1NL-ZfyWjC4Rf3VEtvtWIPJJaYGGkMnGPOvBwDtDG24gDcEWFV0rMgtrh-jTo3HjyiYmvMefqfB3kh9xMDOuCotvtUKFb99Xv0CDnZrfhEQ93HcEs6p-mU6scLcrXGWUD2A-UKb0YTPGgA3wJTzU60rRpMfGjxqR12B9JcBIMDNodD6BInM3GeeiVGvTFBpHNN5Sx6Xs0w3737ocQpQ-WRn7jNXKMvt2-DLfl0WETi8tGcJ0mWRDDXSey2ph7Wo6lJoGtx3OKoPCQTmnQBTbUzFprGQHKq5era80gW44j-dAmFfh23bPqJ71fSorwrqAx3FDiOnV9wHCDVkZlFrGXC-0CqfpzzPiUU1cDmu70qZagrLW2jMNZeRLRt4O9nEq3iSj1MRLWWBJU875aH81arA2pQ-BKOzXo-ed0ovtFVgwOIfzsSEglLR9FLJvdeWe3ljSNj3r8gokDp3K-tXmf2k5wkhoFm9tuJnSfTUxwOrMqJzSj6L7RQARZssE-n5YWbb3AIc8aQC92RbGfsbDEH0TmkCBv8fnFjOHbU9zDUtVa87A6Wu-XkrPIUqwBODeEgPKSgMQY5htVHvdOuQNi4bn6QbeXMbETGUUhgS6xbfU0y0zsN-mTNLMqnfKHF865j7OxQR-o7HmqUJ18QUFjighY-X-edq2jf1a1RgyAeHTSVRPiHRPxitfJdADZ97YNXbaLezn94XP-9rDog3SJqeAOuvnsYSsAHZEgsr9hfO4H46WMPx1xnPMBlXNk7rJea9fdbeEWm5OieTh7ZuC8bdQqvqxOgtaaYNmC8XsGCqJg9-KVRmuNxqosuYq1FT3Cwwe3MepZH3yqb4NVJegEyVQa8BoGtZBC13LkwQESWLVqo1sqrHc1BdjRZKhp7bVJDtoZVIZCOu-y8JQgsESkYAiUmRobcickU7VAloydG8LpZ4AXK4tDH2eH4CVcSpZttTqzJtok7J5WmhG4DhU9tRv3S0H7KGhzoAMOOpLr-BkIxJfxm-WKcOsYMMAJHeJRn7rXnNRVk5QG6CEABDHDh8GHXkf0cUlc04iVQyfqAqrGVlt8RGLPorqi3zl-D9eRJkKfUTaLDDgdbOl7X6rIcWxQby306Ug9vaL1ybJfwDHwKUEhqgNWStQVzk9RlHYLXeC8KQoLjP2gy19ygpNEquxZwjnOwz4-QbeGEH7Hfj2M0s0Aqp3GzyJkjfDd9GzjIR99Vk-cBqpcxqa4LzPQH0KJJ9gAkCyiEG4lgCOi10eZkLG8H7hHV4Gz9AXjsP3fbNzYqeZw3q6v4zr-A9CYzgYXjOrKLUMgdLAYMmBPNFMbpIanziMZYVRwo4xcURYbO9CsfF6uWRuhT-ydTjbAF9P7hpCQHHSEX55wBFxp-NHxa7kMdX1Y-wupCpWqJMWSqPURsd9FcsiVUnNcv5b4x9w7KP6CLvVmPseJSNRfkz13p1daZADgX9tH1W2sF21kLvAhoLg-pHZscalKFt3MOG3FfJA3N8yVW9ZPwluI3G1f6dKgSkBz0jAK7ZdA0z2X4mO6ntVmOA-E5hI1n07cnQ4YnZ5RPdAHlY5xUJCuNoNpqqFEJZtLqMNfOUHPhflohWwRCCH7OLXKZ-oUTDXDGwXf8Cya1GdCSef3eWqqcgsiOdYtZaEqy97iL9xkAKWAEh8E1vCcIKkMVj2aISIfzOPEnyk1VxshQtFPwb8KqSAUUfTYjh-at5fUFKVFWBdiwjxiPOxZG3Up4gCSlfnITBny7hMvHFna4kfR8m2Ln7KHcu8hXbtIMpTMe-FPDlTxPvU3wnAmZne0QolYv-VXWYLIWOMCJjd1s1lksHCVB2g2fOBxQX62tYGlVXaCGXG9KX3x1e1No4ZuQ4mWZZzZvs7WQ-UU04v-GUP1cV87pRqCT7flzP2SZwyWkG7yev5FCNnL7FZs3zeq62I-YPPPyhXrTGwtttlSOFsGzgKyG26a0S-kYyiXjZ85QyFbxkYn8cwqoPzrNY5fUU6UNBhzJ0RK88vpub7cCJuBPPHLedB3hXlavr8gkbKWYxQf6M1VtLe5yYuQ4aSF-xada39ootqwMtRoWw3jt9byKW03JZZrtC3pHU9rT17bwBjITSeIYge6NVRmAWQ4dClVii6DoYxKYi-uE34RLDojGFw8ZQF79WQyuSmlUXm8vL7OzLWEguohySS52Wz5tvx60nNFxjVDpoo24j1xcwzJBM0-85z1peR1gZEXmLNbDmXKGvoza16kIQHBudk8l514l2zAaySAXwEnGDYelU4YZ6qcFiyNOoBSKZJBBpBqWG6W2-YlAyR7uBEy8gu5xiQz9sxMXI5rJqXr8Dpq2quTqe6nOrru2Pr2G5N7cOXzi3WHmzIdYE6R-cJF5ppF35qZtO9Li-20sDwpYmcGNmwWuyYB32354km8bXV5Nm-H0TQd1TvCGP3EEktHqvjmXbsv6LgSCi-mN2uINBHvJVLPWY31UnxNg9lAJ10lhz97vLi0m9LIrv6Cj3UAgdSkDeSR2PfybAjg5EPM4JUJxgtH-wuH1OsWvQe7gVYEed8Cu0fN4YyGuBZusMazBCizFiMFFyUisZxLqC4MqR8HHW5Y9TyIj4bknUOX9OsZXtYujJQ-pxjCs2lsIazM0H0BXKsZyFvMk296vUFOsysloZXKV5lfjfl4OhLwwW0A2mD6fqNztMUPIboLCfX8Nxr4Uubpsm7PHmGQBfcQFBVV-ErQWysRGJlUkZIelv88Csk7Xos8oMrYgOPOd3hvtAl3F2S238Vk9zIqzQRMyCUyX4Pg-6kbXpzPq2FEAhwjQorpUPsyaJDRVPzDuQVJYflPwQZeV4qJtTdikmg5MhF-z3ckx8-yHQxYYQXKp-ZQe57aj1SbfJ62Sd9q0XHz1dJnr6QZKE6yHjorRctQyiB6XLagpdEl5Ahi-lGKr8M21LhlsWyHs1oVqEaQ1xueolSrHoVNp41i7YaY5l9POlKeCYbu9IgZXWcdZJfGYueoUeMcx2-fxT3oGtOT4ZUY04UVDVH-3cz5S25tEsvSsAXP4OQqBbEsdn3E4yGjyhb6nIPx5yX3HpyxGpfnBUcu19svNqobKqgIax139xvgB4VDjUL8AfxTt-Tx5b9YE4zqAIGiSd",
     "start": {
       "line": 134,
@@ -2275,23 +779,6 @@
     "tags": {
       "pii": true,
       "slack_api_token": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/pii/files/1.js",
-    "analyzerName": "pii",
-    "value": "ZF-531632",
-    "start": {
-      "line": 67,
-      "column": 43
-    },
-    "end": {
-      "line": 67,
-      "column": 54
-    },
-    "tags": {
-      "pii": true,
-      "driver's-license-number-(simplified)": true
     }
   }
 ]

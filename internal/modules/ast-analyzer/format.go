@@ -58,7 +58,7 @@ func matchToTreeNode(match AnalyzerMatch) ASTAnalyzerTreeNode {
 	}
 }
 
-func formatMatchesV1(matches []AnalyzerMatch) ASTAnalyzerTreeNode {
+func formatMatchesV1(matches []AnalyzerMatch) []ASTAnalyzerTreeNode {
 	// Group matches by their tags
 	matchesByTag := make(map[string][]AnalyzerMatch)
 	for _, match := range matches {
@@ -73,17 +73,17 @@ func formatMatchesV1(matches []AnalyzerMatch) ASTAnalyzerTreeNode {
 		"storage":              {"cookie-manipulation", "session-storage", "local-storage", "local-file-path-manipulation"},
 		"sources":              {"common-sources"},
 		"behavior":             {"hash-change", "open-redirection"},
-		"data":                 {"paths", "urls", "extension", "graphql", "secret", "pii"},
+		"data":                 {"path", "urls", "extension", "graphql", "secret", "pii", "regex", "regex-literal", "regex-constructor", "regex-match", "https", "http", "api"},
 	}
 
 	// Create root nodes for each category
-	var rootNodes []ASTAnalyzerTreeNode
+	rootNodes := make([]ASTAnalyzerTreeNode, 0)
 
 	// Handle iframe communication
 	if hasAnyMatches(matchesByTag, categories["iframe-communication"]) {
 		iframeNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-			Label:    "Iframe Communication",
-			IconName: "folder",
+			Label: "Iframe Communication",
+			// IconName: "folder",
 		})
 		addSubcategories(&iframeNode, matchesByTag, categories["iframe-communication"])
 		rootNodes = append(rootNodes, iframeNode)
@@ -92,8 +92,8 @@ func formatMatchesV1(matches []AnalyzerMatch) ASTAnalyzerTreeNode {
 	// Handle storage
 	if hasAnyMatches(matchesByTag, categories["storage"]) {
 		storageNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-			Label:    "Storage",
-			IconName: "folder",
+			Label: "Storage",
+			// IconName: "folder",
 		})
 		addSubcategories(&storageNode, matchesByTag, categories["storage"])
 		rootNodes = append(rootNodes, storageNode)
@@ -102,8 +102,8 @@ func formatMatchesV1(matches []AnalyzerMatch) ASTAnalyzerTreeNode {
 	// Handle sources
 	if hasAnyMatches(matchesByTag, categories["sources"]) {
 		sourcesNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-			Label:    "Sources",
-			IconName: "folder",
+			Label: "Sources",
+			// IconName: "folder",
 		})
 		addSubcategories(&sourcesNode, matchesByTag, categories["sources"])
 		rootNodes = append(rootNodes, sourcesNode)
@@ -112,8 +112,8 @@ func formatMatchesV1(matches []AnalyzerMatch) ASTAnalyzerTreeNode {
 	// Handle behavior
 	if hasAnyMatches(matchesByTag, categories["behavior"]) || hasMiscMatches(matchesByTag) {
 		behaviorNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-			Label:    "Behavior",
-			IconName: "folder",
+			Label: "Behavior",
+			// IconName: "folder",
 		})
 
 		// Add hash-change and location assignment
@@ -122,8 +122,8 @@ func formatMatchesV1(matches []AnalyzerMatch) ASTAnalyzerTreeNode {
 		// Add misc matches directly
 		if hasMiscMatches(matchesByTag) {
 			miscNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-				Label:    "Misc",
-				IconName: "folder",
+				Label: "Misc",
+				// IconName: "folder",
 			})
 			addMiscMatches(&miscNode, matchesByTag)
 			behaviorNode.Children = append(behaviorNode.Children, miscNode)
@@ -135,21 +135,73 @@ func formatMatchesV1(matches []AnalyzerMatch) ASTAnalyzerTreeNode {
 	// Handle data
 	if hasAnyMatches(matchesByTag, categories["data"]) {
 		dataNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-			Label:    "Data",
-			IconName: "folder",
+			Label: "Data",
+			// IconName: "folder",
 		})
-		addDataSubcategories(&dataNode, matchesByTag, categories["data"])
+
+		// Group all regex patterns together
+		if hasAnyMatches(matchesByTag, []string{"regex"}) {
+			regexNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
+				Label: "Regex Patterns",
+				// IconName: "folder",
+			})
+			regexTags := []string{"regex"}
+			for _, tag := range regexTags {
+				if matches, exists := matchesByTag[tag]; exists && len(matches) > 0 {
+					for _, match := range matches {
+						matchNode := matchToTreeNode(match)
+						matchNode.Label = match.Value
+						matchNode.Description = match.FilePath
+						regexNode.Children = append(regexNode.Children, matchNode)
+					}
+				}
+			}
+			dataNode.Children = append(dataNode.Children, regexNode)
+		}
+
+		// Group all URLs together
+		if hasAnyMatches(matchesByTag, []string{"urls", "https", "http"}) {
+			urlsNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
+				Label: "URLs",
+				// IconName: "folder",
+			})
+			urlTags := []string{"urls", "https", "http"}
+			for _, tag := range urlTags {
+				if matches, exists := matchesByTag[tag]; exists && len(matches) > 0 {
+					for _, match := range matches {
+						matchNode := matchToTreeNode(match)
+						matchNode.Label = match.Value
+						matchNode.Description = match.FilePath
+						urlsNode.Children = append(urlsNode.Children, matchNode)
+					}
+				}
+			}
+			dataNode.Children = append(dataNode.Children, urlsNode)
+		}
+
+		// Handle other data categories
+		otherDataTags := []string{"path", "extension", "graphql", "secret", "pii", "api"}
+		for _, tag := range otherDataTags {
+			if matches, exists := matchesByTag[tag]; exists && len(matches) > 0 {
+				label := strings.ReplaceAll(cases.Title(language.English).String(tag), "-", " ")
+				subNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
+					Label: label,
+					// IconName: "folder",
+				})
+				for _, match := range matches {
+					matchNode := matchToTreeNode(match)
+					matchNode.Label = match.Value
+					matchNode.Description = match.FilePath
+					subNode.Children = append(subNode.Children, matchNode)
+				}
+				dataNode.Children = append(dataNode.Children, subNode)
+			}
+		}
+
 		rootNodes = append(rootNodes, dataNode)
 	}
 
-	// Only return if we have nodes
-	if len(rootNodes) > 0 {
-		return ASTAnalyzerTreeNode{
-			Children: rootNodes,
-		}
-	}
-
-	return ASTAnalyzerTreeNode{}
+	return rootNodes
 }
 
 // Helper functions
@@ -160,10 +212,6 @@ func hasAnyMatches(matchesByTag map[string][]AnalyzerMatch, tags []string) bool 
 		}
 	}
 	return false
-}
-
-func hasMatches(matchesByTag map[string][]AnalyzerMatch, tag string) bool {
-	return len(matchesByTag[tag]) > 0
 }
 
 func hasMiscMatches(matchesByTag map[string][]AnalyzerMatch) bool {
@@ -184,8 +232,8 @@ func addSubcategories(parent *ASTAnalyzerTreeNode, matchesByTag map[string][]Ana
 				label = "Location Assignment"
 			}
 			subNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-				Label:    label,
-				IconName: "folder",
+				Label: label,
+				// IconName: "folder",
 			})
 			for _, match := range matches {
 				matchNode := matchToTreeNode(match)
@@ -214,57 +262,6 @@ func addMiscMatches(parent *ASTAnalyzerTreeNode, matchesByTag map[string][]Analy
 				matchNode.Description = match.FilePath
 				parent.Children = append(parent.Children, matchNode)
 			}
-		}
-	}
-}
-
-func addDataSubcategories(parent *ASTAnalyzerTreeNode, matchesByTag map[string][]AnalyzerMatch, tags []string) {
-	for _, tag := range tags {
-		if matches, exists := matchesByTag[tag]; exists && len(matches) > 0 {
-			label := strings.ReplaceAll(cases.Title(language.English).String(tag), "-", " ")
-			subNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-				Label:    label,
-				IconName: "folder",
-			})
-
-			if tag == "extension" || tag == "secret" || tag == "pii" {
-				// Create a map to group matches by their other tags
-				matchesByOtherTag := make(map[string][]AnalyzerMatch)
-				for _, match := range matches {
-					for otherTag := range match.Tags {
-						if otherTag != tag {
-							matchesByOtherTag[otherTag] = append(matchesByOtherTag[otherTag], match)
-						}
-					}
-				}
-
-				// Create sub-nodes for each other tag
-				for otherTag, subMatches := range matchesByOtherTag {
-					if len(subMatches) > 0 {
-						otherLabel := strings.ReplaceAll(cases.Title(language.English).String(otherTag), "-", " ")
-						otherNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-							Label:    otherLabel,
-							IconName: "folder",
-						})
-						for _, match := range subMatches {
-							matchNode := matchToTreeNode(match)
-							matchNode.Label = match.Value
-							matchNode.Description = match.FilePath
-							otherNode.Children = append(otherNode.Children, matchNode)
-						}
-						subNode.Children = append(subNode.Children, otherNode)
-					}
-				}
-			} else {
-				for _, match := range matches {
-					matchNode := matchToTreeNode(match)
-					matchNode.Label = match.Value
-					matchNode.Description = match.FilePath
-					subNode.Children = append(subNode.Children, matchNode)
-				}
-			}
-
-			parent.Children = append(parent.Children, subNode)
 		}
 	}
 }

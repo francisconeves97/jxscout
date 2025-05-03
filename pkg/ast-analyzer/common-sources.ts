@@ -8,13 +8,35 @@ const commonSourcesAnalyzerBuilder = (
   matchesReturn: AnalyzerMatch[]
 ) => {
   return {
-    Identifier(node: any, _state: any, ancestors: Node[]) {
+    AssignmentExpression(node: any, _state: any, ancestors: Node[]) {
       if (!node.loc) {
         return;
       }
 
-      // Check for standalone location
-      if (node.name === "location") {
+      // Check for direct location assignment
+      if (node.left.type === "Identifier" && node.left.name === "location") {
+        const match: AnalyzerMatch = {
+          filePath: args.filePath,
+          analyzerName: COMMON_SOURCES_ANALYZER_NAME,
+          value: args.source.slice(node.start, node.end),
+          start: node.loc.start,
+          end: node.loc.end,
+          tags: {
+            "common-sources": true,
+          },
+        };
+
+        matchesReturn.push(match);
+      }
+
+      // Check for location property assignments
+      if (
+        node.left.type === "MemberExpression" &&
+        node.left.object.type === "Identifier" &&
+        node.left.object.name === "location" &&
+        node.left.property.type === "Identifier" &&
+        ["href", "pathname", "search", "hash"].includes(node.left.property.name)
+      ) {
         const match: AnalyzerMatch = {
           filePath: args.filePath,
           analyzerName: COMMON_SOURCES_ANALYZER_NAME,
@@ -84,50 +106,12 @@ const commonSourcesAnalyzerBuilder = (
         matchesReturn.push(match);
       }
 
-      // Check for location
-      if (
-        node.object.type === "Identifier" &&
-        node.object.name === "location"
-      ) {
-        const match: AnalyzerMatch = {
-          filePath: args.filePath,
-          analyzerName: COMMON_SOURCES_ANALYZER_NAME,
-          value: args.source.slice(node.start, node.end),
-          start: node.loc.start,
-          end: node.loc.end,
-          tags: {
-            "common-sources": true,
-          },
-        };
-
-        matchesReturn.push(match);
-      }
-
       // Check for IndexedDB variants
       if (
         node.object.type === "Identifier" &&
         ["mozIndexedDB", "webkitIndexedDB", "msIndexedDB"].includes(
           node.object.name
         )
-      ) {
-        const match: AnalyzerMatch = {
-          filePath: args.filePath,
-          analyzerName: COMMON_SOURCES_ANALYZER_NAME,
-          value: args.source.slice(node.start, node.end),
-          start: node.loc.start,
-          end: node.loc.end,
-          tags: {
-            "common-sources": true,
-          },
-        };
-
-        matchesReturn.push(match);
-      }
-
-      // Check for localStorage and sessionStorage
-      if (
-        node.object.type === "Identifier" &&
-        ["localStorage", "sessionStorage"].includes(node.object.name)
       ) {
         const match: AnalyzerMatch = {
           filePath: args.filePath,
@@ -171,13 +155,13 @@ const commonSourcesAnalyzerBuilder = (
         matchesReturn.push(match);
       }
 
-      // Check for localStorage and sessionStorage methods
+      // Check for localStorage and sessionStorage getItem
       if (
         node.callee.type === "MemberExpression" &&
         node.callee.object.type === "Identifier" &&
         ["localStorage", "sessionStorage"].includes(node.callee.object.name) &&
         node.callee.property.type === "Identifier" &&
-        node.callee.property.name === "setItem"
+        node.callee.property.name === "getItem"
       ) {
         const match: AnalyzerMatch = {
           filePath: args.filePath,

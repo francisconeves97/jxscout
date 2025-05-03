@@ -21,7 +21,7 @@ import (
 	jxscouttypes "github.com/francisconeves97/jxscout/pkg/types"
 )
 
-const analyzerVersion = 1
+const analyzerVersion = 3
 
 //go:embed ast-analyzer.js
 var astAnalyzerBinary []byte

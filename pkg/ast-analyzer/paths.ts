@@ -366,6 +366,8 @@ const pathsAnalyzerBuilder = createRegexAnalyzer({
   tags: (value) => {
     const tags: Record<string, true> = {};
 
+    tags.path = true;
+
     if (value.includes("api")) {
       tags.api = true;
     }

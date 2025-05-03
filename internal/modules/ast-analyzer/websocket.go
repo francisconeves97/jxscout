@@ -41,7 +41,7 @@ type getAnalysisRequest struct {
 }
 
 type getAnalysisResponse struct {
-	Results ASTAnalyzerTreeNode `json:"results"`
+	Results []ASTAnalyzerTreeNode `json:"results"`
 }
 
 func (s *wsServer) getAnalysisHandler(msg jxwebsocket.WebsocketMessage, conn *websocket.Conn) {

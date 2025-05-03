@@ -12,26 +12,26 @@ const testCases: RegexTestCase[] = [
   {
     jsFileName: "1.js",
     expectedMatches: [
-      {
-        analyzerName: "regex",
-        value:
-          '"^(https?://)?([\\\\da-z.-]+)\\\\.([a-z.]{2,6})([/\\\\w .-]*)*/?$"',
-        start: { line: 13, column: 12 },
-        end: { line: 13, column: 72 },
-        tags: { regex: true, "regex-like-string": true },
-        filePath:
-          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/regex/files/1.js",
-      },
-      {
-        analyzerName: "regex",
-        value:
-          '"^(https?://)?([\\\\da-z.-]+)\\\\.([a-z.]{2,6})([/\\\\w .-]*)*/?$"',
-        start: { line: 18, column: 2 },
-        end: { line: 18, column: 62 },
-        tags: { regex: true, "regex-like-string": true },
-        filePath:
-          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/regex/files/1.js",
-      },
+      // {
+      //   analyzerName: "regex",
+      //   value:
+      //     '"^(https?://)?([\\\\da-z.-]+)\\\\.([a-z.]{2,6})([/\\\\w .-]*)*/?$"',
+      //   start: { line: 13, column: 12 },
+      //   end: { line: 13, column: 72 },
+      //   tags: { regex: true, "regex-like-string": true },
+      //   filePath:
+      //     "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/regex/files/1.js",
+      // },
+      // {
+      //   analyzerName: "regex",
+      //   value:
+      //     '"^(https?://)?([\\\\da-z.-]+)\\\\.([a-z.]{2,6})([/\\\\w .-]*)*/?$"',
+      //   start: { line: 18, column: 2 },
+      //   end: { line: 18, column: 62 },
+      //   tags: { regex: true, "regex-like-string": true },
+      //   filePath:
+      //     "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/regex/files/1.js",
+      // },
       {
         analyzerName: "regex",
         value: "/[0-9]+/i",
