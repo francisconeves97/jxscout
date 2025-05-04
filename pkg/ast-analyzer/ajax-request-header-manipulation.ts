@@ -1,4 +1,4 @@
-import { Node } from "acorn";
+import { Node } from "oxc-parser";
 import { Analyzer, AnalyzerMatch, AnalyzerParams } from "./types";
 
 export const AJAX_REQUEST_HEADER_MANIPULATION_ANALYZER_NAME =

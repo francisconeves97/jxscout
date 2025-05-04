@@ -1,5 +1,6 @@
-import { Position, Program } from "acorn";
+import { Position } from "acorn";
 import { AncestorVisitors } from "acorn-walk";
+import { Program } from "oxc-parser";
 
 export interface AnalyzerMatch {
   filePath: string;

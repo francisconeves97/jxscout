@@ -1,7 +1,7 @@
 import fs from "fs";
 import { Program } from "acorn";
-import { parse } from "acorn-loose";
-import { ancestor as traverse } from "acorn-walk";
+import { parseSync } from "oxc-parser";
+import { ancestors as traverse } from "./walker";
 import { AnalyzerParams, AnalyzerMatch } from "./types";
 import { pathsAnalyzerBuilder } from "./paths";
 import { emailsAnalyzerBuilder } from "./emails";
@@ -31,23 +31,14 @@ import { piiAnalyzerBuilder } from "./pii";
 
 export function parseFile(filePath: string): AnalyzerParams {
   const fileContent = fs.readFileSync(filePath, "utf-8");
-  let ast: Program;
 
-  try {
-    ast = parse(fileContent, {
-      ecmaVersion: "latest",
-      sourceType: "module",
-      locations: true,
-    });
-  } catch (err) {
-    ast = parse(fileContent, {
-      ecmaVersion: "latest",
-      sourceType: "script",
-      locations: true,
-    });
-  }
+  const parsed = parseSync(filePath, fileContent, {
+    sourceType: "module",
+    astType: "ts",
+    lang: "tsx",
+  });
 
-  return { ast, source: fileContent, filePath };
+  return { ast: parsed.program, source: fileContent, filePath };
 }
 
 function printUsage() {
@@ -188,76 +179,76 @@ export function analyzeFile(
   const secretsAnalyzer = createAnalyzer("secrets", secretsAnalyzerBuilder);
   const piiAnalyzer = createAnalyzer("pii", piiAnalyzerBuilder);
 
-  traverse(args.ast, {
-    Literal(node, state, ancestors) {
-      pathsAnalyzer?.Literal?.(node, state, ancestors);
-      emailsAnalyzer?.Literal?.(node, state, ancestors);
-      regexAnalyzer?.Literal?.(node, state, ancestors);
-      graphqlAnalyzer?.Literal?.(node, state, ancestors);
-      urlsAnalyzer?.Literal?.(node, state, ancestors);
-      secretsAnalyzer?.Literal?.(node, state, ancestors);
-      piiAnalyzer?.Literal?.(node, state, ancestors);
+  traverse(args.source, args.ast, {
+    Literal(node, ancestors) {
+      pathsAnalyzer?.Literal?.(node, ancestors);
+      emailsAnalyzer?.Literal?.(node, ancestors);
+      regexAnalyzer?.Literal?.(node, ancestors);
+      graphqlAnalyzer?.Literal?.(node, ancestors);
+      urlsAnalyzer?.Literal?.(node, ancestors);
+      secretsAnalyzer?.Literal?.(node, ancestors);
+      piiAnalyzer?.Literal?.(node, ancestors);
     },
-    NewExpression(node, state, ancestors) {
-      regexAnalyzer?.NewExpression?.(node, state, ancestors);
-      websocketUrlPoisoningAnalyzer?.NewExpression?.(node, state, ancestors);
+    NewExpression(node, ancestors) {
+      regexAnalyzer?.NewExpression?.(node, ancestors);
+      websocketUrlPoisoningAnalyzer?.NewExpression?.(node, ancestors);
     },
-    TemplateLiteral(node, state, ancestors) {
-      pathsAnalyzer?.TemplateLiteral?.(node, state, ancestors);
-      emailsAnalyzer?.TemplateLiteral?.(node, state, ancestors);
-      graphqlAnalyzer?.TemplateLiteral?.(node, state, ancestors);
-      urlsAnalyzer?.TemplateLiteral?.(node, state, ancestors);
-      secretsAnalyzer?.TemplateLiteral?.(node, state, ancestors);
-      piiAnalyzer?.TemplateLiteral?.(node, state, ancestors);
+    TemplateLiteral(node, ancestors) {
+      pathsAnalyzer?.TemplateLiteral?.(node, ancestors);
+      emailsAnalyzer?.TemplateLiteral?.(node, ancestors);
+      graphqlAnalyzer?.TemplateLiteral?.(node, ancestors);
+      urlsAnalyzer?.TemplateLiteral?.(node, ancestors);
+      secretsAnalyzer?.TemplateLiteral?.(node, ancestors);
+      piiAnalyzer?.TemplateLiteral?.(node, ancestors);
     },
-    CallExpression(node, state, ancestors) {
-      postMessageAnalyzer?.CallExpression?.(node, state, ancestors);
-      messageListenerAnalyzer?.CallExpression?.(node, state, ancestors);
-      regexMatchAnalyzer?.CallExpression?.(node, state, ancestors);
-      hashChangeAnalyzer?.CallExpression?.(node, state, ancestors);
-      domXssAnalyzer?.CallExpression?.(node, state, ancestors);
-      jqueryDomXssAnalyzer?.CallExpression?.(node, state, ancestors);
-      openRedirectionAnalyzer?.CallExpression?.(node, state, ancestors);
-      javascriptInjectionAnalyzer?.CallExpression?.(node, state, ancestors);
+    CallExpression(node, ancestors) {
+      postMessageAnalyzer?.CallExpression?.(node, ancestors);
+      messageListenerAnalyzer?.CallExpression?.(node, ancestors);
+      regexMatchAnalyzer?.CallExpression?.(node, ancestors);
+      hashChangeAnalyzer?.CallExpression?.(node, ancestors);
+      domXssAnalyzer?.CallExpression?.(node, ancestors);
+      jqueryDomXssAnalyzer?.CallExpression?.(node, ancestors);
+      openRedirectionAnalyzer?.CallExpression?.(node, ancestors);
+      javascriptInjectionAnalyzer?.CallExpression?.(node, ancestors);
       ajaxRequestHeaderManipulationAnalyzer?.CallExpression?.(
         node,
-        state,
+
         ancestors
       );
       localFilePathManipulationAnalyzer?.CallExpression?.(
         node,
-        state,
+
         ancestors
       );
       html5StorageManipulationAnalyzer?.CallExpression?.(
         node,
-        state,
+
         ancestors
       );
-      xpathInjectionAnalyzer?.CallExpression?.(node, state, ancestors);
-      commonSourcesAnalyzer?.CallExpression?.(node, state, ancestors);
+      xpathInjectionAnalyzer?.CallExpression?.(node, ancestors);
+      commonSourcesAnalyzer?.CallExpression?.(node, ancestors);
     },
-    AssignmentExpression(node, state, ancestors) {
-      messageListenerAnalyzer?.AssignmentExpression?.(node, state, ancestors);
-      hashChangeAnalyzer?.AssignmentExpression?.(node, state, ancestors);
-      domXssAnalyzer?.AssignmentExpression?.(node, state, ancestors);
+    AssignmentExpression(node, ancestors) {
+      messageListenerAnalyzer?.AssignmentExpression?.(node, ancestors);
+      hashChangeAnalyzer?.AssignmentExpression?.(node, ancestors);
+      domXssAnalyzer?.AssignmentExpression?.(node, ancestors);
       cookieManipulationAnalyzer?.AssignmentExpression?.(
         node,
-        state,
+
         ancestors
       );
-      linkManipulationAnalyzer?.AssignmentExpression?.(node, state, ancestors);
+      linkManipulationAnalyzer?.AssignmentExpression?.(node, ancestors);
     },
-    MemberExpression(node, state, ancestors) {
-      openRedirectionAnalyzer?.MemberExpression?.(node, state, ancestors);
+    MemberExpression(node, ancestors) {
+      openRedirectionAnalyzer?.MemberExpression?.(node, ancestors);
       documentDomainManipulationAnalyzer?.MemberExpression?.(
         node,
-        state,
+
         ancestors
       );
-      linkManipulationAnalyzer?.MemberExpression?.(node, state, ancestors);
-      domDataManipulationAnalyzer?.MemberExpression?.(node, state, ancestors);
-      commonSourcesAnalyzer?.MemberExpression?.(node, state, ancestors);
+      linkManipulationAnalyzer?.MemberExpression?.(node, ancestors);
+      domDataManipulationAnalyzer?.MemberExpression?.(node, ancestors);
+      commonSourcesAnalyzer?.MemberExpression?.(node, ancestors);
     },
   });
 
