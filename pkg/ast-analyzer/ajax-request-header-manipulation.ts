@@ -1,5 +1,6 @@
 import { Node } from "oxc-parser";
 import { Analyzer, AnalyzerMatch, AnalyzerParams } from "./types";
+import { Visitor } from "./walker";
 
 export const AJAX_REQUEST_HEADER_MANIPULATION_ANALYZER_NAME =
   "ajax-request-header-manipulation";
@@ -7,9 +8,9 @@ export const AJAX_REQUEST_HEADER_MANIPULATION_ANALYZER_NAME =
 const ajaxRequestHeaderManipulationAnalyzerBuilder = (
   args: AnalyzerParams,
   matchesReturn: AnalyzerMatch[]
-) => {
+): Visitor => {
   return {
-    CallExpression(node: any, _state: any, ancestors: Node[]) {
+    CallExpression(node) {
       if (!node.loc) {
         return;
       }
@@ -36,7 +37,7 @@ const ajaxRequestHeaderManipulationAnalyzerBuilder = (
           start: node.loc.start,
           end: node.loc.end,
           tags: {
-            "ajax-request-header-manipulation": true,
+            "ajax-request-header-manipulation-xhr": true,
           },
         };
 
@@ -59,7 +60,7 @@ const ajaxRequestHeaderManipulationAnalyzerBuilder = (
           start: node.loc.start,
           end: node.loc.end,
           tags: {
-            "ajax-request-header-manipulation": true,
+            "ajax-request-header-manipulation-jquery": true,
           },
         };
 

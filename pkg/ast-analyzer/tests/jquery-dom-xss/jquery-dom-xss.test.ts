@@ -2,6 +2,7 @@ import path from "path";
 import { expect, test } from "vitest";
 import { analyzeFile } from "../../index";
 import { AnalyzerMatch } from "../../types";
+import fs from "fs";
 
 interface JQueryDomXssTestCase {
   jsFileName: string;
@@ -11,62 +12,9 @@ interface JQueryDomXssTestCase {
 const testCases: JQueryDomXssTestCase[] = [
   {
     jsFileName: "1.js",
-    expectedCalls: [
-      {
-        analyzerName: "jquery-dom-xss",
-        value: '$.parseHTML("<script>alert(1)</script>")',
-        start: { line: 4, column: 0 },
-        end: { line: 4, column: 40 },
-        tags: { "jquery-dom-xss": true },
-        filePath:
-          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/jquery-dom-xss/files/1.js",
-      },
-      {
-        analyzerName: "jquery-dom-xss",
-        value: '$("#element").append("<script>alert(1)</script>")',
-        start: { line: 2, column: 0 },
-        end: { line: 2, column: 49 },
-        tags: { "jquery-dom-xss": true },
-        filePath:
-          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/jquery-dom-xss/files/1.js",
-      },
-      {
-        analyzerName: "jquery-dom-xss",
-        value: 'jQuery.parseHTML("<script>alert(1)</script>")',
-        start: { line: 3, column: 0 },
-        end: { line: 3, column: 45 },
-        tags: { "jquery-dom-xss": true },
-        filePath:
-          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/jquery-dom-xss/files/1.js",
-      },
-      {
-        analyzerName: "jquery-dom-xss",
-        value: 'jQuery("#element").after("<script>alert(1)</script>")',
-        start: { line: 5, column: 0 },
-        end: { line: 5, column: 53 },
-        tags: { "jquery-dom-xss": true },
-        filePath:
-          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/jquery-dom-xss/files/1.js",
-      },
-      {
-        analyzerName: "jquery-dom-xss",
-        value: 'jQuery("#element").html("<script>alert(1)</script>")',
-        start: { line: 1, column: 0 },
-        end: { line: 1, column: 52 },
-        tags: { "jquery-dom-xss": true },
-        filePath:
-          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/jquery-dom-xss/files/1.js",
-      },
-      {
-        analyzerName: "jquery-dom-xss",
-        value: 'jQuery("#element").prepend("<script>alert(1)</script>")',
-        start: { line: 6, column: 0 },
-        end: { line: 6, column: 55 },
-        tags: { "jquery-dom-xss": true },
-        filePath:
-          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/jquery-dom-xss/files/1.js",
-      },
-    ],
+    expectedCalls: JSON.parse(
+      fs.readFileSync(path.join(__dirname, "expected.json"), "utf-8")
+    ),
   },
 ];
 
@@ -81,6 +29,9 @@ test.each(testCases)(
     const sortedExpected = expectedCalls.sort((a, b) =>
       a.value.localeCompare(b.value)
     );
+
+    // const outputPath = path.join(__dirname, "expected.json");
+    // fs.writeFileSync(outputPath, JSON.stringify(sortedCalls, null, 2));
 
     expect(sortedCalls).toEqual(sortedExpected);
   }

@@ -1,14 +1,15 @@
 import { Node } from "acorn";
 import { Analyzer, AnalyzerMatch, AnalyzerParams } from "./types";
+import { Visitor } from "./walker";
 
 export const LINK_MANIPULATION_ANALYZER_NAME = "link-manipulation";
 
 const linkManipulationAnalyzerBuilder = (
   args: AnalyzerParams,
   matchesReturn: AnalyzerMatch[]
-) => {
+): Visitor => {
   return {
-    MemberExpression(node: any, _state: any, ancestors: Node[]) {
+    MemberExpression(node, ancestors) {
       if (!node.loc) {
         return;
       }
@@ -33,7 +34,7 @@ const linkManipulationAnalyzerBuilder = (
       }
     },
 
-    AssignmentExpression(node: any, _state: any, ancestors: Node[]) {
+    AssignmentExpression(node, ancestors) {
       if (!node.loc) {
         return;
       }

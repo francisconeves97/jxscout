@@ -1,14 +1,15 @@
 import { Node } from "acorn";
 import { Analyzer, AnalyzerMatch, AnalyzerParams } from "./types";
+import { Visitor } from "./walker";
 
 export const HASH_CHANGE_ANALYZER_NAME = "hash-change";
 
 const hashChangeAnalyzerBuilder = (
   args: AnalyzerParams,
   matchesReturn: AnalyzerMatch[]
-) => {
+): Visitor => {
   return {
-    AssignmentExpression(node: any, _state: any, ancestors: Node[]) {
+    AssignmentExpression(node, ancestors) {
       // Check for window.onhashchange assignments and global onhashchange assignments
       if (
         (node.left.type === "MemberExpression" &&
@@ -37,7 +38,7 @@ const hashChangeAnalyzerBuilder = (
       }
     },
 
-    CallExpression(node: any, _state: any, ancestors: Node[]) {
+    CallExpression(node, ancestors) {
       // Check for addEventListener("hashchange", ...)
       if (
         node.callee.type === "MemberExpression" &&

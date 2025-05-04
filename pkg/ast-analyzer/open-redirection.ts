@@ -1,14 +1,15 @@
 import { Node } from "acorn";
 import { Analyzer, AnalyzerMatch, AnalyzerParams } from "./types";
+import { Visitor } from "./walker";
 
 export const OPEN_REDIRECTION_ANALYZER_NAME = "open-redirection";
 
 const openRedirectionAnalyzerBuilder = (
   args: AnalyzerParams,
   matchesReturn: AnalyzerMatch[]
-) => {
+): Visitor => {
   return {
-    CallExpression(node: any, _state: any, ancestors: Node[]) {
+    CallExpression(node, ancestors) {
       if (!node.loc) {
         return;
       }
@@ -110,7 +111,7 @@ const openRedirectionAnalyzerBuilder = (
       }
     },
 
-    MemberExpression(node: any, _state: any, ancestors: Node[]) {
+    MemberExpression(node, ancestors) {
       if (!node.loc) {
         return;
       }
@@ -158,7 +159,7 @@ const openRedirectionAnalyzerBuilder = (
       }
     },
 
-    AssignmentExpression(node: any, _state: any, ancestors: Node[]) {
+    AssignmentExpression(node, ancestors) {
       if (!node.loc) {
         return;
       }

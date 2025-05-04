@@ -2,7 +2,7 @@ import path from "path";
 import { expect, test } from "vitest";
 import { analyzeFile } from "../../index";
 import { AnalyzerMatch } from "../../types";
-
+import fs from "fs";
 interface HashChangeTestCase {
   jsFileName: string;
   expectedCalls: AnalyzerMatch[];
@@ -11,48 +11,9 @@ interface HashChangeTestCase {
 const testCases: HashChangeTestCase[] = [
   {
     jsFileName: "1.js",
-    expectedCalls: [
-      {
-        analyzerName: "hash-change",
-        value:
-          'document.addEventListener("hashchange", function(event) {\n  console.log(window.location.hash);\n})',
-        start: { line: 12, column: 0 },
-        end: { line: 14, column: 2 },
-        tags: { "hash-change": true },
-        filePath:
-          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/hash-change/files/1.js",
-      },
-      {
-        analyzerName: "hash-change",
-        value:
-          "onhashchange = function(event) {\n  console.log(window.location.hash);\n}",
-        start: { line: 17, column: 0 },
-        end: { line: 19, column: 1 },
-        tags: { "hash-change": true },
-        filePath:
-          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/hash-change/files/1.js",
-      },
-      {
-        analyzerName: "hash-change",
-        value:
-          'window.addEventListener("hashchange", function(event) {\n  console.log(window.location.hash);\n})',
-        start: { line: 7, column: 0 },
-        end: { line: 9, column: 2 },
-        tags: { "hash-change": true },
-        filePath:
-          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/hash-change/files/1.js",
-      },
-      {
-        analyzerName: "hash-change",
-        value:
-          "window.onhashchange = function(event) {\n  console.log(window.location.hash);\n}",
-        start: { line: 2, column: 0 },
-        end: { line: 4, column: 1 },
-        tags: { "hash-change": true },
-        filePath:
-          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/hash-change/files/1.js",
-      },
-    ],
+    expectedCalls: JSON.parse(
+      fs.readFileSync(path.join(__dirname, "expected.json"), "utf-8")
+    ),
   },
 ];
 
@@ -67,6 +28,9 @@ test.each(testCases)(
     const sortedExpected = expectedCalls.sort((a, b) =>
       a.value.localeCompare(b.value)
     );
+
+    // const outputPath = path.join(__dirname, "expected.json");
+    // fs.writeFileSync(outputPath, JSON.stringify(sortedCalls, null, 2));
 
     expect(sortedCalls).toEqual(sortedExpected);
   }

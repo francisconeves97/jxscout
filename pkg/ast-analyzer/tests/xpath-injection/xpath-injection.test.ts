@@ -2,7 +2,7 @@ import path from "path";
 import { expect, test } from "vitest";
 import { analyzeFile } from "../../index";
 import { AnalyzerMatch } from "../../types";
-
+import fs from "fs";
 interface XPathInjectionTestCase {
   jsFileName: string;
   expectedCalls: AnalyzerMatch[];
@@ -11,28 +11,9 @@ interface XPathInjectionTestCase {
 const testCases: XPathInjectionTestCase[] = [
   {
     jsFileName: "1.js",
-    expectedCalls: [
-      {
-        analyzerName: "xpath-injection",
-        value:
-          'document.evaluate("//div", document, null, XPathResult.ANY_TYPE, null)',
-        start: { line: 1, column: 0 },
-        end: { line: 1, column: 70 },
-        tags: { "xpath-injection": true },
-        filePath:
-          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/xpath-injection/files/1.js",
-      },
-      {
-        analyzerName: "xpath-injection",
-        value:
-          'element.evaluate("//div", document, null, XPathResult.ANY_TYPE, null)',
-        start: { line: 2, column: 0 },
-        end: { line: 2, column: 69 },
-        tags: { "xpath-injection": true },
-        filePath:
-          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/xpath-injection/files/1.js",
-      },
-    ],
+    expectedCalls: JSON.parse(
+      fs.readFileSync(path.join(__dirname, "expected.json"), "utf-8")
+    ),
   },
 ];
 
@@ -47,6 +28,9 @@ test.each(testCases)(
     const sortedExpected = expectedCalls.sort((a, b) =>
       a.value.localeCompare(b.value)
     );
+
+    const outputPath = path.join(__dirname, "expected.json");
+    fs.writeFileSync(outputPath, JSON.stringify(sortedCalls, null, 2));
 
     expect(sortedCalls).toEqual(sortedExpected);
   }

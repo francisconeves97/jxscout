@@ -2,6 +2,7 @@ import path from "path";
 import { expect, test } from "vitest";
 import { analyzeFile } from "../../index";
 import { AnalyzerMatch } from "../../types";
+import fs from "fs";
 
 interface MessageListenerTestCase {
   jsFileName: string;
@@ -11,47 +12,9 @@ interface MessageListenerTestCase {
 const testCases: MessageListenerTestCase[] = [
   {
     jsFileName: "1.js",
-    expectedCalls: [
-      {
-        analyzerName: "message-listener",
-        value:
-          'document.addEventListener("message", function(event) {\n  console.log(event.data);\n})',
-        start: { line: 9, column: 0 },
-        end: { line: 11, column: 2 },
-        tags: { "message-listener": true },
-        filePath:
-          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/message-listener/files/1.js",
-      },
-      {
-        analyzerName: "message-listener",
-        value: "onmessage = function(event) {\n  console.log(event.data);\n}",
-        start: { line: 18, column: 0 },
-        end: { line: 20, column: 1 },
-        tags: { "message-listener": true },
-        filePath:
-          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/message-listener/files/1.js",
-      },
-      {
-        analyzerName: "message-listener",
-        value:
-          'window.addEventListener("message", function(event) {\n  console.log(event.data);\n})',
-        start: { line: 5, column: 0 },
-        end: { line: 7, column: 2 },
-        tags: { "message-listener": true },
-        filePath:
-          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/message-listener/files/1.js",
-      },
-      {
-        analyzerName: "message-listener",
-        value:
-          "window.onmessage = function(event) {\n  console.log(event.data);\n}",
-        start: { line: 1, column: 0 },
-        end: { line: 3, column: 1 },
-        tags: { "message-listener": true },
-        filePath:
-          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/message-listener/files/1.js",
-      },
-    ],
+    expectedCalls: JSON.parse(
+      fs.readFileSync(path.join(__dirname, "expected.json"), "utf-8")
+    ),
   },
 ];
 
@@ -66,6 +29,9 @@ test.each(testCases)(
     const sortedExpected = expectedCalls.sort((a, b) =>
       a.value.localeCompare(b.value)
     );
+
+    // const outputPath = path.join(__dirname, "expected.json");
+    // fs.writeFileSync(outputPath, JSON.stringify(sortedCalls, null, 2));
 
     expect(sortedCalls).toEqual(sortedExpected);
   }

@@ -1,14 +1,15 @@
 import { Node } from "acorn";
 import { Analyzer, AnalyzerMatch, AnalyzerParams } from "./types";
+import { Visitor } from "./walker";
 
 export const COOKIE_MANIPULATION_ANALYZER_NAME = "cookie-manipulation";
 
 const cookieManipulationAnalyzerBuilder = (
   args: AnalyzerParams,
   matchesReturn: AnalyzerMatch[]
-) => {
+): Visitor => {
   return {
-    AssignmentExpression(node: any, _state: any, ancestors: Node[]) {
+    AssignmentExpression(node, ancestors) {
       if (!node.loc) {
         return;
       }

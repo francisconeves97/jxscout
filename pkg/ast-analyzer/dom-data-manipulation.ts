@@ -1,14 +1,15 @@
 import { Node } from "acorn";
 import { Analyzer, AnalyzerMatch, AnalyzerParams } from "./types";
+import { Visitor } from "./walker";
 
 export const DOM_DATA_MANIPULATION_ANALYZER_NAME = "dom-data-manipulation";
 
 const domDataManipulationAnalyzerBuilder = (
   args: AnalyzerParams,
   matchesReturn: AnalyzerMatch[]
-) => {
+): Visitor => {
   return {
-    CallExpression(node: any, _state: any, ancestors: Node[]) {
+    CallExpression(node, ancestors) {
       if (!node.loc) {
         return;
       }
@@ -82,7 +83,7 @@ const domDataManipulationAnalyzerBuilder = (
       }
     },
 
-    MemberExpression(node: any, _state: any, ancestors: Node[]) {
+    MemberExpression(node, ancestors) {
       if (!node.loc) {
         return;
       }

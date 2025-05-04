@@ -1,5 +1,6 @@
 import { Node } from "acorn";
 import { Analyzer, AnalyzerMatch, AnalyzerParams } from "./types";
+import { Visitor } from "./walker";
 
 export const HTML5_STORAGE_MANIPULATION_ANALYZER_NAME =
   "html5-storage-manipulation";
@@ -7,9 +8,9 @@ export const HTML5_STORAGE_MANIPULATION_ANALYZER_NAME =
 const html5StorageManipulationAnalyzerBuilder = (
   args: AnalyzerParams,
   matchesReturn: AnalyzerMatch[]
-) => {
+): Visitor => {
   return {
-    CallExpression(node: any, _state: any, ancestors: Node[]) {
+    CallExpression(node, ancestors) {
       if (!node.loc) {
         return;
       }

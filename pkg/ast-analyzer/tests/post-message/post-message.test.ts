@@ -2,6 +2,7 @@ import path from "path";
 import { expect, test } from "vitest";
 import { analyzeFile } from "../../index";
 import { AnalyzerMatch } from "../../types";
+import fs from "fs";
 
 interface PostMessageTestCase {
   jsFileName: string;
@@ -11,45 +12,9 @@ interface PostMessageTestCase {
 const testCases: PostMessageTestCase[] = [
   {
     jsFileName: "1.js",
-    expectedCalls: [
-      {
-        analyzerName: "post-message",
-        value: 'abc.postMessage({ type: "data", payload: "test" }, "*")',
-        start: { line: 4, column: 0 },
-        end: { line: 4, column: 55 },
-        tags: { "post-message": true },
-        filePath:
-          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/post-message/files/1.js",
-      },
-      {
-        analyzerName: "post-message",
-        value: 'postMessage({ type: "data", payload: "test" }, "*")',
-        start: { line: 3, column: 0 },
-        end: { line: 3, column: 51 },
-        tags: { "post-message": true },
-        filePath:
-          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/post-message/files/1.js",
-      },
-      {
-        analyzerName: "post-message",
-        value: 'window.postMessage({ type: "data", payload: "test" }, "*")',
-        start: { line: 1, column: 0 },
-        end: { line: 1, column: 58 },
-        tags: { "post-message": true },
-        filePath:
-          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/post-message/files/1.js",
-      },
-      {
-        analyzerName: "post-message",
-        value:
-          'window.postMessage({ type: "data", payload: "test" }, "https://example.com")',
-        start: { line: 2, column: 0 },
-        end: { line: 2, column: 76 },
-        tags: { "post-message": true },
-        filePath:
-          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/post-message/files/1.js",
-      },
-    ],
+    expectedCalls: JSON.parse(
+      fs.readFileSync(path.join(__dirname, "expected.json"), "utf-8")
+    ),
   },
 ];
 
@@ -64,6 +29,9 @@ test.each(testCases)(
     const sortedExpected = expectedCalls.sort((a, b) =>
       a.value.localeCompare(b.value)
     );
+
+    // const outputPath = path.join(__dirname, "expected.json");
+    // fs.writeFileSync(outputPath, JSON.stringify(sortedCalls, null, 2));
 
     expect(sortedCalls).toEqual(sortedExpected);
   }

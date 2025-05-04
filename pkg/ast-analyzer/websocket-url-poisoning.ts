@@ -1,14 +1,15 @@
 import { Node } from "acorn";
 import { Analyzer, AnalyzerMatch, AnalyzerParams } from "./types";
+import { Visitor } from "./walker";
 
 export const WEBSOCKET_URL_POISONING_ANALYZER_NAME = "websocket-url-poisoning";
 
 const websocketUrlPoisoningAnalyzerBuilder = (
   args: AnalyzerParams,
   matchesReturn: AnalyzerMatch[]
-) => {
+): Visitor => {
   return {
-    NewExpression(node: any, _state: any, ancestors: Node[]) {
+    NewExpression(node, ancestors) {
       if (!node.loc) {
         return;
       }

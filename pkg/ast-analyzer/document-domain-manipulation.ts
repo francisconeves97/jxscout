@@ -1,5 +1,6 @@
 import { Node } from "acorn";
 import { Analyzer, AnalyzerMatch, AnalyzerParams } from "./types";
+import { Visitor } from "./walker";
 
 export const DOCUMENT_DOMAIN_MANIPULATION_ANALYZER_NAME =
   "document-domain-manipulation";
@@ -7,9 +8,9 @@ export const DOCUMENT_DOMAIN_MANIPULATION_ANALYZER_NAME =
 const documentDomainManipulationAnalyzerBuilder = (
   args: AnalyzerParams,
   matchesReturn: AnalyzerMatch[]
-) => {
+): Visitor => {
   return {
-    MemberExpression(node: any, _state: any, ancestors: Node[]) {
+    MemberExpression(node, ancestors) {
       if (!node.loc) {
         return;
       }
@@ -36,7 +37,7 @@ const documentDomainManipulationAnalyzerBuilder = (
       }
     },
 
-    AssignmentExpression(node: any, _state: any, ancestors: Node[]) {
+    AssignmentExpression(node, ancestors) {
       if (!node.loc) {
         return;
       }

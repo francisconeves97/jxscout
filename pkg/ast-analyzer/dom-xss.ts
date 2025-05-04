@@ -1,14 +1,15 @@
 import { Node } from "acorn";
 import { Analyzer, AnalyzerMatch, AnalyzerParams } from "./types";
+import { Visitor } from "./walker";
 
 export const DOM_XSS_ANALYZER_NAME = "dom-xss";
 
 const domXssAnalyzerBuilder = (
   args: AnalyzerParams,
   matchesReturn: AnalyzerMatch[]
-) => {
+): Visitor => {
   return {
-    AssignmentExpression(node: any, _state: any, ancestors: Node[]) {
+    AssignmentExpression(node, ancestors) {
       if (!node.loc) {
         return;
       }
@@ -97,7 +98,7 @@ const domXssAnalyzerBuilder = (
       }
     },
 
-    CallExpression(node: any, _state: any, ancestors: Node[]) {
+    CallExpression(node, ancestors) {
       if (!node.loc) {
         return;
       }

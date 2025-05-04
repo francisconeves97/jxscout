@@ -8,7 +8,7 @@ export interface Position {
 }
 
 // Define a type that includes the loc property
-type NodeWithLoc = OxcNode & {
+export type NodeWithLoc = OxcNode & {
   loc: {
     start: Position;
     end: Position;
@@ -17,7 +17,7 @@ type NodeWithLoc = OxcNode & {
 
 type NodeType = OxcNode["type"];
 
-type Visitor = {
+export type Visitor = {
   [K in NodeType]?: (
     node: Extract<NodeWithLoc, { type: K }>,
     ancestors: NodeWithLoc[]

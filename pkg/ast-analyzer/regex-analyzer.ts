@@ -1,5 +1,6 @@
 import { Node } from "acorn";
 import { Analyzer, AnalyzerMatch, AnalyzerParams } from "./types";
+import { Visitor } from "./walker";
 
 export interface RegexAnalyzerConfig {
   analyzerName: string;
@@ -9,9 +10,9 @@ export interface RegexAnalyzerConfig {
 }
 
 export function createRegexAnalyzer(config: RegexAnalyzerConfig): Analyzer {
-  return (args: AnalyzerParams, matchesReturn: AnalyzerMatch[]) => {
+  return (args: AnalyzerParams, matchesReturn: AnalyzerMatch[]): Visitor => {
     return {
-      Literal(node, _state, ancestors) {
+      Literal(node, ancestors) {
         const stringValue = node.value;
         if (typeof stringValue !== "string") {
           return;
@@ -41,7 +42,7 @@ export function createRegexAnalyzer(config: RegexAnalyzerConfig): Analyzer {
         matchesReturn.push(match);
       },
 
-      TemplateLiteral(node, _state, ancestors) {
+      TemplateLiteral(node, ancestors) {
         const templateValue = args.source
           .slice(node.start, node.end)
           .replaceAll("`", "");

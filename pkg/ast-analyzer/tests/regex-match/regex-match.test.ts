@@ -2,6 +2,7 @@ import path from "path";
 import { expect, test } from "vitest";
 import { analyzeFile } from "../../index";
 import { AnalyzerMatch } from "../../types";
+import fs from "fs";
 
 interface RegexMatchTestCase {
   jsFileName: string;
@@ -11,53 +12,9 @@ interface RegexMatchTestCase {
 const testCases: RegexMatchTestCase[] = [
   {
     jsFileName: "1.js",
-    expectedCalls: [
-      {
-        analyzerName: "regex-match",
-        value: '"asd".match(/world/)',
-        start: { line: 5, column: 0 },
-        end: { line: 5, column: 20 },
-        tags: { "regex-match": true },
-        filePath:
-          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/regex-match/files/1.js",
-      },
-      {
-        analyzerName: "regex-match",
-        value: 'regex.exec("hello world")',
-        start: { line: 10, column: 16 },
-        end: { line: 10, column: 41 },
-        tags: { "regex-match": true },
-        filePath:
-          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/regex-match/files/1.js",
-      },
-      {
-        analyzerName: "regex-match",
-        value: 'regex.test("hello world")',
-        start: { line: 9, column: 16 },
-        end: { line: 9, column: 41 },
-        tags: { "regex-match": true },
-        filePath:
-          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/regex-match/files/1.js",
-      },
-      {
-        analyzerName: "regex-match",
-        value: 'RegExp.test("hello world")',
-        start: { line: 13, column: 16 },
-        end: { line: 13, column: 42 },
-        tags: { "regex-match": true },
-        filePath:
-          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/regex-match/files/1.js",
-      },
-      {
-        analyzerName: "regex-match",
-        value: "str.match(/world/)",
-        start: { line: 3, column: 16 },
-        end: { line: 3, column: 34 },
-        tags: { "regex-match": true },
-        filePath:
-          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/regex-match/files/1.js",
-      },
-    ],
+    expectedCalls: JSON.parse(
+      fs.readFileSync(path.join(__dirname, "expected.json"), "utf-8")
+    ),
   },
 ];
 
@@ -72,6 +29,9 @@ test.each(testCases)(
     const sortedExpected = expectedCalls.sort((a, b) =>
       a.value.localeCompare(b.value)
     );
+
+    // const outputPath = path.join(__dirname, "expected.json");
+    // fs.writeFileSync(outputPath, JSON.stringify(sortedCalls, null, 2));
 
     expect(sortedCalls).toEqual(sortedExpected);
   }

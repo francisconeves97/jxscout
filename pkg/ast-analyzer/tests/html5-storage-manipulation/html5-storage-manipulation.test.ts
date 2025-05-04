@@ -2,7 +2,7 @@ import path from "path";
 import { expect, test } from "vitest";
 import { analyzeFile } from "../../index";
 import { AnalyzerMatch } from "../../types";
-
+import fs from "fs";
 interface Html5StorageManipulationTestCase {
   jsFileName: string;
   expectedCalls: AnalyzerMatch[];
@@ -11,26 +11,9 @@ interface Html5StorageManipulationTestCase {
 const testCases: Html5StorageManipulationTestCase[] = [
   {
     jsFileName: "1.js",
-    expectedCalls: [
-      {
-        analyzerName: "html5-storage-manipulation",
-        value: 'localStorage.setItem("key", "value")',
-        start: { line: 1, column: 0 },
-        end: { line: 1, column: 36 },
-        tags: { "local-storage": true },
-        filePath:
-          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/html5-storage-manipulation/files/1.js",
-      },
-      {
-        analyzerName: "html5-storage-manipulation",
-        value: 'sessionStorage.setItem("key", "value")',
-        start: { line: 2, column: 0 },
-        end: { line: 2, column: 38 },
-        tags: { "session-storage": true },
-        filePath:
-          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/html5-storage-manipulation/files/1.js",
-      },
-    ],
+    expectedCalls: JSON.parse(
+      fs.readFileSync(path.join(__dirname, "expected.json"), "utf-8")
+    ),
   },
 ];
 
@@ -45,6 +28,9 @@ test.each(testCases)(
     const sortedExpected = expectedCalls.sort((a, b) =>
       a.value.localeCompare(b.value)
     );
+
+    // const outputPath = path.join(__dirname, "expected.json");
+    // fs.writeFileSync(outputPath, JSON.stringify(sortedCalls, null, 2));
 
     expect(sortedCalls).toEqual(sortedExpected);
   }

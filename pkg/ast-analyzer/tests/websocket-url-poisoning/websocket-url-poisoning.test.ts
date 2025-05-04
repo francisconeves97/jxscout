@@ -2,6 +2,7 @@ import path from "path";
 import { expect, test } from "vitest";
 import { analyzeFile } from "../../index";
 import { AnalyzerMatch } from "../../types";
+import fs from "fs";
 
 interface WebSocketUrlPoisoningTestCase {
   jsFileName: string;
@@ -11,35 +12,9 @@ interface WebSocketUrlPoisoningTestCase {
 const testCases: WebSocketUrlPoisoningTestCase[] = [
   {
     jsFileName: "1.js",
-    expectedCalls: [
-      {
-        analyzerName: "websocket-url-poisoning",
-        value: 'new WebSocket("ws://example.com")',
-        start: { line: 1, column: 0 },
-        end: { line: 1, column: 33 },
-        tags: { "websocket-url-poisoning": true },
-        filePath:
-          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/websocket-url-poisoning/files/1.js",
-      },
-      {
-        analyzerName: "websocket-url-poisoning",
-        value: 'new WebSocket("wss://example.com")',
-        start: { line: 2, column: 0 },
-        end: { line: 2, column: 34 },
-        tags: { "websocket-url-poisoning": true },
-        filePath:
-          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/websocket-url-poisoning/files/1.js",
-      },
-      {
-        analyzerName: "websocket-url-poisoning",
-        value: "new WebSocket(asd)",
-        start: { line: 3, column: 0 },
-        end: { line: 3, column: 18 },
-        tags: { "websocket-url-poisoning": true },
-        filePath:
-          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/websocket-url-poisoning/files/1.js",
-      },
-    ],
+    expectedCalls: JSON.parse(
+      fs.readFileSync(path.join(__dirname, "expected.json"), "utf-8")
+    ),
   },
 ];
 
@@ -54,6 +29,9 @@ test.each(testCases)(
     const sortedExpected = expectedCalls.sort((a, b) =>
       a.value.localeCompare(b.value)
     );
+
+    // const outputPath = path.join(__dirname, "expected.json");
+    // fs.writeFileSync(outputPath, JSON.stringify(sortedCalls, null, 2));
 
     expect(sortedCalls).toEqual(sortedExpected);
   }

@@ -1,6 +1,6 @@
 import { Position } from "acorn";
-import { AncestorVisitors } from "acorn-walk";
 import { Program } from "oxc-parser";
+import { Visitor } from "./walker";
 
 export interface AnalyzerMatch {
   filePath: string;
@@ -20,4 +20,4 @@ export interface AnalyzerParams {
 export type Analyzer = (
   params: AnalyzerParams,
   matchesReturn: AnalyzerMatch[]
-) => AncestorVisitors<unknown>;
+) => Visitor;

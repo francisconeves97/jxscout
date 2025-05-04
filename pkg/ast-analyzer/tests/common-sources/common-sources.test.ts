@@ -2,7 +2,7 @@ import path from "path";
 import { expect, test } from "vitest";
 import { analyzeFile } from "../../index";
 import { AnalyzerMatch } from "../../types";
-
+import fs from "fs";
 interface CommonSourcesTestCase {
   jsFileName: string;
   expectedCalls: AnalyzerMatch[];
@@ -11,116 +11,9 @@ interface CommonSourcesTestCase {
 const testCases: CommonSourcesTestCase[] = [
   {
     jsFileName: "1.js",
-    expectedCalls: [
-      {
-        filePath:
-          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/common-sources/files/1.js",
-        analyzerName: "common-sources",
-        value: "document.baseURI",
-        start: { line: 4, column: 0 },
-        end: { line: 4, column: 16 },
-        tags: { "common-sources": true },
-      },
-      {
-        filePath:
-          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/common-sources/files/1.js",
-        analyzerName: "common-sources",
-        value: "document.cookie",
-        start: { line: 5, column: 0 },
-        end: { line: 5, column: 15 },
-        tags: { "common-sources": true },
-      },
-      {
-        filePath:
-          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/common-sources/files/1.js",
-        analyzerName: "common-sources",
-        value: "document.documentURI",
-        start: { line: 2, column: 0 },
-        end: { line: 2, column: 20 },
-        tags: { "common-sources": true },
-      },
-      {
-        filePath:
-          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/common-sources/files/1.js",
-        analyzerName: "common-sources",
-        value: "document.referrer",
-        start: { line: 6, column: 0 },
-        end: { line: 6, column: 17 },
-        tags: { "common-sources": true },
-      },
-      {
-        filePath:
-          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/common-sources/files/1.js",
-        analyzerName: "common-sources",
-        value: "document.URL",
-        start: { line: 1, column: 0 },
-        end: { line: 1, column: 12 },
-        tags: { "common-sources": true },
-      },
-      {
-        filePath:
-          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/common-sources/files/1.js",
-        analyzerName: "common-sources",
-        value: "document.URLUnencoded",
-        start: { line: 3, column: 0 },
-        end: { line: 3, column: 21 },
-        tags: { "common-sources": true },
-      },
-      {
-        filePath:
-          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/common-sources/files/1.js",
-        analyzerName: "common-sources",
-        value: 'history.pushState({}, "", "https://example.com")',
-        start: { line: 9, column: 0 },
-        end: { line: 9, column: 48 },
-        tags: { "common-sources": true },
-      },
-      {
-        filePath:
-          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/common-sources/files/1.js",
-        analyzerName: "common-sources",
-        value: 'history.replaceState({}, "", "https://example.com")',
-        start: { line: 10, column: 0 },
-        end: { line: 10, column: 51 },
-        tags: { "common-sources": true },
-      },
-      {
-        filePath:
-          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/common-sources/files/1.js",
-        analyzerName: "common-sources",
-        value: "mozIndexedDB.open",
-        start: { line: 13, column: 0 },
-        end: { line: 13, column: 17 },
-        tags: { "common-sources": true },
-      },
-      {
-        filePath:
-          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/common-sources/files/1.js",
-        analyzerName: "common-sources",
-        value: "msIndexedDB.open",
-        start: { line: 15, column: 0 },
-        end: { line: 15, column: 16 },
-        tags: { "common-sources": true },
-      },
-      {
-        filePath:
-          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/common-sources/files/1.js",
-        analyzerName: "common-sources",
-        value: "webkitIndexedDB.open",
-        start: { line: 14, column: 0 },
-        end: { line: 14, column: 20 },
-        tags: { "common-sources": true },
-      },
-      {
-        filePath:
-          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/common-sources/files/1.js",
-        analyzerName: "common-sources",
-        value: "window.name",
-        start: { line: 7, column: 0 },
-        end: { line: 7, column: 11 },
-        tags: { "common-sources": true },
-      },
-    ],
+    expectedCalls: JSON.parse(
+      fs.readFileSync(path.join(__dirname, "expected.json"), "utf-8")
+    ),
   },
 ];
 
@@ -136,7 +29,8 @@ test.each(testCases)(
       a.value.localeCompare(b.value)
     );
 
-    // console.log(JSON.stringify(sortedCalls));
+    // const outputPath = path.join(__dirname, "expected.json");
+    // fs.writeFileSync(outputPath, JSON.stringify(sortedCalls, null, 2));
 
     expect(sortedCalls).toEqual(sortedExpected);
   }

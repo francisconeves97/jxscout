@@ -1,6 +1,6 @@
 import fs from "fs";
 import { Program } from "acorn";
-import { parseSync } from "oxc-parser";
+import { ParseResult, parseSync } from "oxc-parser";
 import { ancestors as traverse } from "./walker";
 import { AnalyzerParams, AnalyzerMatch } from "./types";
 import { pathsAnalyzerBuilder } from "./paths";
@@ -28,15 +28,28 @@ import { domDataManipulationAnalyzerBuilder } from "./dom-data-manipulation";
 import { commonSourcesAnalyzerBuilder } from "./common-sources";
 import { secretsAnalyzerBuilder } from "./secrets";
 import { piiAnalyzerBuilder } from "./pii";
+import { fileExtensionsAnalyzerBuilder } from "./extensions";
+import path from "path";
 
 export function parseFile(filePath: string): AnalyzerParams {
   const fileContent = fs.readFileSync(filePath, "utf-8");
 
-  const parsed = parseSync(filePath, fileContent, {
-    sourceType: "module",
-    astType: "ts",
-    lang: "tsx",
-  });
+  const extension = path.extname(filePath).replace(".", "");
+
+  let parsed: ParseResult;
+  try {
+    parsed = parseSync(filePath, fileContent, {
+      sourceType: "module",
+      astType: "ts",
+      lang: extension as "js" | "ts" | "jsx" | "tsx",
+    });
+  } catch (error) {
+    parsed = parseSync(filePath, fileContent, {
+      sourceType: "module",
+      astType: "ts",
+      lang: extension as "js" | "ts" | "jsx" | "tsx",
+    });
+  }
 
   return { ast: parsed.program, source: fileContent, filePath };
 }
@@ -71,7 +84,8 @@ export type AnalyzerType =
   | "dom-data-manipulation"
   | "common-sources"
   | "secrets"
-  | "pii";
+  | "pii"
+  | "extensions";
 
 export function analyzeFile(
   filePath: string,
@@ -178,6 +192,10 @@ export function analyzeFile(
   );
   const secretsAnalyzer = createAnalyzer("secrets", secretsAnalyzerBuilder);
   const piiAnalyzer = createAnalyzer("pii", piiAnalyzerBuilder);
+  const extensionsAnalyzer = createAnalyzer(
+    "extensions",
+    fileExtensionsAnalyzerBuilder
+  );
 
   traverse(args.source, args.ast, {
     Literal(node, ancestors) {
@@ -188,6 +206,7 @@ export function analyzeFile(
       urlsAnalyzer?.Literal?.(node, ancestors);
       secretsAnalyzer?.Literal?.(node, ancestors);
       piiAnalyzer?.Literal?.(node, ancestors);
+      extensionsAnalyzer?.Literal?.(node, ancestors);
     },
     NewExpression(node, ancestors) {
       regexAnalyzer?.NewExpression?.(node, ancestors);
@@ -200,6 +219,7 @@ export function analyzeFile(
       urlsAnalyzer?.TemplateLiteral?.(node, ancestors);
       secretsAnalyzer?.TemplateLiteral?.(node, ancestors);
       piiAnalyzer?.TemplateLiteral?.(node, ancestors);
+      extensionsAnalyzer?.TemplateLiteral?.(node, ancestors);
     },
     CallExpression(node, ancestors) {
       postMessageAnalyzer?.CallExpression?.(node, ancestors);

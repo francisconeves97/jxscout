@@ -1,14 +1,15 @@
 import { Node } from "acorn";
 import { Analyzer, AnalyzerMatch, AnalyzerParams } from "./types";
+import { Visitor } from "./walker";
 
 export const REGEX_MATCH_ANALYZER_NAME = "regex-match";
 
 const regexMatchAnalyzerBuilder = (
   args: AnalyzerParams,
   matchesReturn: AnalyzerMatch[]
-) => {
+): Visitor => {
   return {
-    CallExpression(node: any, _state: any, ancestors: Node[]) {
+    CallExpression(node, ancestors) {
       if (!node.loc) {
         return;
       }
@@ -23,7 +24,7 @@ const regexMatchAnalyzerBuilder = (
             typeof node.callee.object.value === "string")) &&
         node.arguments.length > 0 &&
         (node.arguments[0].type === "Literal" ||
-          node.arguments[0].type === "RegExpLiteral")
+          (node.arguments[0] as any).regex)
       ) {
         const match: AnalyzerMatch = {
           filePath: args.filePath,

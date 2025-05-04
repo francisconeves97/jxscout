@@ -2,6 +2,7 @@ import path from "path";
 import { expect, test } from "vitest";
 import { analyzeFile } from "../../index";
 import { AnalyzerMatch } from "../../types";
+import fs from "fs";
 
 interface RegexTestCase {
   jsFileName: string;
@@ -11,119 +12,9 @@ interface RegexTestCase {
 const testCases: RegexTestCase[] = [
   {
     jsFileName: "1.js",
-    expectedMatches: [
-      // {
-      //   analyzerName: "regex",
-      //   value:
-      //     '"^(https?://)?([\\\\da-z.-]+)\\\\.([a-z.]{2,6})([/\\\\w .-]*)*/?$"',
-      //   start: { line: 13, column: 12 },
-      //   end: { line: 13, column: 72 },
-      //   tags: { regex: true, "regex-like-string": true },
-      //   filePath:
-      //     "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/regex/files/1.js",
-      // },
-      // {
-      //   analyzerName: "regex",
-      //   value:
-      //     '"^(https?://)?([\\\\da-z.-]+)\\\\.([a-z.]{2,6})([/\\\\w .-]*)*/?$"',
-      //   start: { line: 18, column: 2 },
-      //   end: { line: 18, column: 62 },
-      //   tags: { regex: true, "regex-like-string": true },
-      //   filePath:
-      //     "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/regex/files/1.js",
-      // },
-      {
-        analyzerName: "regex",
-        value: "/[0-9]+/i",
-        start: { line: 4, column: 15 },
-        end: { line: 4, column: 24 },
-        tags: { regex: true, "regex-literal": true },
-        filePath:
-          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/regex/files/1.js",
-      },
-      {
-        analyzerName: "regex",
-        value: "/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$/",
-        start: { line: 16, column: 19 },
-        end: { line: 16, column: 69 },
-        tags: { regex: true, "regex-literal": true },
-        filePath:
-          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/regex/files/1.js",
-      },
-      {
-        analyzerName: "regex",
-        value: "/^start.*end$/m",
-        start: { line: 5, column: 15 },
-        end: { line: 5, column: 30 },
-        tags: { regex: true, "regex-literal": true },
-        filePath:
-          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/regex/files/1.js",
-      },
-      {
-        analyzerName: "regex",
-        value: "/hello/",
-        start: { line: 2, column: 15 },
-        end: { line: 2, column: 22 },
-        tags: { regex: true, "regex-literal": true },
-        filePath:
-          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/regex/files/1.js",
-      },
-      {
-        analyzerName: "regex",
-        value: "/world/g",
-        start: { line: 3, column: 15 },
-        end: { line: 3, column: 23 },
-        tags: { regex: true, "regex-literal": true },
-        filePath:
-          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/regex/files/1.js",
-      },
-      {
-        analyzerName: "regex",
-        value:
-          'new RegExp(\n  "^(https?://)?([\\\\da-z.-]+)\\\\.([a-z.]{2,6})([/\\\\w .-]*)*/?$",\n  "i"\n)',
-        start: { line: 17, column: 17 },
-        end: { line: 20, column: 1 },
-        tags: { regex: true, "regex-constructor": true },
-        filePath:
-          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/regex/files/1.js",
-      },
-      {
-        analyzerName: "regex",
-        value: 'new RegExp("case-insensitive", "i")',
-        start: { line: 9, column: 15 },
-        end: { line: 9, column: 50 },
-        tags: { regex: true, "regex-constructor": true },
-        filePath:
-          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/regex/files/1.js",
-      },
-      {
-        analyzerName: "regex",
-        value: 'new RegExp("global", "g")',
-        start: { line: 10, column: 15 },
-        end: { line: 10, column: 40 },
-        tags: { regex: true, "regex-constructor": true },
-        filePath:
-          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/regex/files/1.js",
-      },
-      {
-        analyzerName: "regex",
-        value: 'new RegExp("multiline", "m")',
-        start: { line: 11, column: 15 },
-        end: { line: 11, column: 43 },
-        tags: { regex: true, "regex-constructor": true },
-        filePath:
-          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/regex/files/1.js",
-      },
-      {
-        analyzerName: "regex",
-        value: 'new RegExp("pattern")',
-        start: { line: 8, column: 15 },
-        end: { line: 8, column: 36 },
-        tags: { regex: true, "regex-constructor": true },
-        filePath:
-          "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/regex/files/1.js",
-      },
-    ],
+    expectedMatches: JSON.parse(
+      fs.readFileSync(path.join(__dirname, "expected.json"), "utf-8")
+    ),
   },
 ];
 
@@ -140,6 +31,9 @@ test.each(testCases)(
     const sortedExpected = expectedMatches.sort((a, b) =>
       a.value.localeCompare(b.value)
     );
+
+    // const outputPath = path.join(__dirname, "expected.json");
+    // fs.writeFileSync(outputPath, JSON.stringify(sortedResults, null, 2));
 
     expect(sortedResults).toEqual(sortedExpected);
   }
