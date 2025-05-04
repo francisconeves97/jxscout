@@ -15,12 +15,14 @@ const addEventListenerAnalyzerBuilder = (
       }
 
       // Check if this is an addEventListener call
-      if (
-        node.callee.type === "MemberExpression" &&
-        node.callee.property.type === "Identifier" &&
-        node.callee.property.name === "addEventListener" &&
-        node.arguments.length >= 2
-      ) {
+      const isAddEventListenerCall =
+        (node.callee.type === "MemberExpression" &&
+          node.callee.property.type === "Identifier" &&
+          node.callee.property.name === "addEventListener") ||
+        (node.callee.type === "Identifier" &&
+          node.callee.name === "addEventListener");
+
+      if (isAddEventListenerCall && node.arguments.length >= 2) {
         const eventType =
           node.arguments[0].type === "Literal"
             ? String(node.arguments[0].value)

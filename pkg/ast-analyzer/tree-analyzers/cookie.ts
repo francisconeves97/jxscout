@@ -31,9 +31,6 @@ const cookieAnalyzerBuilder = (
           end: node.loc.end,
           tags: {
             "cookie-assignment": true,
-            ...(node.right.type === "Literal"
-              ? { "has-literal-value": true }
-              : {}),
           },
         };
 

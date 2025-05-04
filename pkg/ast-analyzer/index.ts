@@ -29,6 +29,7 @@ import { commonSourcesAnalyzerBuilder } from "./common-sources";
 import { secretsAnalyzerBuilder } from "./secrets";
 import { piiAnalyzerBuilder } from "./pii";
 import { fileExtensionsAnalyzerBuilder } from "./extensions";
+import { addEventListenerAnalyzerBuilder } from "./tree-analyzers/add-event-listener";
 import path from "path";
 
 export function parseFile(filePath: string): AnalyzerParams {
@@ -85,7 +86,8 @@ export type AnalyzerType =
   | "common-sources"
   | "secrets"
   | "pii"
-  | "extensions";
+  | "extensions"
+  | "add-event-listener";
 
 export function analyzeFile(
   filePath: string,
@@ -196,6 +198,10 @@ export function analyzeFile(
     "extensions",
     fileExtensionsAnalyzerBuilder
   );
+  const addEventListenerAnalyzer = createAnalyzer(
+    "add-event-listener",
+    addEventListenerAnalyzerBuilder
+  );
 
   traverse(args.source, args.ast, {
     Literal(node, ancestors) {
@@ -230,23 +236,12 @@ export function analyzeFile(
       jqueryDomXssAnalyzer?.CallExpression?.(node, ancestors);
       openRedirectionAnalyzer?.CallExpression?.(node, ancestors);
       javascriptInjectionAnalyzer?.CallExpression?.(node, ancestors);
-      ajaxRequestHeaderManipulationAnalyzer?.CallExpression?.(
-        node,
-
-        ancestors
-      );
-      localFilePathManipulationAnalyzer?.CallExpression?.(
-        node,
-
-        ancestors
-      );
-      html5StorageManipulationAnalyzer?.CallExpression?.(
-        node,
-
-        ancestors
-      );
+      ajaxRequestHeaderManipulationAnalyzer?.CallExpression?.(node, ancestors);
+      localFilePathManipulationAnalyzer?.CallExpression?.(node, ancestors);
+      html5StorageManipulationAnalyzer?.CallExpression?.(node, ancestors);
       xpathInjectionAnalyzer?.CallExpression?.(node, ancestors);
       commonSourcesAnalyzer?.CallExpression?.(node, ancestors);
+      addEventListenerAnalyzer?.CallExpression?.(node, ancestors);
     },
     AssignmentExpression(node, ancestors) {
       messageListenerAnalyzer?.AssignmentExpression?.(node, ancestors);

@@ -1,5 +1,5 @@
 import path from "path";
-import { expect, test } from "vitest";
+import { expect, it } from "vitest";
 import { analyzeFile, AnalyzerType } from "../index";
 import { AnalyzerMatch } from "../types";
 import fs from "fs";
@@ -11,26 +11,40 @@ export interface BaseTestCase {
 
 export function createBaseTest(
   testType: string,
-  testCases: BaseTestCase[],
-  analyzerType: AnalyzerType
+  testCase: BaseTestCase,
+  analyzerType: AnalyzerType,
+  number: number
 ) {
-  test.each(testCases)(
-    `${testType} - $jsFileName`,
-    ({ jsFileName, expectedResults }) => {
-      const filePath = path.join(__dirname, testType, "files", jsFileName);
-      const results = analyzeFile(filePath, [analyzerType]);
+  it(`${testType} ${number} - $jsFileName`, () => {
+    const { jsFileName, expectedResults } = testCase;
+    const filePath = path.join(__dirname, testType, "files", jsFileName);
+    const results = analyzeFile(filePath, [analyzerType]);
 
-      // Sort both arrays by value to ensure consistent comparison
-      const sortedResults = results.sort((a, b) =>
-        a.value.localeCompare(b.value)
-      );
-      const sortedExpected = expectedResults.sort((a, b) =>
-        a.value.localeCompare(b.value)
-      );
+    // Sort both arrays by value to ensure consistent comparison
+    const sortedResults = results.sort((a, b) =>
+      a.value.localeCompare(b.value)
+    );
+    const sortedExpected = expectedResults.sort((a, b) =>
+      a.value.localeCompare(b.value)
+    );
 
-      expect(sortedResults).toEqual(sortedExpected);
+    const expectedPath = path.join(
+      __dirname,
+      testType,
+      `expected${number}.json`
+    );
+
+    if (!fs.existsSync(expectedPath)) {
+      const outputPath = path.join(
+        __dirname,
+        testType,
+        `expected${number}.json`
+      );
+      fs.writeFileSync(outputPath, JSON.stringify(sortedResults, null, 2));
     }
-  );
+
+    expect(sortedResults).toEqual(sortedExpected);
+  });
 }
 
 export function loadExpectedResults(

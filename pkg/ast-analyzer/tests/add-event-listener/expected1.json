@@ -1,0 +1,87 @@
+[
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/add-event-listener/files/1.js",
+    "analyzerName": "add-event-listener",
+    "value": "addEventListener('click', () => {\n  console.log('clicked');\n})",
+    "start": {
+      "line": 25,
+      "column": 0
+    },
+    "end": {
+      "line": 27,
+      "column": 2
+    },
+    "tags": {
+      "event-listener": true,
+      "event-type-click": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/add-event-listener/files/1.js",
+    "analyzerName": "add-event-listener",
+    "value": "button?.addEventListener('mouseover', () => {\n  console.log('mouseover');\n})",
+    "start": {
+      "line": 21,
+      "column": 0
+    },
+    "end": {
+      "line": 23,
+      "column": 2
+    },
+    "tags": {
+      "event-listener": true,
+      "event-type-mouseover": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/add-event-listener/files/1.js",
+    "analyzerName": "add-event-listener",
+    "value": "document.addEventListener('click', () => {\n  console.log('clicked');\n})",
+    "start": {
+      "line": 4,
+      "column": 0
+    },
+    "end": {
+      "line": 6,
+      "column": 2
+    },
+    "tags": {
+      "event-listener": true,
+      "event-type-click": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/add-event-listener/files/1.js",
+    "analyzerName": "add-event-listener",
+    "value": "document.addEventListener(eventType, () => {\n  console.log('scrolled');\n})",
+    "start": {
+      "line": 15,
+      "column": 0
+    },
+    "end": {
+      "line": 17,
+      "column": 2
+    },
+    "tags": {
+      "event-listener": true,
+      "event-type-dynamic": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/add-event-listener/files/1.js",
+    "analyzerName": "add-event-listener",
+    "value": "window.addEventListener('resize', () => {\n  console.log('resized');\n}, { once: true })",
+    "start": {
+      "line": 9,
+      "column": 0
+    },
+    "end": {
+      "line": 11,
+      "column": 18
+    },
+    "tags": {
+      "event-listener": true,
+      "event-type-resize": true
+    }
+  }
+]

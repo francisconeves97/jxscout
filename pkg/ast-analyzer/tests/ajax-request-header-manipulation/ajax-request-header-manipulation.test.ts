@@ -29,8 +29,8 @@ test.each(testCases)(
       a.value.localeCompare(b.value)
     );
 
-    // const outputPath = path.join(__dirname, "expected.json");
-    // fs.writeFileSync(outputPath, JSON.stringify(sortedCalls, null, 2));
+    const outputPath = path.join(__dirname, "expected.json");
+    fs.writeFileSync(outputPath, JSON.stringify(sortedCalls, null, 2));
 
     expect(sortedCalls).toEqual(sortedExpected);
   }

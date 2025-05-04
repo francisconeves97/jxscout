@@ -7,4 +7,6 @@ const testCases: BaseTestCase[] = [
   },
 ];
 
-createBaseTest("paths", testCases, "paths");
+for (let i = 1; i <= testCases.length; i++) {
+  createBaseTest("paths", testCases[i - 1], "paths", i);
+}
