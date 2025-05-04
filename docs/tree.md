@@ -51,3 +51,6 @@ Data
 -- -- other
 -- IPAddress
 -- HTTP Method
+Frameworks
+-- React
+-- -- dangerouslySetInnerHTML
