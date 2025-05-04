@@ -30,6 +30,7 @@ import { secretsAnalyzerBuilder } from "./secrets";
 import { piiAnalyzerBuilder } from "./pii";
 import { fileExtensionsAnalyzerBuilder } from "./extensions";
 import { addEventListenerAnalyzerBuilder } from "./tree-analyzers/add-event-listener";
+import { cookieAnalyzerBuilder } from "./tree-analyzers/cookie";
 import path from "path";
 
 export function parseFile(filePath: string): AnalyzerParams {
@@ -87,7 +88,8 @@ export type AnalyzerType =
   | "secrets"
   | "pii"
   | "extensions"
-  | "add-event-listener";
+  | "add-event-listener"
+  | "cookie";
 
 export function analyzeFile(
   filePath: string,
@@ -104,18 +106,10 @@ export function analyzeFile(
     type: AnalyzerType,
     builder: (args: AnalyzerParams, results: AnalyzerMatch[]) => T
   ): T | null => {
-    // don't include emails analyzer for now
-    if (
-      (type === "emails" && !analyzersToRun?.includes("emails")) ||
-      (type === "link-manipulation" &&
-        !analyzersToRun?.includes("link-manipulation"))
-    ) {
+    if (analyzersToRun && !analyzersToRun.includes(type)) {
       return null;
     }
-
-    return !analyzersToRun || analyzersToRun.includes(type)
-      ? builder(args, results)
-      : null;
+    return builder(args, results);
   };
 
   const pathsAnalyzer = createAnalyzer("paths", pathsAnalyzerBuilder);
@@ -202,6 +196,7 @@ export function analyzeFile(
     "add-event-listener",
     addEventListenerAnalyzerBuilder
   );
+  const cookieAnalyzer = createAnalyzer("cookie", cookieAnalyzerBuilder);
 
   traverse(args.source, args.ast, {
     Literal(node, ancestors) {
@@ -247,23 +242,17 @@ export function analyzeFile(
       messageListenerAnalyzer?.AssignmentExpression?.(node, ancestors);
       hashChangeAnalyzer?.AssignmentExpression?.(node, ancestors);
       domXssAnalyzer?.AssignmentExpression?.(node, ancestors);
-      cookieManipulationAnalyzer?.AssignmentExpression?.(
-        node,
-
-        ancestors
-      );
+      cookieManipulationAnalyzer?.AssignmentExpression?.(node, ancestors);
       linkManipulationAnalyzer?.AssignmentExpression?.(node, ancestors);
+      cookieAnalyzer?.AssignmentExpression?.(node, ancestors);
     },
     MemberExpression(node, ancestors) {
       openRedirectionAnalyzer?.MemberExpression?.(node, ancestors);
-      documentDomainManipulationAnalyzer?.MemberExpression?.(
-        node,
-
-        ancestors
-      );
+      documentDomainManipulationAnalyzer?.MemberExpression?.(node, ancestors);
       linkManipulationAnalyzer?.MemberExpression?.(node, ancestors);
       domDataManipulationAnalyzer?.MemberExpression?.(node, ancestors);
       commonSourcesAnalyzer?.MemberExpression?.(node, ancestors);
+      cookieAnalyzer?.MemberExpression?.(node, ancestors);
     },
   });
 

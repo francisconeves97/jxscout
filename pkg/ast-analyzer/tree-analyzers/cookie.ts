@@ -17,11 +17,10 @@ const cookieAnalyzerBuilder = (
       // Check for cookie assignments
       if (
         node.left.type === "MemberExpression" &&
-        node.left.object.type === "MemberExpression" &&
-        node.left.object.object.type === "Identifier" &&
-        node.left.object.object.name === "document" &&
-        node.left.object.property.type === "Identifier" &&
-        node.left.object.property.name === "cookie"
+        node.left.object.type === "Identifier" &&
+        node.left.object.name === "document" &&
+        node.left.property.type === "Identifier" &&
+        node.left.property.name === "cookie"
       ) {
         const match: AnalyzerMatch = {
           filePath: args.filePath,
@@ -42,13 +41,22 @@ const cookieAnalyzerBuilder = (
         return;
       }
 
+      // Skip if this is part of an assignment
+      for (const ancestor of ancestors) {
+        if (
+          ancestor.type === "AssignmentExpression" &&
+          ancestor.left === node
+        ) {
+          return;
+        }
+      }
+
       // Check for cookie reads
       if (
-        node.object.type === "MemberExpression" &&
-        node.object.object.type === "Identifier" &&
-        node.object.object.name === "document" &&
-        node.object.property.type === "Identifier" &&
-        node.object.property.name === "cookie"
+        node.object.type === "Identifier" &&
+        node.object.name === "document" &&
+        node.property.type === "Identifier" &&
+        node.property.name === "cookie"
       ) {
         const match: AnalyzerMatch = {
           filePath: args.filePath,
