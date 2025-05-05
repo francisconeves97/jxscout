@@ -42,6 +42,7 @@ import path from "path";
 import { postmessageAnalyzerBuilder } from "./tree-analyzers/postmessage";
 import { regexMatchAnalyzerBuilder } from "./tree-analyzers/regex-match";
 import { regexAnalyzerBuilder as regexPatternAnalyzerBuilder } from "./tree-analyzers/regex-pattern";
+import { sessionStorageAnalyzerBuilder } from "./tree-analyzers/session-storage";
 
 export function parseFile(filePath: string): AnalyzerParams {
   const fileContent = fs.readFileSync(filePath, "utf-8");
@@ -107,6 +108,7 @@ export type AnalyzerType =
   | "hostname"
   | "inner-html"
   | "local-storage"
+  | "session-storage"
   | "location"
   | "onhashchange"
   | "onmessage"
@@ -233,6 +235,10 @@ export function analyzeFile(
     "local-storage",
     localStorageAnalyzerBuilder
   );
+  const sessionStorageAnalyzer = createAnalyzer(
+    "session-storage",
+    sessionStorageAnalyzerBuilder
+  );
   const locationAnalyzer = createAnalyzer("location", locationAnalyzerBuilder);
   const onhashchangeAnalyzer = createAnalyzer(
     "onhashchange",
@@ -305,6 +311,8 @@ export function analyzeFile(
       hostnameAnalyzer?.CallExpression?.(node, ancestors);
       innerHtmlAnalyzer?.CallExpression?.(node, ancestors);
       localStorageAnalyzer?.CallExpression?.(node, ancestors);
+      sessionStorageAnalyzer?.CallExpression?.(node, ancestors);
+      locationAnalyzer?.CallExpression?.(node, ancestors);
       onhashchangeAnalyzer?.CallExpression?.(node, ancestors);
       onmessageAnalyzer?.CallExpression?.(node, ancestors);
       regexMatchAnalyzer?.CallExpression?.(node, ancestors);
@@ -344,6 +352,7 @@ export function analyzeFile(
       hostnameAnalyzer?.AssignmentExpression?.(node, ancestors);
       innerHtmlAnalyzer?.AssignmentExpression?.(node, ancestors);
       localStorageAnalyzer?.AssignmentExpression?.(node, ancestors);
+      sessionStorageAnalyzer?.AssignmentExpression?.(node, ancestors);
       locationAnalyzer?.AssignmentExpression?.(node, ancestors);
       onhashchangeAnalyzer?.AssignmentExpression?.(node, ancestors);
       onmessageAnalyzer?.AssignmentExpression?.(node, ancestors);
@@ -376,6 +385,7 @@ export function analyzeFile(
       hostnameAnalyzer?.MemberExpression?.(node, ancestors);
       innerHtmlAnalyzer?.MemberExpression?.(node, ancestors);
       localStorageAnalyzer?.MemberExpression?.(node, ancestors);
+      sessionStorageAnalyzer?.MemberExpression?.(node, ancestors);
       locationAnalyzer?.MemberExpression?.(node, ancestors);
     },
     VariableDeclarator(node, ancestors) {

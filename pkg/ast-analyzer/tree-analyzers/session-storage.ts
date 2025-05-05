@@ -1,4 +1,4 @@
-import { Node } from "acorn";
+import { Node, MemberExpression } from "acorn";
 import { Analyzer, AnalyzerMatch, AnalyzerParams } from "../types";
 import { Visitor } from "../walker";
 
@@ -15,18 +15,39 @@ const sessionStorageAnalyzerBuilder = (
       }
 
       // Check for sessionStorage method calls
-      if (
-        node.callee.type === "MemberExpression" &&
-        node.callee.object.type === "MemberExpression" &&
-        node.callee.object.object.type === "Identifier" &&
-        node.callee.object.object.name === "window" &&
-        node.callee.object.property.type === "Identifier" &&
-        node.callee.object.property.name === "sessionStorage" &&
-        node.callee.property.type === "Identifier" &&
-        ["getItem", "setItem", "removeItem", "clear"].includes(
-          node.callee.property.name
-        )
-      ) {
+      const isSessionStorageCall = (node: Node) => {
+        if (node.type !== "MemberExpression") return false;
+
+        const memberNode = node as MemberExpression;
+
+        // Check for direct sessionStorage usage
+        if (
+          memberNode.object.type === "Identifier" &&
+          memberNode.object.name === "sessionStorage" &&
+          memberNode.property.type === "Identifier" &&
+          ["getItem", "setItem"].includes(memberNode.property.name)
+        ) {
+          return true;
+        }
+
+        // Check for window.sessionStorage usage
+        if (
+          memberNode.object.type === "MemberExpression" &&
+          memberNode.object.object.type === "Identifier" &&
+          memberNode.object.object.name === "window" &&
+          memberNode.object.property.type === "Identifier" &&
+          memberNode.object.property.name === "sessionStorage" &&
+          memberNode.property.type === "Identifier" &&
+          ["getItem", "setItem"].includes(memberNode.property.name)
+        ) {
+          return true;
+        }
+
+        return false;
+      };
+
+      if (isSessionStorageCall(node.callee)) {
+        const callee = node.callee as MemberExpression;
         const match: AnalyzerMatch = {
           filePath: args.filePath,
           analyzerName: SESSION_STORAGE_ANALYZER_NAME,
@@ -35,7 +56,7 @@ const sessionStorageAnalyzerBuilder = (
           end: node.loc.end,
           tags: {
             "session-storage": true,
-            [`session-storage-${node.callee.property.name}`]: true,
+            [`property-${(callee.property as any).name}`]: true,
           },
         };
 
