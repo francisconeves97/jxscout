@@ -28,10 +28,7 @@ const postmessageAnalyzerBuilder = (
           start: node.loc.start,
           end: node.loc.end,
           tags: {
-            "message-sender": true,
-            ...(node.arguments.length >= 2
-              ? { "has-target-origin": true }
-              : {}),
+            postMessage: true,
           },
         };
 

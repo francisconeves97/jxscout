@@ -42,6 +42,7 @@ import { locationAnalyzerBuilder } from "./tree-analyzers/location";
 import { onhashchangeAnalyzerBuilder } from "./tree-analyzers/onhashchange";
 import { onmessageAnalyzerBuilder } from "./tree-analyzers/onmessage";
 import path from "path";
+import { postmessageAnalyzerBuilder } from "./tree-analyzers/postmessage";
 
 export function parseFile(filePath: string): AnalyzerParams {
   const fileContent = fs.readFileSync(filePath, "utf-8");
@@ -74,7 +75,7 @@ function printUsage() {
 export type AnalyzerType =
   | "paths"
   | "emails"
-  | "post-message"
+  | "postmessage"
   | "message-listener"
   | "regex-match"
   | "hash-change"
@@ -135,8 +136,8 @@ export function analyzeFile(
   const pathsAnalyzer = createAnalyzer("paths", pathsAnalyzerBuilder);
   const emailsAnalyzer = createAnalyzer("emails", emailsAnalyzerBuilder);
   const postMessageAnalyzer = createAnalyzer(
-    "post-message",
-    postMessageAnalyzerBuilder
+    "postmessage",
+    postmessageAnalyzerBuilder
   );
   const messageListenerAnalyzer = createAnalyzer(
     "message-listener",
