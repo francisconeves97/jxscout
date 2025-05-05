@@ -37,6 +37,7 @@ import { fetchOptionsAnalyzerBuilder } from "./tree-analyzers/fetch-options";
 import { fetchAnalyzerBuilder } from "./tree-analyzers/fetch";
 import { hostnameAnalyzerBuilder } from "./tree-analyzers/hostname";
 import { innerHtmlAnalyzerBuilder } from "./tree-analyzers/inner-html";
+import { localStorageAnalyzerBuilder } from "./tree-analyzers/local-storage";
 import path from "path";
 
 export function parseFile(filePath: string): AnalyzerParams {
@@ -101,7 +102,8 @@ export type AnalyzerType =
   | "fetch-options"
   | "fetch"
   | "hostname"
-  | "inner-html";
+  | "inner-html"
+  | "local-storage";
 
 export function analyzeFile(
   filePath: string,
@@ -224,6 +226,10 @@ export function analyzeFile(
     "inner-html",
     innerHtmlAnalyzerBuilder
   );
+  const localStorageAnalyzer = createAnalyzer(
+    "local-storage",
+    localStorageAnalyzerBuilder
+  );
 
   traverse(args.source, args.ast, {
     Literal(node, ancestors) {
@@ -268,6 +274,7 @@ export function analyzeFile(
       evalAnalyzer?.CallExpression?.(node, ancestors);
       fetchOptionsAnalyzer?.CallExpression?.(node, ancestors);
       fetchAnalyzer?.CallExpression?.(node, ancestors);
+      localStorageAnalyzer?.CallExpression?.(node, ancestors);
     },
     AssignmentExpression(node, ancestors) {
       messageListenerAnalyzer?.AssignmentExpression?.(node, ancestors);
