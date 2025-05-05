@@ -34,6 +34,7 @@ import { cookieAnalyzerBuilder } from "./tree-analyzers/cookie";
 import { documentDomainAnalyzerBuilder } from "./tree-analyzers/document-domain";
 import { evalAnalyzerBuilder } from "./tree-analyzers/eval";
 import { fetchOptionsAnalyzerBuilder } from "./tree-analyzers/fetch-options";
+import { fetchAnalyzerBuilder } from "./tree-analyzers/fetch";
 import path from "path";
 
 export function parseFile(filePath: string): AnalyzerParams {
@@ -95,7 +96,8 @@ export type AnalyzerType =
   | "cookie"
   | "document-domain"
   | "eval"
-  | "fetch-options";
+  | "fetch-options"
+  | "fetch";
 
 export function analyzeFile(
   filePath: string,
@@ -212,6 +214,7 @@ export function analyzeFile(
     "fetch-options",
     fetchOptionsAnalyzerBuilder
   );
+  const fetchAnalyzer = createAnalyzer("fetch", fetchAnalyzerBuilder);
 
   traverse(args.source, args.ast, {
     Literal(node, ancestors) {
@@ -254,6 +257,7 @@ export function analyzeFile(
       addEventListenerAnalyzer?.CallExpression?.(node, ancestors);
       evalAnalyzer?.CallExpression?.(node, ancestors);
       fetchOptionsAnalyzer?.CallExpression?.(node, ancestors);
+      fetchAnalyzer?.CallExpression?.(node, ancestors);
     },
     AssignmentExpression(node, ancestors) {
       messageListenerAnalyzer?.AssignmentExpression?.(node, ancestors);

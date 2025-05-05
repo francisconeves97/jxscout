@@ -28,7 +28,6 @@ const fetchAnalyzerBuilder = (
           end: node.loc.end,
           tags: {
             "fetch-call": true,
-            ...(node.arguments.length >= 2 ? { "has-options": true } : {}),
           },
         };
 
