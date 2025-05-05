@@ -43,6 +43,7 @@ import { postmessageAnalyzerBuilder } from "./tree-analyzers/postmessage";
 import { regexMatchAnalyzerBuilder } from "./tree-analyzers/regex-match";
 import { regexAnalyzerBuilder as regexPatternAnalyzerBuilder } from "./tree-analyzers/regex-pattern";
 import { sessionStorageAnalyzerBuilder } from "./tree-analyzers/session-storage";
+import { urlSearchParamsAnalyzerBuilder } from "./tree-analyzers/url-search-params";
 
 export function parseFile(filePath: string): AnalyzerParams {
   const fileContent = fs.readFileSync(filePath, "utf-8");
@@ -112,7 +113,8 @@ export type AnalyzerType =
   | "location"
   | "onhashchange"
   | "onmessage"
-  | "regex-pattern";
+  | "regex-pattern"
+  | "url-search-params";
 
 export function analyzeFile(
   filePath: string,
@@ -256,6 +258,10 @@ export function analyzeFile(
     "regex-pattern",
     regexPatternAnalyzerBuilder
   );
+  const urlSearchParamsAnalyzer = createAnalyzer(
+    "url-search-params",
+    urlSearchParamsAnalyzerBuilder
+  );
 
   traverse(args.source, args.ast, {
     Literal(node, ancestors) {
@@ -274,6 +280,7 @@ export function analyzeFile(
       regexAnalyzer?.NewExpression?.(node, ancestors);
       websocketUrlPoisoningAnalyzer?.NewExpression?.(node, ancestors);
       regexPatternAnalyzer?.NewExpression?.(node, ancestors);
+      urlSearchParamsAnalyzer?.NewExpression?.(node, ancestors);
     },
     TemplateLiteral(node, ancestors) {
       pathsAnalyzer?.TemplateLiteral?.(node, ancestors);

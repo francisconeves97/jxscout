@@ -26,7 +26,7 @@ const urlSearchParamsAnalyzerBuilder = (
           start: node.loc.start,
           end: node.loc.end,
           tags: {
-            "url-search-params-creation": true,
+            "url-search-params": true,
           },
         };
 
