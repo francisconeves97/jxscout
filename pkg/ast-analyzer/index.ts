@@ -6,7 +6,7 @@ import { pathsAnalyzerBuilder } from "./paths";
 import { emailsAnalyzerBuilder } from "./emails";
 import { messageListenerAnalyzerBuilder } from "./message-listener";
 import { hashChangeAnalyzerBuilder } from "./hash-change";
-import { regexAnalyzerBuilder } from "./regex";
+import { regexAnalyzerBuilder } from "./tree-analyzers/regex-pattern";
 import { domXssAnalyzerBuilder } from "./dom-xss";
 import { graphqlAnalyzerBuilder } from "./graphql";
 import { urlsAnalyzerBuilder } from "./urls";
@@ -41,6 +41,7 @@ import { onmessageAnalyzerBuilder } from "./tree-analyzers/onmessage";
 import path from "path";
 import { postmessageAnalyzerBuilder } from "./tree-analyzers/postmessage";
 import { regexMatchAnalyzerBuilder } from "./tree-analyzers/regex-match";
+import { regexAnalyzerBuilder as regexPatternAnalyzerBuilder } from "./tree-analyzers/regex-pattern";
 
 export function parseFile(filePath: string): AnalyzerParams {
   const fileContent = fs.readFileSync(filePath, "utf-8");
@@ -108,7 +109,8 @@ export type AnalyzerType =
   | "local-storage"
   | "location"
   | "onhashchange"
-  | "onmessage";
+  | "onmessage"
+  | "regex-pattern";
 
 export function analyzeFile(
   filePath: string,
@@ -244,6 +246,10 @@ export function analyzeFile(
     "regex-match",
     regexMatchAnalyzerBuilder
   );
+  const regexPatternAnalyzer = createAnalyzer(
+    "regex-pattern",
+    regexPatternAnalyzerBuilder
+  );
 
   traverse(args.source, args.ast, {
     Literal(node, ancestors) {
@@ -256,10 +262,12 @@ export function analyzeFile(
       piiAnalyzer?.Literal?.(node, ancestors);
       extensionsAnalyzer?.Literal?.(node, ancestors);
       hostnameAnalyzer?.Literal?.(node, ancestors);
+      regexPatternAnalyzer?.Literal?.(node, ancestors);
     },
     NewExpression(node, ancestors) {
       regexAnalyzer?.NewExpression?.(node, ancestors);
       websocketUrlPoisoningAnalyzer?.NewExpression?.(node, ancestors);
+      regexPatternAnalyzer?.NewExpression?.(node, ancestors);
     },
     TemplateLiteral(node, ancestors) {
       pathsAnalyzer?.TemplateLiteral?.(node, ancestors);
