@@ -27,7 +27,35 @@ const onmessageAnalyzerBuilder = (
           start: node.loc.start,
           end: node.loc.end,
           tags: {
-            "message-handler": true,
+            onmessage: true,
+          },
+        };
+
+        matchesReturn.push(match);
+      }
+    },
+    CallExpression(node, ancestors) {
+      if (!node.loc) {
+        return;
+      }
+
+      // Check if this is an addEventListener call with "message" event
+      if (
+        node.callee.type === "MemberExpression" &&
+        node.callee.property.type === "Identifier" &&
+        node.callee.property.name === "addEventListener" &&
+        node.arguments.length >= 2 &&
+        node.arguments[0].type === "Literal" &&
+        node.arguments[0].value === "message"
+      ) {
+        const match: AnalyzerMatch = {
+          filePath: args.filePath,
+          analyzerName: ONMESSAGE_ANALYZER_NAME,
+          value: args.source.slice(node.start, node.end),
+          start: node.loc.start,
+          end: node.loc.end,
+          tags: {
+            onmessage: true,
           },
         };
 

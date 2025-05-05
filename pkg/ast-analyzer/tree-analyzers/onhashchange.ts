@@ -1,5 +1,4 @@
-import { Node } from "acorn";
-import { Analyzer, AnalyzerMatch, AnalyzerParams } from "../types";
+import { AnalyzerMatch, AnalyzerParams } from "../types";
 import { Visitor } from "../walker";
 
 export const ONHASHCHANGE_ANALYZER_NAME = "onhashchange";

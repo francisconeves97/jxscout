@@ -40,6 +40,7 @@ import { innerHtmlAnalyzerBuilder } from "./tree-analyzers/inner-html";
 import { localStorageAnalyzerBuilder } from "./tree-analyzers/local-storage";
 import { locationAnalyzerBuilder } from "./tree-analyzers/location";
 import { onhashchangeAnalyzerBuilder } from "./tree-analyzers/onhashchange";
+import { onmessageAnalyzerBuilder } from "./tree-analyzers/onmessage";
 import path from "path";
 
 export function parseFile(filePath: string): AnalyzerParams {
@@ -107,7 +108,8 @@ export type AnalyzerType =
   | "inner-html"
   | "local-storage"
   | "location"
-  | "onhashchange";
+  | "onhashchange"
+  | "onmessage";
 
 export function analyzeFile(
   filePath: string,
@@ -239,6 +241,10 @@ export function analyzeFile(
     "onhashchange",
     onhashchangeAnalyzerBuilder
   );
+  const onmessageAnalyzer = createAnalyzer(
+    "onmessage",
+    onmessageAnalyzerBuilder
+  );
 
   traverse(args.source, args.ast, {
     Literal(node, ancestors) {
@@ -294,6 +300,7 @@ export function analyzeFile(
       innerHtmlAnalyzer?.CallExpression?.(node, ancestors);
       localStorageAnalyzer?.CallExpression?.(node, ancestors);
       onhashchangeAnalyzer?.CallExpression?.(node, ancestors);
+      onmessageAnalyzer?.CallExpression?.(node, ancestors);
     },
     AssignmentExpression(node, ancestors) {
       pathsAnalyzer?.AssignmentExpression?.(node, ancestors);
@@ -332,6 +339,7 @@ export function analyzeFile(
       localStorageAnalyzer?.AssignmentExpression?.(node, ancestors);
       locationAnalyzer?.AssignmentExpression?.(node, ancestors);
       onhashchangeAnalyzer?.AssignmentExpression?.(node, ancestors);
+      onmessageAnalyzer?.AssignmentExpression?.(node, ancestors);
     },
     MemberExpression(node, ancestors) {
       pathsAnalyzer?.MemberExpression?.(node, ancestors);
