@@ -22,8 +22,7 @@ const regexAnalyzerBuilder = (
           start: node.loc.start,
           end: node.loc.end,
           tags: {
-            regex: true,
-            "regex-literal": true,
+            "regex-pattern": true,
           },
         };
 
@@ -50,8 +49,7 @@ const regexAnalyzerBuilder = (
             start: node.loc.start,
             end: node.loc.end,
             tags: {
-              regex: true,
-              "regex-constructor": true,
+              "regex-pattern": true,
             },
           };
 

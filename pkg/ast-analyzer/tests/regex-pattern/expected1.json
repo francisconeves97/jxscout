@@ -12,8 +12,7 @@
       "column": 24
     },
     "tags": {
-      "regex": true,
-      "regex-literal": true
+      "regex-pattern": true
     }
   },
   {
@@ -29,8 +28,7 @@
       "column": 36
     },
     "tags": {
-      "regex": true,
-      "regex-literal": true
+      "regex-pattern": true
     }
   },
   {
@@ -46,8 +44,7 @@
       "column": 21
     },
     "tags": {
-      "regex": true,
-      "regex-literal": true
+      "regex-pattern": true
     }
   },
   {
@@ -63,8 +60,7 @@
       "column": 40
     },
     "tags": {
-      "regex": true,
-      "regex-constructor": true
+      "regex-pattern": true
     }
   },
   {
@@ -80,8 +76,7 @@
       "column": 51
     },
     "tags": {
-      "regex": true,
-      "regex-constructor": true
+      "regex-pattern": true
     }
   },
   {
@@ -97,8 +92,7 @@
       "column": 33
     },
     "tags": {
-      "regex": true,
-      "regex-constructor": true
+      "regex-pattern": true
     }
   }
 ]
