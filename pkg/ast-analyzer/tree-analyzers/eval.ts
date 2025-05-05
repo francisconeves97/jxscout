@@ -27,8 +27,7 @@ const evalAnalyzerBuilder = (
           start: node.loc.start,
           end: node.loc.end,
           tags: {
-            "eval-call": true,
-            "has-argument": true,
+            eval: true,
           },
         };
 

@@ -92,8 +92,7 @@
       "column": 31
     },
     "tags": {
-      "domain-assignment": true,
-      "has-literal-value": true
+      "domain-assignment": true
     }
   },
   {
@@ -109,8 +108,7 @@
       "column": 39
     },
     "tags": {
-      "domain-assignment": true,
-      "has-literal-value": true
+      "domain-assignment": true
     }
   },
   {
@@ -126,8 +124,7 @@
       "column": 44
     },
     "tags": {
-      "domain-assignment": true,
-      "has-literal-value": true
+      "domain-assignment": true
     }
   },
   {
@@ -159,8 +156,7 @@
       "column": 29
     },
     "tags": {
-      "domain-assignment": true,
-      "has-literal-value": true
+      "domain-assignment": true
     }
   }
 ]

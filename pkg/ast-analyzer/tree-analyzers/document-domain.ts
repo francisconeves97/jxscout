@@ -30,9 +30,6 @@ const documentDomainAnalyzerBuilder = (
           end: node.loc.end,
           tags: {
             "domain-assignment": true,
-            ...(node.right.type !== "Identifier"
-              ? { "has-literal-value": true }
-              : {}),
           },
         };
 

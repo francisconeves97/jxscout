@@ -32,6 +32,7 @@ import { fileExtensionsAnalyzerBuilder } from "./extensions";
 import { addEventListenerAnalyzerBuilder } from "./tree-analyzers/add-event-listener";
 import { cookieAnalyzerBuilder } from "./tree-analyzers/cookie";
 import { documentDomainAnalyzerBuilder } from "./tree-analyzers/document-domain";
+import { evalAnalyzerBuilder } from "./tree-analyzers/eval";
 import path from "path";
 
 export function parseFile(filePath: string): AnalyzerParams {
@@ -91,7 +92,8 @@ export type AnalyzerType =
   | "extensions"
   | "add-event-listener"
   | "cookie"
-  | "document-domain";
+  | "document-domain"
+  | "eval";
 
 export function analyzeFile(
   filePath: string,
@@ -203,6 +205,7 @@ export function analyzeFile(
     "document-domain",
     documentDomainAnalyzerBuilder
   );
+  const evalAnalyzer = createAnalyzer("eval", evalAnalyzerBuilder);
 
   traverse(args.source, args.ast, {
     Literal(node, ancestors) {
@@ -243,6 +246,7 @@ export function analyzeFile(
       xpathInjectionAnalyzer?.CallExpression?.(node, ancestors);
       commonSourcesAnalyzer?.CallExpression?.(node, ancestors);
       addEventListenerAnalyzer?.CallExpression?.(node, ancestors);
+      evalAnalyzer?.CallExpression?.(node, ancestors);
     },
     AssignmentExpression(node, ancestors) {
       messageListenerAnalyzer?.AssignmentExpression?.(node, ancestors);
