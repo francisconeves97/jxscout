@@ -3,17 +3,28 @@ Events
 -- onmessage
 -- postmessage
 -- onhashchange
-Client Calls
+Client Behavior
 -- eval
 -- document.domain
 -- innerHTML
 -- WebSocket
 -- fetch
+-- HTTP Method
 -- xpath
 -- XHR
+-- URLSearchParams
+-- Window Location
+-- -- Assignment
+-- -- document.URL
+-- -- window.location
+-- -- location
+-- -- document.baseURI
+-- -- document.documentURI
+-- -- Read
+-- window.name
+-- Document Location
 Object Schemas
 -- fetch options
--- generic http options
 Storage
 -- Cookie
 -- -- Assignment
@@ -24,21 +35,14 @@ Storage
 -- sessionStorage
 -- -- getItem
 -- -- setItem
-Location
--- Assignment
--- Read
--- URLSearchParams
-Regex
--- Match
--- Pattern
 Data
 -- Path
 -- URL
 -- Hostname
+-- Regex
+-- -- Match
+-- -- Pattern
 -- X-Header
--- Request Method
--- -- String
--- -- Calls
 -- PII
 -- -- [dynamic]
 -- Secret
@@ -54,3 +58,5 @@ Data
 Frameworks
 -- React
 -- -- dangerouslySetInnerHTML
+-- -- jsx
+-- -- js
