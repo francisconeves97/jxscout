@@ -1,47 +1,47 @@
 Client Behavior
 -- Events
--- -- addEventListener
--- -- onmessage
--- -- postmessage
--- -- onhashchange
--- eval
--- document.domain
--- innerHTML
--- fetch
--- URLSearchParams
--- Window Location
--- -- Assignment
--- -- -- search
--- -- -- href
--- -- -- location
--- -- Read
--- -- -- search
--- -- -- href
--- -- -- location
-Object Schemas
--- fetch options
-Storage
--- Cookie
--- -- Assignment
--- -- Read
--- localStorage
--- -- getItem
--- -- setItem
--- sessionStorage
--- -- getItem
--- -- setItem
+-- -- addEventListener ✅
+-- -- onmessage ✅
+-- -- postmessage ✅
+-- -- onhashchange ✅
+-- eval ✅
+-- document.domain ✅
+-- -- Assignment ✅
+-- -- Read ✅
+-- innerHTML ✅
+-- fetch ✅
+-- URLSearchParams ✅
+-- Window Location ✅
+-- -- Assignment ✅
+-- -- -- search ✅
+-- -- -- href ✅
+-- -- -- location ✅
+-- -- Read ✅
+-- -- -- search ✅
+-- -- -- href ✅
+-- -- -- location ✅
+Object Schemas ✅
+-- fetch options ✅
+Storage ✅
+-- Cookie ✅
+-- -- Assignment ✅
+-- -- Read ✅
+-- localStorage ✅
+-- -- getItem ✅
+-- -- setItem ✅
+-- sessionStorage ✅
+-- -- getItem ✅
+-- -- setItem ✅
 Data
--- Path
--- -- API
--- -- Path
--- -- URL
--- -- Query
--- Hostname
--- Regex
--- -- Match
--- -- Pattern
--- PII
--- -- [dynamic]
+-- Path ✅
+-- -- API ✅
+-- -- Path ✅
+-- -- URL ✅
+-- -- Query ✅
+-- Hostname ✅
+-- Regex ✅
+-- -- Match ✅
+-- -- Pattern ✅
 -- Secret
 -- -- [dynamic]
 -- GraphQL
