@@ -56,7 +56,7 @@ const localStorageAnalyzerBuilder = (
           end: node.loc.end,
           tags: {
             "local-storage": true,
-            [`local-storage-${callee.property.name}`]: true,
+            [`property-${(callee.property as any).name}`]: true,
           },
         };
 

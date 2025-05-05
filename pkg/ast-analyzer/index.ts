@@ -38,6 +38,7 @@ import { fetchAnalyzerBuilder } from "./tree-analyzers/fetch";
 import { hostnameAnalyzerBuilder } from "./tree-analyzers/hostname";
 import { innerHtmlAnalyzerBuilder } from "./tree-analyzers/inner-html";
 import { localStorageAnalyzerBuilder } from "./tree-analyzers/local-storage";
+import { locationAnalyzerBuilder } from "./tree-analyzers/location";
 import path from "path";
 
 export function parseFile(filePath: string): AnalyzerParams {
@@ -103,7 +104,8 @@ export type AnalyzerType =
   | "fetch"
   | "hostname"
   | "inner-html"
-  | "local-storage";
+  | "local-storage"
+  | "location";
 
 export function analyzeFile(
   filePath: string,
@@ -230,6 +232,7 @@ export function analyzeFile(
     "local-storage",
     localStorageAnalyzerBuilder
   );
+  const locationAnalyzer = createAnalyzer("location", locationAnalyzerBuilder);
 
   traverse(args.source, args.ast, {
     Literal(node, ancestors) {
@@ -257,43 +260,101 @@ export function analyzeFile(
       extensionsAnalyzer?.TemplateLiteral?.(node, ancestors);
     },
     CallExpression(node, ancestors) {
+      pathsAnalyzer?.CallExpression?.(node, ancestors);
       postMessageAnalyzer?.CallExpression?.(node, ancestors);
       messageListenerAnalyzer?.CallExpression?.(node, ancestors);
       regexMatchAnalyzer?.CallExpression?.(node, ancestors);
-      hashChangeAnalyzer?.CallExpression?.(node, ancestors);
       domXssAnalyzer?.CallExpression?.(node, ancestors);
       jqueryDomXssAnalyzer?.CallExpression?.(node, ancestors);
       openRedirectionAnalyzer?.CallExpression?.(node, ancestors);
+      cookieManipulationAnalyzer?.CallExpression?.(node, ancestors);
       javascriptInjectionAnalyzer?.CallExpression?.(node, ancestors);
+      documentDomainManipulationAnalyzer?.CallExpression?.(node, ancestors);
+      websocketUrlPoisoningAnalyzer?.CallExpression?.(node, ancestors);
+      linkManipulationAnalyzer?.CallExpression?.(node, ancestors);
       ajaxRequestHeaderManipulationAnalyzer?.CallExpression?.(node, ancestors);
       localFilePathManipulationAnalyzer?.CallExpression?.(node, ancestors);
       html5StorageManipulationAnalyzer?.CallExpression?.(node, ancestors);
       xpathInjectionAnalyzer?.CallExpression?.(node, ancestors);
+      domDataManipulationAnalyzer?.CallExpression?.(node, ancestors);
       commonSourcesAnalyzer?.CallExpression?.(node, ancestors);
       addEventListenerAnalyzer?.CallExpression?.(node, ancestors);
+      cookieAnalyzer?.CallExpression?.(node, ancestors);
+      documentDomainAnalyzer?.CallExpression?.(node, ancestors);
       evalAnalyzer?.CallExpression?.(node, ancestors);
       fetchOptionsAnalyzer?.CallExpression?.(node, ancestors);
       fetchAnalyzer?.CallExpression?.(node, ancestors);
+      hostnameAnalyzer?.CallExpression?.(node, ancestors);
+      innerHtmlAnalyzer?.CallExpression?.(node, ancestors);
       localStorageAnalyzer?.CallExpression?.(node, ancestors);
     },
     AssignmentExpression(node, ancestors) {
-      messageListenerAnalyzer?.AssignmentExpression?.(node, ancestors);
+      pathsAnalyzer?.AssignmentExpression?.(node, ancestors);
+      postMessageAnalyzer?.AssignmentExpression?.(node, ancestors);
       hashChangeAnalyzer?.AssignmentExpression?.(node, ancestors);
       domXssAnalyzer?.AssignmentExpression?.(node, ancestors);
+      jqueryDomXssAnalyzer?.AssignmentExpression?.(node, ancestors);
+      openRedirectionAnalyzer?.AssignmentExpression?.(node, ancestors);
       cookieManipulationAnalyzer?.AssignmentExpression?.(node, ancestors);
+      javascriptInjectionAnalyzer?.AssignmentExpression?.(node, ancestors);
+      documentDomainManipulationAnalyzer?.AssignmentExpression?.(
+        node,
+        ancestors
+      );
+      websocketUrlPoisoningAnalyzer?.AssignmentExpression?.(node, ancestors);
       linkManipulationAnalyzer?.AssignmentExpression?.(node, ancestors);
+      ajaxRequestHeaderManipulationAnalyzer?.AssignmentExpression?.(
+        node,
+        ancestors
+      );
+      localFilePathManipulationAnalyzer?.AssignmentExpression?.(
+        node,
+        ancestors
+      );
+      html5StorageManipulationAnalyzer?.AssignmentExpression?.(node, ancestors);
+      xpathInjectionAnalyzer?.AssignmentExpression?.(node, ancestors);
+      domDataManipulationAnalyzer?.AssignmentExpression?.(node, ancestors);
+      commonSourcesAnalyzer?.AssignmentExpression?.(node, ancestors);
+      addEventListenerAnalyzer?.AssignmentExpression?.(node, ancestors);
       cookieAnalyzer?.AssignmentExpression?.(node, ancestors);
       documentDomainAnalyzer?.AssignmentExpression?.(node, ancestors);
+      fetchOptionsAnalyzer?.AssignmentExpression?.(node, ancestors);
+      fetchAnalyzer?.AssignmentExpression?.(node, ancestors);
+      hostnameAnalyzer?.AssignmentExpression?.(node, ancestors);
       innerHtmlAnalyzer?.AssignmentExpression?.(node, ancestors);
+      localStorageAnalyzer?.AssignmentExpression?.(node, ancestors);
+      locationAnalyzer?.AssignmentExpression?.(node, ancestors);
     },
     MemberExpression(node, ancestors) {
+      pathsAnalyzer?.MemberExpression?.(node, ancestors);
+      postMessageAnalyzer?.MemberExpression?.(node, ancestors);
+      regexMatchAnalyzer?.MemberExpression?.(node, ancestors);
+      domXssAnalyzer?.MemberExpression?.(node, ancestors);
+      jqueryDomXssAnalyzer?.MemberExpression?.(node, ancestors);
       openRedirectionAnalyzer?.MemberExpression?.(node, ancestors);
+      cookieManipulationAnalyzer?.MemberExpression?.(node, ancestors);
+      javascriptInjectionAnalyzer?.MemberExpression?.(node, ancestors);
       documentDomainManipulationAnalyzer?.MemberExpression?.(node, ancestors);
+      websocketUrlPoisoningAnalyzer?.MemberExpression?.(node, ancestors);
       linkManipulationAnalyzer?.MemberExpression?.(node, ancestors);
+      ajaxRequestHeaderManipulationAnalyzer?.MemberExpression?.(
+        node,
+        ancestors
+      );
+      localFilePathManipulationAnalyzer?.MemberExpression?.(node, ancestors);
+      html5StorageManipulationAnalyzer?.MemberExpression?.(node, ancestors);
+      xpathInjectionAnalyzer?.MemberExpression?.(node, ancestors);
       domDataManipulationAnalyzer?.MemberExpression?.(node, ancestors);
       commonSourcesAnalyzer?.MemberExpression?.(node, ancestors);
+      addEventListenerAnalyzer?.MemberExpression?.(node, ancestors);
       cookieAnalyzer?.MemberExpression?.(node, ancestors);
       documentDomainAnalyzer?.MemberExpression?.(node, ancestors);
+      fetchOptionsAnalyzer?.MemberExpression?.(node, ancestors);
+      fetchAnalyzer?.MemberExpression?.(node, ancestors);
+      hostnameAnalyzer?.MemberExpression?.(node, ancestors);
+      innerHtmlAnalyzer?.MemberExpression?.(node, ancestors);
+      localStorageAnalyzer?.MemberExpression?.(node, ancestors);
+      locationAnalyzer?.MemberExpression?.(node, ancestors);
     },
     VariableDeclarator(node, ancestors) {
       documentDomainAnalyzer?.VariableDeclarator?.(node, ancestors);

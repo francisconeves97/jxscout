@@ -13,7 +13,7 @@
     },
     "tags": {
       "local-storage": true,
-      "local-storage-getItem": true
+      "property-getItem": true
     }
   },
   {
@@ -30,7 +30,7 @@
     },
     "tags": {
       "local-storage": true,
-      "local-storage-setItem": true
+      "property-setItem": true
     }
   },
   {
@@ -47,7 +47,7 @@
     },
     "tags": {
       "local-storage": true,
-      "local-storage-getItem": true
+      "property-getItem": true
     }
   },
   {
@@ -64,7 +64,7 @@
     },
     "tags": {
       "local-storage": true,
-      "local-storage-getItem": true
+      "property-getItem": true
     }
   },
   {
@@ -81,7 +81,7 @@
     },
     "tags": {
       "local-storage": true,
-      "local-storage-getItem": true
+      "property-getItem": true
     }
   },
   {
@@ -98,7 +98,7 @@
     },
     "tags": {
       "local-storage": true,
-      "local-storage-getItem": true
+      "property-getItem": true
     }
   },
   {
@@ -115,7 +115,7 @@
     },
     "tags": {
       "local-storage": true,
-      "local-storage-getItem": true
+      "property-getItem": true
     }
   },
   {
@@ -132,7 +132,7 @@
     },
     "tags": {
       "local-storage": true,
-      "local-storage-setItem": true
+      "property-setItem": true
     }
   },
   {
@@ -149,7 +149,7 @@
     },
     "tags": {
       "local-storage": true,
-      "local-storage-setItem": true
+      "property-setItem": true
     }
   },
   {
@@ -166,7 +166,7 @@
     },
     "tags": {
       "local-storage": true,
-      "local-storage-setItem": true
+      "property-setItem": true
     }
   },
   {
@@ -183,7 +183,7 @@
     },
     "tags": {
       "local-storage": true,
-      "local-storage-setItem": true
+      "property-setItem": true
     }
   },
   {
@@ -200,7 +200,7 @@
     },
     "tags": {
       "local-storage": true,
-      "local-storage-setItem": true
+      "property-setItem": true
     }
   }
 ]
