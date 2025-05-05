@@ -31,6 +31,7 @@ import { piiAnalyzerBuilder } from "./pii";
 import { fileExtensionsAnalyzerBuilder } from "./extensions";
 import { addEventListenerAnalyzerBuilder } from "./tree-analyzers/add-event-listener";
 import { cookieAnalyzerBuilder } from "./tree-analyzers/cookie";
+import { documentDomainAnalyzerBuilder } from "./tree-analyzers/document-domain";
 import path from "path";
 
 export function parseFile(filePath: string): AnalyzerParams {
@@ -89,7 +90,8 @@ export type AnalyzerType =
   | "pii"
   | "extensions"
   | "add-event-listener"
-  | "cookie";
+  | "cookie"
+  | "document-domain";
 
 export function analyzeFile(
   filePath: string,
@@ -197,6 +199,10 @@ export function analyzeFile(
     addEventListenerAnalyzerBuilder
   );
   const cookieAnalyzer = createAnalyzer("cookie", cookieAnalyzerBuilder);
+  const documentDomainAnalyzer = createAnalyzer(
+    "document-domain",
+    documentDomainAnalyzerBuilder
+  );
 
   traverse(args.source, args.ast, {
     Literal(node, ancestors) {
@@ -245,6 +251,7 @@ export function analyzeFile(
       cookieManipulationAnalyzer?.AssignmentExpression?.(node, ancestors);
       linkManipulationAnalyzer?.AssignmentExpression?.(node, ancestors);
       cookieAnalyzer?.AssignmentExpression?.(node, ancestors);
+      documentDomainAnalyzer?.AssignmentExpression?.(node, ancestors);
     },
     MemberExpression(node, ancestors) {
       openRedirectionAnalyzer?.MemberExpression?.(node, ancestors);
@@ -253,6 +260,10 @@ export function analyzeFile(
       domDataManipulationAnalyzer?.MemberExpression?.(node, ancestors);
       commonSourcesAnalyzer?.MemberExpression?.(node, ancestors);
       cookieAnalyzer?.MemberExpression?.(node, ancestors);
+      documentDomainAnalyzer?.MemberExpression?.(node, ancestors);
+    },
+    VariableDeclarator(node, ancestors) {
+      documentDomainAnalyzer?.VariableDeclarator?.(node, ancestors);
     },
   });
 
