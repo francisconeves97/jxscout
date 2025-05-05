@@ -33,6 +33,7 @@ import { addEventListenerAnalyzerBuilder } from "./tree-analyzers/add-event-list
 import { cookieAnalyzerBuilder } from "./tree-analyzers/cookie";
 import { documentDomainAnalyzerBuilder } from "./tree-analyzers/document-domain";
 import { evalAnalyzerBuilder } from "./tree-analyzers/eval";
+import { fetchOptionsAnalyzerBuilder } from "./tree-analyzers/fetch-options";
 import path from "path";
 
 export function parseFile(filePath: string): AnalyzerParams {
@@ -93,7 +94,8 @@ export type AnalyzerType =
   | "add-event-listener"
   | "cookie"
   | "document-domain"
-  | "eval";
+  | "eval"
+  | "fetch-options";
 
 export function analyzeFile(
   filePath: string,
@@ -206,6 +208,10 @@ export function analyzeFile(
     documentDomainAnalyzerBuilder
   );
   const evalAnalyzer = createAnalyzer("eval", evalAnalyzerBuilder);
+  const fetchOptionsAnalyzer = createAnalyzer(
+    "fetch-options",
+    fetchOptionsAnalyzerBuilder
+  );
 
   traverse(args.source, args.ast, {
     Literal(node, ancestors) {
@@ -247,6 +253,7 @@ export function analyzeFile(
       commonSourcesAnalyzer?.CallExpression?.(node, ancestors);
       addEventListenerAnalyzer?.CallExpression?.(node, ancestors);
       evalAnalyzer?.CallExpression?.(node, ancestors);
+      fetchOptionsAnalyzer?.CallExpression?.(node, ancestors);
     },
     AssignmentExpression(node, ancestors) {
       messageListenerAnalyzer?.AssignmentExpression?.(node, ancestors);
@@ -268,6 +275,9 @@ export function analyzeFile(
     },
     VariableDeclarator(node, ancestors) {
       documentDomainAnalyzer?.VariableDeclarator?.(node, ancestors);
+    },
+    ObjectExpression(node, ancestors) {
+      fetchOptionsAnalyzer?.ObjectExpression?.(node, ancestors);
     },
   });
 

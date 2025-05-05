@@ -4,34 +4,43 @@ import { Visitor } from "../walker";
 
 export const FETCH_OPTIONS_ANALYZER_NAME = "fetch-options";
 
+// Common fetch option properties
+const FETCH_OPTION_PROPERTIES = [
+  "method",
+  "headers",
+  "body",
+  "credentials",
+  "mode",
+];
+
 const fetchOptionsAnalyzerBuilder = (
   args: AnalyzerParams,
   matchesReturn: AnalyzerMatch[]
 ): Visitor => {
   return {
-    CallExpression(node, ancestors) {
+    ObjectExpression(node, ancestors) {
       if (!node.loc) {
         return;
       }
 
-      // Check if this is a fetch call with options
-      if (
-        node.callee.type === "Identifier" &&
-        node.callee.name === "fetch" &&
-        node.arguments.length >= 2 &&
-        node.arguments[1].type === "ObjectExpression"
-      ) {
-        const options = node.arguments[1];
+      // Get all property names in this object
+      const propertyNames = new Set(
+        node.properties
+          .filter(
+            (prop) => prop.type === "Property" && prop.key.type === "Identifier"
+          )
+          .map((prop) => (prop as any).key.name)
+      );
+
+      // Check if this object has any fetch option properties
+      const hasFetchProperties = FETCH_OPTION_PROPERTIES.some((prop) =>
+        propertyNames.has(prop)
+      );
+
+      if (hasFetchProperties) {
         const tags: Record<string, true> = {
           "fetch-options": true,
         };
-
-        // Check for specific options
-        options.properties.forEach((prop) => {
-          if (prop.type === "Property" && prop.key.type === "Identifier") {
-            tags[`fetch-option-${prop.key.name}`] = true;
-          }
-        });
 
         const match: AnalyzerMatch = {
           filePath: args.filePath,
