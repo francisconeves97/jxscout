@@ -27,10 +27,7 @@ const innerHtmlAnalyzerBuilder = (
           start: node.loc.start,
           end: node.loc.end,
           tags: {
-            "html-assignment": true,
-            ...(node.right.type === "Literal"
-              ? { "has-literal-value": true }
-              : {}),
+            "inner-html": true,
           },
         };
 

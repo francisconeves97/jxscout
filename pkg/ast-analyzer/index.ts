@@ -36,6 +36,7 @@ import { evalAnalyzerBuilder } from "./tree-analyzers/eval";
 import { fetchOptionsAnalyzerBuilder } from "./tree-analyzers/fetch-options";
 import { fetchAnalyzerBuilder } from "./tree-analyzers/fetch";
 import { hostnameAnalyzerBuilder } from "./tree-analyzers/hostname";
+import { innerHtmlAnalyzerBuilder } from "./tree-analyzers/inner-html";
 import path from "path";
 
 export function parseFile(filePath: string): AnalyzerParams {
@@ -99,7 +100,8 @@ export type AnalyzerType =
   | "eval"
   | "fetch-options"
   | "fetch"
-  | "hostname";
+  | "hostname"
+  | "inner-html";
 
 export function analyzeFile(
   filePath: string,
@@ -218,6 +220,10 @@ export function analyzeFile(
   );
   const fetchAnalyzer = createAnalyzer("fetch", fetchAnalyzerBuilder);
   const hostnameAnalyzer = createAnalyzer("hostname", hostnameAnalyzerBuilder);
+  const innerHtmlAnalyzer = createAnalyzer(
+    "inner-html",
+    innerHtmlAnalyzerBuilder
+  );
 
   traverse(args.source, args.ast, {
     Literal(node, ancestors) {
@@ -271,6 +277,7 @@ export function analyzeFile(
       linkManipulationAnalyzer?.AssignmentExpression?.(node, ancestors);
       cookieAnalyzer?.AssignmentExpression?.(node, ancestors);
       documentDomainAnalyzer?.AssignmentExpression?.(node, ancestors);
+      innerHtmlAnalyzer?.AssignmentExpression?.(node, ancestors);
     },
     MemberExpression(node, ancestors) {
       openRedirectionAnalyzer?.MemberExpression?.(node, ancestors);
