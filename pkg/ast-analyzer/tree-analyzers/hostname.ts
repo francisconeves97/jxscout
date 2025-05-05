@@ -1,29 +1,34 @@
 import { Node } from "acorn";
 import { Analyzer, AnalyzerMatch, AnalyzerParams } from "../types";
 import { Visitor } from "../walker";
+import tlds from "tlds";
 
 export const HOSTNAME_ANALYZER_NAME = "hostname";
+
+// Regex pattern to match hostnames
+// Matches:
+// - Domain names with subdomains (e.g. sub.example.com)
+// - Must end with a valid TLD from the tlds package
+// - Allows only letters, numbers, hyphens, and dots
+// - Each label must start and end with a letter or number
+// - Labels cannot start or end with hyphens
+const HOSTNAME_REGEX = new RegExp(
+  `^[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\\.(${tlds.join("|")})$`,
+  "i"
+);
 
 const hostnameAnalyzerBuilder = (
   args: AnalyzerParams,
   matchesReturn: AnalyzerMatch[]
 ): Visitor => {
   return {
-    MemberExpression(node, ancestors) {
-      if (!node.loc) {
+    Literal(node, ancestors) {
+      if (!node.loc || typeof node.value !== "string") {
         return;
       }
 
-      // Check for hostname access
-      if (
-        node.property.type === "Identifier" &&
-        node.property.name === "hostname" &&
-        ((node.object.type === "Identifier" &&
-          node.object.name === "location") ||
-          (node.object.type === "NewExpression" &&
-            node.object.callee.type === "Identifier" &&
-            node.object.callee.name === "URL"))
-      ) {
+      // Check if the string literal matches the hostname pattern
+      if (HOSTNAME_REGEX.test(node.value)) {
         const match: AnalyzerMatch = {
           filePath: args.filePath,
           analyzerName: HOSTNAME_ANALYZER_NAME,
@@ -31,38 +36,7 @@ const hostnameAnalyzerBuilder = (
           start: node.loc.start,
           end: node.loc.end,
           tags: {
-            "hostname-access": true,
-            ...(node.object.type === "Identifier"
-              ? { "location-hostname": true }
-              : { "url-hostname": true }),
-          },
-        };
-
-        matchesReturn.push(match);
-      }
-    },
-    AssignmentExpression(node, ancestors) {
-      if (!node.loc) {
-        return;
-      }
-
-      // Check for hostname assignments
-      if (
-        node.left.type === "MemberExpression" &&
-        node.left.property.type === "Identifier" &&
-        node.left.property.name === "hostname" &&
-        node.left.object.type === "Identifier" &&
-        node.left.object.name === "location"
-      ) {
-        const match: AnalyzerMatch = {
-          filePath: args.filePath,
-          analyzerName: HOSTNAME_ANALYZER_NAME,
-          value: args.source.slice(node.start, node.end),
-          start: node.loc.start,
-          end: node.loc.end,
-          tags: {
-            "hostname-assignment": true,
-            "location-hostname": true,
+            "hostname-string": true,
           },
         };
 

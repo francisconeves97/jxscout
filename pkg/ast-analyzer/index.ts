@@ -35,6 +35,7 @@ import { documentDomainAnalyzerBuilder } from "./tree-analyzers/document-domain"
 import { evalAnalyzerBuilder } from "./tree-analyzers/eval";
 import { fetchOptionsAnalyzerBuilder } from "./tree-analyzers/fetch-options";
 import { fetchAnalyzerBuilder } from "./tree-analyzers/fetch";
+import { hostnameAnalyzerBuilder } from "./tree-analyzers/hostname";
 import path from "path";
 
 export function parseFile(filePath: string): AnalyzerParams {
@@ -97,7 +98,8 @@ export type AnalyzerType =
   | "document-domain"
   | "eval"
   | "fetch-options"
-  | "fetch";
+  | "fetch"
+  | "hostname";
 
 export function analyzeFile(
   filePath: string,
@@ -215,6 +217,7 @@ export function analyzeFile(
     fetchOptionsAnalyzerBuilder
   );
   const fetchAnalyzer = createAnalyzer("fetch", fetchAnalyzerBuilder);
+  const hostnameAnalyzer = createAnalyzer("hostname", hostnameAnalyzerBuilder);
 
   traverse(args.source, args.ast, {
     Literal(node, ancestors) {
@@ -226,6 +229,7 @@ export function analyzeFile(
       secretsAnalyzer?.Literal?.(node, ancestors);
       piiAnalyzer?.Literal?.(node, ancestors);
       extensionsAnalyzer?.Literal?.(node, ancestors);
+      hostnameAnalyzer?.Literal?.(node, ancestors);
     },
     NewExpression(node, ancestors) {
       regexAnalyzer?.NewExpression?.(node, ancestors);
