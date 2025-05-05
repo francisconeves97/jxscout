@@ -1,28 +1,23 @@
-Events
--- addEventListener
--- onmessage
--- postmessage
--- onhashchange
 Client Behavior
+-- Events
+-- -- addEventListener
+-- -- onmessage
+-- -- postmessage
+-- -- onhashchange
 -- eval
 -- document.domain
 -- innerHTML
--- WebSocket
 -- fetch
--- HTTP Method
--- xpath
--- XHR
 -- URLSearchParams
 -- Window Location
 -- -- Assignment
--- -- document.URL
--- -- window.location
--- -- location
--- -- document.baseURI
--- -- document.documentURI
+-- -- -- search
+-- -- -- href
+-- -- -- location
 -- -- Read
--- window.name
--- Document Location
+-- -- -- search
+-- -- -- href
+-- -- -- location
 Object Schemas
 -- fetch options
 Storage
@@ -37,24 +32,22 @@ Storage
 -- -- setItem
 Data
 -- Path
--- URL
+-- -- API
+-- -- Path
+-- -- URL
+-- -- Query
 -- Hostname
 -- Regex
 -- -- Match
 -- -- Pattern
--- X-Header
 -- PII
 -- -- [dynamic]
 -- Secret
--- -- [dynamic]
--- Extension
 -- -- [dynamic]
 -- GraphQL
 -- -- mutation
 -- -- query
 -- -- other
--- IPAddress
--- HTTP Method
 Frameworks
 -- React
 -- -- dangerouslySetInnerHTML

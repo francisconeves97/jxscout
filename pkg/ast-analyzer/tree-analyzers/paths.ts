@@ -1,31 +1,19 @@
-import { createRegexAnalyzer } from "./regex-analyzer";
+import { Node } from "acorn";
+import { Analyzer, AnalyzerMatch, AnalyzerParams } from "../types";
+import { Visitor } from "../walker";
 
-// This regex matches potential API paths while excluding full URLs
+export const PATHS_ANALYZER_NAME = "paths";
+
+// This regex matches potential API paths and URLs
 // It allows:
+// - Full URLs with http/https protocol (must have at least one path segment)
 // - Paths starting with or without a leading slash
 // - Paths with segments separated by slashes
 // - Paths with placeholders in curly braces or with colons
 // - Paths with query parameters
 // - Alphanumeric characters, hyphens, underscores, dots, and other URL-safe characters
 const PATH_REGEX =
-  /^(?!https?:\/\/)(?:\/)?(?:[A-Za-z0-9\-._~!$&'()*+,;=:@{}]+\/)*[A-Za-z0-9\-._~!$&'()*+,;=:@{}]+(?:\?[^#]*)?(?:#[^]*)?$/;
-
-function isHighEntropy(str, threshold = 4.9) {
-  const freq = {};
-  for (const char of str) {
-    freq[char] = (freq[char] || 0) + 1;
-  }
-
-  let entropy = 0;
-  const len = str.length;
-
-  for (const char in freq) {
-    const p = freq[char] / len;
-    entropy -= p * Math.log2(p);
-  }
-
-  return entropy >= threshold;
-}
+  /^(?:(?:https?:\/\/[^\/]+)(?:\/[A-Za-z0-9\-._~!$&'()*+,;=:@{}]+)+(?:\?[^#]*)?(?:#[^]*)?|(?:\/)?(?:[A-Za-z0-9\-._~!$&'()*+,;=:@{}]+\/)*[A-Za-z0-9\-._~!$&'()*+,;=:@{}]+(?:\?[^#]*)?(?:#[^]*)?)$/;
 
 // Common MIME types that should be excluded
 const COMMON_MIME_TYPES = new Set([
@@ -282,6 +270,23 @@ const STATIC_ASSET_EXTENSIONS = new Set([
   ".webm",
 ]);
 
+function isHighEntropy(str: string, threshold = 4.9): boolean {
+  const freq: Record<string, number> = {};
+  for (const char of str) {
+    freq[char] = (freq[char] || 0) + 1;
+  }
+
+  let entropy = 0;
+  const len = str.length;
+
+  for (const char in freq) {
+    const p = freq[char] / len;
+    entropy -= p * Math.log2(p);
+  }
+
+  return entropy >= threshold;
+}
+
 // Checks if a string is a known MIME type
 function isMimeType(str: string): boolean {
   return (
@@ -291,14 +296,12 @@ function isMimeType(str: string): boolean {
 
 // Checks if a path contains only special characters (no alphanumeric)
 function containsOnlySpecialChars(path: string): boolean {
-  // Remove slashes and check if the remaining characters are all special
   const withoutSlashes = path.replace(/\//g, "");
   return withoutSlashes.length > 0 && /^[^a-zA-Z0-9]+$/.test(withoutSlashes);
 }
 
 // Checks if a path has only short segments (all segments are 1-2 characters)
 function hasOnlyShortSegments(path: string): boolean {
-  // Split by slashes and check if all segments are short
   const segments = path.split("/").filter((segment) => segment.length > 0);
   return (
     segments.length > 0 && segments.every((segment) => segment.length <= 2)
@@ -307,81 +310,133 @@ function hasOnlyShortSegments(path: string): boolean {
 
 // Checks if a path ends with a static asset extension
 function hasFileExtension(path: string): boolean {
-  // Get the last segment of the path (after the last slash)
   const lastSegment = path.split("/").pop() || "";
-
-  // Check if it ends with any of the static asset extensions
   return Array.from(STATIC_ASSET_EXTENSIONS).some((ext) =>
     lastSegment.toLowerCase().endsWith(ext)
   );
 }
 
-export const PATHS_ANALYZER_NAME = "paths";
+function isValidPath(value: string, ancestors: Node[]): boolean {
+  if (!value.includes("/")) {
+    return false;
+  }
 
-const pathsAnalyzerBuilder = createRegexAnalyzer({
-  analyzerName: PATHS_ANALYZER_NAME,
-  regex: PATH_REGEX,
-  filter: (match, ancestors) => {
-    const value = match.value;
+  // Exclude paths with special prefixes
+  if (/^[@.~]/.test(value)) {
+    return false;
+  }
 
-    if (!value.includes("/")) {
-      return false;
-    }
+  // Skip if it's a MIME type
+  if (isMimeType(value)) {
+    return false;
+  }
 
-    // Exclude paths with only special characters
-    if (containsOnlySpecialChars(value)) {
-      return false;
-    }
+  // Skip if it has high entropy
+  if (isHighEntropy(value)) {
+    return false;
+  }
 
-    // Exclude paths with special prefixes
-    if (/^[@.~]/.test(value)) {
-      return false;
-    }
+  // Skip if it contains only special characters
+  if (containsOnlySpecialChars(value)) {
+    return false;
+  }
 
-    // Exclude MIME types and content types
-    if (isMimeType(value)) {
-      return false;
-    }
+  // Skip if it has only short segments
+  if (hasOnlyShortSegments(value)) {
+    return false;
+  }
 
-    if (isHighEntropy(value)) {
-      return false;
-    }
+  // Skip if it's an import statement
+  if (ancestors.some((ancestor) => ancestor.type === "ImportDeclaration")) {
+    return false;
+  }
 
-    // Exclude paths with only short segments
-    if (hasOnlyShortSegments(value)) {
-      return false;
-    }
+  return PATH_REGEX.test(value);
+}
 
-    // Exclude paths that end with a static asset extension
-    if (hasFileExtension(value)) {
-      return false;
-    }
+function createPathMatch(
+  args: AnalyzerParams,
+  node: Node,
+  value: string,
+  isTemplate = false
+): AnalyzerMatch {
+  const isUrl = value.includes("http") && value.includes("://");
 
-    if (ancestors.some((ancestor) => ancestor.type === "ImportDeclaration")) {
-      return false;
-    }
+  return {
+    filePath: args.filePath,
+    analyzerName: PATHS_ANALYZER_NAME,
+    value: isTemplate ? value : args.source.slice(node.start, node.end),
+    start: node.loc!.start,
+    end: node.loc!.end,
+    tags: {
+      path: true,
+      ...(isTemplate && { template: true }),
+      ...(isUrl && { url: true }),
+      ...(value.includes("api") && { api: true }),
+      ...(value.includes("?") && { query: true }),
+      ...(value.includes("#") && { fragment: true }),
+    },
+  };
+}
 
-    return true;
-  },
-  tags: (value) => {
-    const tags: Record<string, true> = {};
+const pathsAnalyzerBuilder = (
+  args: AnalyzerParams,
+  matchesReturn: AnalyzerMatch[]
+): Visitor => {
+  return {
+    Literal(node, ancestors) {
+      if (!node.loc || typeof node.value !== "string") {
+        return;
+      }
 
-    tags.path = true;
+      const value = node.value;
+      if (isValidPath(value, ancestors)) {
+        matchesReturn.push(createPathMatch(args, node, value));
+      }
+    },
 
-    if (value.includes("api")) {
-      tags.api = true;
-    }
+    TemplateLiteral(node, ancestors) {
+      if (!node.loc) {
+        return;
+      }
 
-    if (value.includes("?")) {
-      tags.query = true;
-    }
+      // Skip if it's an import statement
+      if (ancestors.some((ancestor) => ancestor.type === "ImportDeclaration")) {
+        return;
+      }
 
-    if (value.includes("#")) {
-      tags.fragment = true;
-    }
+      // Get the raw template literal value
+      const rawValue = args.source.slice(node.start, node.end);
 
-    return tags;
-  },
-});
+      // Check if any of the quasis (static parts) contain a path-like pattern
+      const hasPathLikeQuasis = node.quasis.some((quasi) => {
+        const value = quasi.value.raw;
+        return (
+          value.includes("/") && !isMimeType(value) && !hasFileExtension(value)
+        );
+      });
+
+      if (hasPathLikeQuasis) {
+        const match: AnalyzerMatch = {
+          filePath: args.filePath,
+          analyzerName: PATHS_ANALYZER_NAME,
+          value: rawValue,
+          start: node.loc.start,
+          end: node.loc.end,
+          tags: {
+            path: true,
+            template: true,
+            dynamic: true,
+            ...(rawValue.includes("api") && { api: true }),
+            ...(rawValue.includes("?") && { query: true }),
+            ...(rawValue.includes("#") && { fragment: true }),
+          },
+        };
+
+        matchesReturn.push(match);
+      }
+    },
+  };
+};
 
 export { pathsAnalyzerBuilder };

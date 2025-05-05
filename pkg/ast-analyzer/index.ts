@@ -2,7 +2,6 @@ import fs from "fs";
 import { ParseResult, parseSync } from "oxc-parser";
 import { ancestors as traverse } from "./walker";
 import { AnalyzerParams, AnalyzerMatch } from "./types";
-import { pathsAnalyzerBuilder } from "./paths";
 import { emailsAnalyzerBuilder } from "./emails";
 import { messageListenerAnalyzerBuilder } from "./message-listener";
 import { hashChangeAnalyzerBuilder } from "./hash-change";
@@ -44,6 +43,7 @@ import { regexMatchAnalyzerBuilder } from "./tree-analyzers/regex-match";
 import { regexAnalyzerBuilder as regexPatternAnalyzerBuilder } from "./tree-analyzers/regex-pattern";
 import { sessionStorageAnalyzerBuilder } from "./tree-analyzers/session-storage";
 import { urlSearchParamsAnalyzerBuilder } from "./tree-analyzers/url-search-params";
+import { pathsAnalyzerBuilder } from "./tree-analyzers/paths";
 
 export function parseFile(filePath: string): AnalyzerParams {
   const fileContent = fs.readFileSync(filePath, "utf-8");
@@ -74,7 +74,6 @@ function printUsage() {
 }
 
 export type AnalyzerType =
-  | "paths"
   | "emails"
   | "postmessage"
   | "message-listener"
@@ -114,7 +113,8 @@ export type AnalyzerType =
   | "onhashchange"
   | "onmessage"
   | "regex-pattern"
-  | "url-search-params";
+  | "url-search-params"
+  | "paths";
 
 export function analyzeFile(
   filePath: string,
@@ -137,7 +137,6 @@ export function analyzeFile(
     return builder(args, results);
   };
 
-  const pathsAnalyzer = createAnalyzer("paths", pathsAnalyzerBuilder);
   const emailsAnalyzer = createAnalyzer("emails", emailsAnalyzerBuilder);
   const postMessageAnalyzer = createAnalyzer(
     "postmessage",
@@ -262,10 +261,10 @@ export function analyzeFile(
     "url-search-params",
     urlSearchParamsAnalyzerBuilder
   );
+  const pathsAnalyzer = createAnalyzer("paths", pathsAnalyzerBuilder);
 
   traverse(args.source, args.ast, {
     Literal(node, ancestors) {
-      pathsAnalyzer?.Literal?.(node, ancestors);
       emailsAnalyzer?.Literal?.(node, ancestors);
       regexAnalyzer?.Literal?.(node, ancestors);
       graphqlAnalyzer?.Literal?.(node, ancestors);
@@ -275,6 +274,7 @@ export function analyzeFile(
       extensionsAnalyzer?.Literal?.(node, ancestors);
       hostnameAnalyzer?.Literal?.(node, ancestors);
       regexPatternAnalyzer?.Literal?.(node, ancestors);
+      pathsAnalyzer?.Literal?.(node, ancestors);
     },
     NewExpression(node, ancestors) {
       regexAnalyzer?.NewExpression?.(node, ancestors);
@@ -283,16 +283,15 @@ export function analyzeFile(
       urlSearchParamsAnalyzer?.NewExpression?.(node, ancestors);
     },
     TemplateLiteral(node, ancestors) {
-      pathsAnalyzer?.TemplateLiteral?.(node, ancestors);
       emailsAnalyzer?.TemplateLiteral?.(node, ancestors);
       graphqlAnalyzer?.TemplateLiteral?.(node, ancestors);
       urlsAnalyzer?.TemplateLiteral?.(node, ancestors);
       secretsAnalyzer?.TemplateLiteral?.(node, ancestors);
       piiAnalyzer?.TemplateLiteral?.(node, ancestors);
       extensionsAnalyzer?.TemplateLiteral?.(node, ancestors);
+      pathsAnalyzer?.TemplateLiteral?.(node, ancestors);
     },
     CallExpression(node, ancestors) {
-      pathsAnalyzer?.CallExpression?.(node, ancestors);
       postMessageAnalyzer?.CallExpression?.(node, ancestors);
       messageListenerAnalyzer?.CallExpression?.(node, ancestors);
       domXssAnalyzer?.CallExpression?.(node, ancestors);
@@ -325,7 +324,6 @@ export function analyzeFile(
       regexMatchAnalyzer?.CallExpression?.(node, ancestors);
     },
     AssignmentExpression(node, ancestors) {
-      pathsAnalyzer?.AssignmentExpression?.(node, ancestors);
       postMessageAnalyzer?.AssignmentExpression?.(node, ancestors);
       hashChangeAnalyzer?.AssignmentExpression?.(node, ancestors);
       domXssAnalyzer?.AssignmentExpression?.(node, ancestors);
@@ -365,7 +363,6 @@ export function analyzeFile(
       onmessageAnalyzer?.AssignmentExpression?.(node, ancestors);
     },
     MemberExpression(node, ancestors) {
-      pathsAnalyzer?.MemberExpression?.(node, ancestors);
       postMessageAnalyzer?.MemberExpression?.(node, ancestors);
       domXssAnalyzer?.MemberExpression?.(node, ancestors);
       jqueryDomXssAnalyzer?.MemberExpression?.(node, ancestors);
