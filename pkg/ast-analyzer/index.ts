@@ -1,13 +1,10 @@
 import fs from "fs";
-import { Program } from "acorn";
 import { ParseResult, parseSync } from "oxc-parser";
 import { ancestors as traverse } from "./walker";
 import { AnalyzerParams, AnalyzerMatch } from "./types";
 import { pathsAnalyzerBuilder } from "./paths";
 import { emailsAnalyzerBuilder } from "./emails";
-import { postMessageAnalyzerBuilder } from "./post-message";
 import { messageListenerAnalyzerBuilder } from "./message-listener";
-import { regexMatchAnalyzerBuilder } from "./regex-match";
 import { hashChangeAnalyzerBuilder } from "./hash-change";
 import { regexAnalyzerBuilder } from "./regex";
 import { domXssAnalyzerBuilder } from "./dom-xss";
@@ -43,6 +40,7 @@ import { onhashchangeAnalyzerBuilder } from "./tree-analyzers/onhashchange";
 import { onmessageAnalyzerBuilder } from "./tree-analyzers/onmessage";
 import path from "path";
 import { postmessageAnalyzerBuilder } from "./tree-analyzers/postmessage";
+import { regexMatchAnalyzerBuilder } from "./tree-analyzers/regex-match";
 
 export function parseFile(filePath: string): AnalyzerParams {
   const fileContent = fs.readFileSync(filePath, "utf-8");
@@ -143,10 +141,6 @@ export function analyzeFile(
     "message-listener",
     messageListenerAnalyzerBuilder
   );
-  const regexMatchAnalyzer = createAnalyzer(
-    "regex-match",
-    regexMatchAnalyzerBuilder
-  );
   const hashChangeAnalyzer = createAnalyzer(
     "hash-change",
     hashChangeAnalyzerBuilder
@@ -246,6 +240,10 @@ export function analyzeFile(
     "onmessage",
     onmessageAnalyzerBuilder
   );
+  const regexMatchAnalyzer = createAnalyzer(
+    "regex-match",
+    regexMatchAnalyzerBuilder
+  );
 
   traverse(args.source, args.ast, {
     Literal(node, ancestors) {
@@ -276,7 +274,6 @@ export function analyzeFile(
       pathsAnalyzer?.CallExpression?.(node, ancestors);
       postMessageAnalyzer?.CallExpression?.(node, ancestors);
       messageListenerAnalyzer?.CallExpression?.(node, ancestors);
-      regexMatchAnalyzer?.CallExpression?.(node, ancestors);
       domXssAnalyzer?.CallExpression?.(node, ancestors);
       jqueryDomXssAnalyzer?.CallExpression?.(node, ancestors);
       openRedirectionAnalyzer?.CallExpression?.(node, ancestors);
@@ -302,6 +299,7 @@ export function analyzeFile(
       localStorageAnalyzer?.CallExpression?.(node, ancestors);
       onhashchangeAnalyzer?.CallExpression?.(node, ancestors);
       onmessageAnalyzer?.CallExpression?.(node, ancestors);
+      regexMatchAnalyzer?.CallExpression?.(node, ancestors);
     },
     AssignmentExpression(node, ancestors) {
       pathsAnalyzer?.AssignmentExpression?.(node, ancestors);
@@ -345,7 +343,6 @@ export function analyzeFile(
     MemberExpression(node, ancestors) {
       pathsAnalyzer?.MemberExpression?.(node, ancestors);
       postMessageAnalyzer?.MemberExpression?.(node, ancestors);
-      regexMatchAnalyzer?.MemberExpression?.(node, ancestors);
       domXssAnalyzer?.MemberExpression?.(node, ancestors);
       jqueryDomXssAnalyzer?.MemberExpression?.(node, ancestors);
       openRedirectionAnalyzer?.MemberExpression?.(node, ancestors);

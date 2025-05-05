@@ -16,9 +16,6 @@ const regexPatternAnalyzerBuilder = (
 
       // Check for regex pattern literals
       if ((node as any).regex) {
-        const pattern = (node as any).regex.pattern;
-        const flags = (node as any).regex.flags;
-
         const match: AnalyzerMatch = {
           filePath: args.filePath,
           analyzerName: REGEX_PATTERN_ANALYZER_NAME,
@@ -27,7 +24,6 @@ const regexPatternAnalyzerBuilder = (
           end: node.loc.end,
           tags: {
             "regex-pattern": true,
-            ...(flags ? { "has-flags": true } : {}),
           },
         };
 
@@ -53,8 +49,6 @@ const regexPatternAnalyzerBuilder = (
           end: node.loc.end,
           tags: {
             "regex-pattern": true,
-            "regex-constructor": true,
-            ...(node.arguments.length >= 2 ? { "has-flags": true } : {}),
           },
         };
 
