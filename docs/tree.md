@@ -1,3 +1,6 @@
+# AST Analysis Tree
+
+```
 Client Behavior
 -- Events
 -- -- addEventListener ✅
@@ -54,3 +57,4 @@ Data
 Frameworks ✅
 -- React ✅
 -- -- dangerouslySetInnerHTML ✅
+```

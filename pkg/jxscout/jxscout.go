@@ -21,7 +21,6 @@ import (
 	"github.com/francisconeves97/jxscout/internal/modules/beautifier"
 	chunkdiscoverer "github.com/francisconeves97/jxscout/internal/modules/chunk-discoverer"
 	gitcommiter "github.com/francisconeves97/jxscout/internal/modules/git-committer"
-	htmlingestion "github.com/francisconeves97/jxscout/internal/modules/html-ingestion"
 	"github.com/francisconeves97/jxscout/internal/modules/ingestion"
 	jsingestion "github.com/francisconeves97/jxscout/internal/modules/js-ingestion"
 	"github.com/francisconeves97/jxscout/internal/modules/overrides"
@@ -99,15 +98,13 @@ func initJxscout(options jxscouttypes.Options) (*jxscout, error) {
 	}
 
 	assetService, err := assetservice.NewAssetService(assetservice.AssetServiceConfig{
-		EventBus:                   dbEventBus,
-		SaveConcurrency:            options.AssetSaveConcurrency,
-		FetchConcurrency:           options.AssetFetchConcurrency,
-		Logger:                     logger,
-		FileService:                fileService,
-		Database:                   db,
-		HTMLRequestsCacheTTL:       options.HTMLRequestsCacheTTL,
-		JavascriptRequestsCacheTTL: options.JavascriptRequestsCacheTTL,
-		ProjectName:                options.ProjectName,
+		EventBus:         dbEventBus,
+		SaveConcurrency:  options.AssetSaveConcurrency,
+		FetchConcurrency: options.AssetFetchConcurrency,
+		Logger:           logger,
+		FileService:      fileService,
+		Database:         db,
+		ProjectName:      options.ProjectName,
 	})
 	if err != nil {
 		return nil, errutil.Wrap(err, "failed to initialize asset service")
@@ -148,14 +145,13 @@ func (s *jxscout) registerCoreModules() {
 
 	coreModules := []jxscouttypes.Module{
 		ingestion.NewIngestionModule(),
-		htmlingestion.NewHTMLIngestionModule(s.options.HTMLRequestsCacheTTL),
-		jsingestion.NewJSIngestionModule(s.options.JavascriptRequestsCacheTTL, s.options.DownloadReferedJS),
+		jsingestion.NewJSIngestionModule(s.options.DownloadReferedJS),
 		beautifier.NewBeautifier(s.options.BeautifierConcurrency),
 		chunkdiscoverer.NewChunkDiscovererModule(
 			s.options.ChunkDiscovererConcurrency,
 			s.options.ChunkDiscovererBruteForceLimit,
 		),
-		gitcommiter.NewGitCommiter(s.options.GitCommitInterval),
+		gitcommiter.NewGitCommiter(),
 		sourcemaps.NewSourceMaps(s.options.AssetSaveConcurrency),
 		overridesModule,
 		astanalyzer.NewAstAnalyzerModule(s.options.ASTAnalyzerConcurrency),

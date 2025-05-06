@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"log/slog"
-	"time"
 
 	"github.com/jmoiron/sqlx"
 
@@ -67,21 +66,17 @@ type assetService struct {
 	assetSaveQueue concurrentqueue.Queue[Asset]
 	log            *slog.Logger
 	fileService    FileService
-	htmlCacheTTL   time.Duration
-	jsCacheTTL     time.Duration
 	projectName    string
 }
 
 type AssetServiceConfig struct {
-	EventBus                   *dbeventbus.EventBus
-	SaveConcurrency            int
-	FetchConcurrency           int
-	Logger                     *slog.Logger
-	FileService                FileService
-	Database                   *sqlx.DB
-	HTMLRequestsCacheTTL       time.Duration
-	JavascriptRequestsCacheTTL time.Duration
-	ProjectName                string
+	EventBus         *dbeventbus.EventBus
+	SaveConcurrency  int
+	FetchConcurrency int
+	Logger           *slog.Logger
+	FileService      FileService
+	Database         *sqlx.DB
+	ProjectName      string
 }
 
 func NewAssetService(cfg AssetServiceConfig) (AssetService, error) {
@@ -96,8 +91,6 @@ func NewAssetService(cfg AssetServiceConfig) (AssetService, error) {
 		assetSaveQueue: concurrentqueue.NewQueue[Asset](cfg.SaveConcurrency),
 		log:            cfg.Logger,
 		fileService:    cfg.FileService,
-		htmlCacheTTL:   cfg.HTMLRequestsCacheTTL,
-		jsCacheTTL:     cfg.JavascriptRequestsCacheTTL,
 		projectName:    cfg.ProjectName,
 	}
 

@@ -39,8 +39,8 @@ func (g *gitService) ensureGitRepo() error {
 	return errutil.Wrap(err, "failed to ensure git repo exists")
 }
 
-func (g *gitService) addAll() error {
-	cmd := exec.Command("git", "add", "-A")
+func (g *gitService) add(path string) error {
+	cmd := exec.Command("git", "add", path)
 	cmd.Dir = g.repoPath
 	return cmd.Run()
 }

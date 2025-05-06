@@ -4,7 +4,6 @@ import (
 	"errors"
 	"net/http"
 	"strings"
-	"time"
 
 	assetservice "github.com/francisconeves97/jxscout/internal/core/asset-service"
 	"github.com/francisconeves97/jxscout/internal/core/common"
@@ -15,13 +14,11 @@ import (
 
 type jsIngestionModule struct {
 	sdk               *jxscouttypes.ModuleSDK
-	cacheTTL          time.Duration
 	downloadReferedJS bool
 }
 
-func NewJSIngestionModule(cacheTTL time.Duration, downloadReferedJS bool) jxscouttypes.Module {
+func NewJSIngestionModule(downloadReferedJS bool) jxscouttypes.Module {
 	return &jsIngestionModule{
-		cacheTTL:          cacheTTL,
 		downloadReferedJS: downloadReferedJS,
 	}
 }

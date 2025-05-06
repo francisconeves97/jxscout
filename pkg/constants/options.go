@@ -26,13 +26,6 @@ const (
 	// Chunk discovery configuration
 	DefaultChunkDiscovererBruteForceLimit = 3000
 
-	// Cache configuration
-	DefaultJavascriptRequestsCacheTTL = time.Hour
-	DefaultHTMLRequestsCacheTTL       = time.Hour
-
-	// Git commiter configuration
-	DefaultGitCommitInterval = time.Minute * 5
-
 	// Rate limiting configuration
 	DefaultRateLimitingMaxRequestsPerSecond = 2
 	DefaultRateLimitingMaxRequestsPerMinute = 0

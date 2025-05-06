@@ -162,12 +162,6 @@ func (t *TUI) RegisterDefaultCommands() {
 						currentOptions.ChunkDiscovererConcurrency = constants.DefaultChunkDiscovererConcurrency
 					case constants.FlagChunkDiscovererBruteForceLimit:
 						currentOptions.ChunkDiscovererBruteForceLimit = constants.DefaultChunkDiscovererBruteForceLimit
-					case constants.FlagJavascriptRequestsCacheTTL:
-						currentOptions.JavascriptRequestsCacheTTL = constants.DefaultJavascriptRequestsCacheTTL
-					case constants.FlagHTMLRequestsCacheTTL:
-						currentOptions.HTMLRequestsCacheTTL = constants.DefaultHTMLRequestsCacheTTL
-					case constants.FlagGitCommitInterval:
-						currentOptions.GitCommitInterval = constants.DefaultGitCommitInterval
 					case constants.FlagRateLimitingMaxRequestsPerMinute:
 						currentOptions.RateLimitingMaxRequestsPerMinute = constants.DefaultRateLimitingMaxRequestsPerMinute
 					case constants.FlagRateLimitingMaxRequestsPerSecond:
@@ -288,24 +282,6 @@ func (t *TUI) RegisterDefaultCommands() {
 						return nil, fmt.Errorf("invalid chunk-discoverer-bruteforce-limit value: %s", value)
 					}
 					currentOptions.ChunkDiscovererBruteForceLimit = limit
-				case constants.FlagJavascriptRequestsCacheTTL:
-					duration, err := time.ParseDuration(value)
-					if err != nil {
-						return nil, fmt.Errorf("invalid js-requests-cache-ttl value: %s", value)
-					}
-					currentOptions.JavascriptRequestsCacheTTL = duration
-				case constants.FlagHTMLRequestsCacheTTL:
-					duration, err := time.ParseDuration(value)
-					if err != nil {
-						return nil, fmt.Errorf("invalid html-requests-cache-ttl value: %s", value)
-					}
-					currentOptions.HTMLRequestsCacheTTL = duration
-				case constants.FlagGitCommitInterval:
-					duration, err := time.ParseDuration(value)
-					if err != nil {
-						return nil, fmt.Errorf("invalid git-commit-interval value: %s", value)
-					}
-					currentOptions.GitCommitInterval = duration
 				case constants.FlagRateLimitingMaxRequestsPerMinute:
 					rate, err := strconv.Atoi(value)
 					if err != nil {
@@ -403,9 +379,6 @@ func (t *TUI) RegisterDefaultCommands() {
 				ChunkDiscovererConcurrency:       constants.DefaultChunkDiscovererConcurrency,
 				ASTAnalyzerConcurrency:           constants.DefaultASTAnalyzerConcurrency,
 				ChunkDiscovererBruteForceLimit:   constants.DefaultChunkDiscovererBruteForceLimit,
-				JavascriptRequestsCacheTTL:       constants.DefaultJavascriptRequestsCacheTTL,
-				HTMLRequestsCacheTTL:             constants.DefaultHTMLRequestsCacheTTL,
-				GitCommitInterval:                constants.DefaultGitCommitInterval,
 				RateLimitingMaxRequestsPerMinute: constants.DefaultRateLimitingMaxRequestsPerMinute,
 				RateLimitingMaxRequestsPerSecond: constants.DefaultRateLimitingMaxRequestsPerSecond,
 				DownloadReferedJS:                constants.DefaultDownloadReferedJS,
@@ -1214,23 +1187,6 @@ func (t *TUI) printCurrentConfig() {
 		constants.FlagChunkDiscovererBruteForceLimit,
 		fmt.Sprintf("%d", currentOptions.ChunkDiscovererBruteForceLimit),
 		descStyle.Render(constants.DescriptionChunkDiscovererBruteForceLimit)))
-
-	// Cache configuration
-	t.writeLineToOutput(formatLine(
-		constants.FlagJavascriptRequestsCacheTTL,
-		fmt.Sprintf("%v", currentOptions.JavascriptRequestsCacheTTL),
-		descStyle.Render(constants.DescriptionJavascriptRequestsCacheTTL)))
-
-	t.writeLineToOutput(formatLine(
-		constants.FlagHTMLRequestsCacheTTL,
-		fmt.Sprintf("%v", currentOptions.HTMLRequestsCacheTTL),
-		descStyle.Render(constants.DescriptionHTMLRequestsCacheTTL)))
-
-	// Git commiter configuration
-	t.writeLineToOutput(formatLine(
-		constants.FlagGitCommitInterval,
-		fmt.Sprintf("%v", currentOptions.GitCommitInterval),
-		descStyle.Render(constants.DescriptionGitCommitInterval)))
 
 	// Rate limiting configuration
 	t.writeLineToOutput(formatLine(
