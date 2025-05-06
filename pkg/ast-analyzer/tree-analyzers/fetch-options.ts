@@ -5,13 +5,7 @@ import { Visitor } from "../walker";
 export const FETCH_OPTIONS_ANALYZER_NAME = "fetch-options";
 
 // Common fetch option properties
-const FETCH_OPTION_PROPERTIES = [
-  "method",
-  "headers",
-  "body",
-  "credentials",
-  "mode",
-];
+const FETCH_OPTION_PROPERTIES = ["method", "headers", "body", "credentials"];
 
 const fetchOptionsAnalyzerBuilder = (
   args: AnalyzerParams,
