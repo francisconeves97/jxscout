@@ -326,9 +326,13 @@ func (s *jxscout) GetAssetService() jxscouttypes.AssetService {
 func (s *jxscout) TruncateTables() error {
 	_, err := s.db.Exec(`
 		DELETE FROM asset_relationships;
-		DELETE FROM overrides;
 		DELETE FROM assets;
-		DELETE FROM sqlite_sequence;
+		DELETE FROM ast_analysis_results;
+		DELETE FROM event_processing;
+		DELETE FROM events;
+		DELETE FROM overrides;
+		DELETE FROM reversed_sourcemaps;
+		DELETE FROM sourcemaps;
 	`)
 	if err != nil {
 		return errutil.Wrap(err, "failed to truncate tables")
