@@ -344,7 +344,7 @@ var frameworkTags = common.AppendAll(
 func buildFrameworksTree(matchesByTag map[string][]AnalyzerMatch) ASTAnalyzerTreeNode {
 	frameworksNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
 		Label:    "Frameworks",
-		IconName: "resources:framework",
+		IconName: "resources:react",
 	})
 
 	if hasAnyMatches(matchesByTag, reactTags) {
@@ -486,7 +486,7 @@ func buildClientBehaviorTree(matchesByTag map[string][]AnalyzerMatch) ASTAnalyze
 		if hasAnyMatches(matchesByTag, onmessageTags) {
 			onmessageNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
 				Label:    "onmessage",
-				IconName: "resources:mail",
+				IconName: "resources:onmessage",
 			})
 
 			addMatchesToNode(&onmessageNode, matchesByTag, onmessageTags)
@@ -497,7 +497,7 @@ func buildClientBehaviorTree(matchesByTag map[string][]AnalyzerMatch) ASTAnalyze
 		if hasAnyMatches(matchesByTag, postMessageTags) {
 			postmessageNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
 				Label:    "postMessage",
-				IconName: "resources:mail",
+				IconName: "resources:postmessage",
 			})
 
 			addMatchesToNode(&postmessageNode, matchesByTag, postMessageTags)

@@ -470,7 +470,7 @@
     "tags": {
       "path": true,
       "template": true,
-      "dynamic": true,
+      "is-path-only": true,
       "api": true
     }
   },
@@ -489,7 +489,7 @@
     "tags": {
       "path": true,
       "template": true,
-      "dynamic": true,
+      "is-path-only": true,
       "api": true
     }
   },
@@ -508,7 +508,7 @@
     "tags": {
       "path": true,
       "template": true,
-      "dynamic": true,
+      "is-path-only": true,
       "api": true
     }
   }
