@@ -39,6 +39,7 @@ type DBAsset struct {
 	UpdatedAt         time.Time `db:"updated_at"`
 	IsInlineJS        bool      `db:"is_inline_js"`
 	IsChunkDiscovered bool      `db:"is_chunk_discovered"`
+	IsBeautified      bool      `db:"is_beautified"`
 	Parent            *DBAsset
 
 	Children []DBAsset
@@ -92,6 +93,10 @@ func initializeRepo(db *sqlx.DB) error {
 		return errutil.Wrap(err, "failed to run migrations")
 	}
 
+	if err := migrateIsBeautified(db); err != nil {
+		return errutil.Wrap(err, "failed to run migrations")
+	}
+
 	return nil
 }
 
@@ -141,6 +146,32 @@ func migrateAddIsChunkDiscovered(db *sqlx.DB) error {
 		`)
 		if err != nil {
 			return errutil.Wrap(err, "failed to add is_chunk_discovered column")
+		}
+	}
+
+	return nil
+}
+
+// migrateIsBeautified safely adds the is_beautified column if it doesn't exist
+func migrateIsBeautified(db *sqlx.DB) error {
+	// Check if column exists
+	var count int
+	err := db.Get(&count, `
+		SELECT COUNT(*) FROM pragma_table_info('assets') 
+		WHERE name = 'is_beautified'
+	`)
+	if err != nil {
+		return errutil.Wrap(err, "failed to check if column exists")
+	}
+
+	// If column doesn't exist, add it
+	if count == 0 {
+		_, err := db.Exec(`
+			ALTER TABLE assets 
+			ADD COLUMN is_beautified BOOLEAN DEFAULT FALSE
+		`)
+		if err != nil {
+			return errutil.Wrap(err, "failed to add is_beautified column")
 		}
 	}
 
@@ -482,4 +513,19 @@ func GetAssetByID(ctx context.Context, db queryer, id int64) (DBAsset, error) {
 	}
 
 	return asset, nil
+}
+
+func UpdateAssetIsBeautified(ctx context.Context, db queryer, assetID int64, isBeautified bool) error {
+	query := `
+		UPDATE assets
+		SET is_beautified = ?
+		WHERE id = ?
+	`
+
+	_, err := db.ExecContext(ctx, query, isBeautified, assetID)
+	if err != nil {
+		return errutil.Wrap(err, "failed to update asset is beautified")
+	}
+
+	return nil
 }

@@ -94,6 +94,11 @@ func (m *beautifierModule) handleAssetSavedEvent(ctx context.Context, asset asse
 		return errutil.Wrap(err, "failed to publish asset saved event")
 	}
 
+	err = assetservice.UpdateAssetIsBeautified(ctx, m.sdk.Database, asset.ID, true)
+	if err != nil {
+		return errutil.Wrap(err, "failed to update asset is beautified")
+	}
+
 	return nil
 }
 

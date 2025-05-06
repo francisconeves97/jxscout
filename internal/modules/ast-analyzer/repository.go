@@ -38,9 +38,10 @@ func (a *astAnalysis) GetMatches() ([]AnalyzerMatch, error) {
 }
 
 type asset struct {
-	ID        int64  `db:"id"`
-	Path      string `db:"fs_path"`
-	AssetType string `db:"asset_type"`
+	ID           int64  `db:"id"`
+	Path         string `db:"fs_path"`
+	AssetType    string `db:"asset_type"`
+	IsBeautified bool   `db:"is_beautified"`
 }
 
 type astAnalyzerRepository struct {
@@ -101,13 +102,13 @@ func (r *astAnalyzerRepository) createAnalysis(ctx context.Context, analysis ast
 
 func (r *astAnalyzerRepository) getAssetByPath(ctx context.Context, filePath string) (*asset, error) {
 	query := `
-		SELECT id, fs_path, asset_type
+		SELECT id, fs_path, asset_type, is_beautified
 		FROM (
-			SELECT id, fs_path, 'asset' as asset_type
+			SELECT id, fs_path, 'asset' as asset_type, is_beautified
 			FROM assets
 			WHERE fs_path = ? AND content_type = 'JS'
 			UNION
-			SELECT id, path as fs_path, 'reversed_sourcemap' as asset_type
+			SELECT id, path as fs_path, 'reversed_sourcemap' as asset_type, true as is_beautified
 			FROM reversed_sourcemaps
 			WHERE path = ?
 		)

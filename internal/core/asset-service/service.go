@@ -42,6 +42,8 @@ type Asset struct {
 	IsInlineJS bool `json:"is_inline_js"`
 	// IsChunkDiscovered is true if the asset is a chunk
 	IsChunkDiscovered bool `json:"is_chunk_discovered"`
+	// IsBeautified is true if the asset has been beautified
+	IsBeautified bool `json:"is_beautified"`
 	// Parent is the asset that loaded the current asset, nil if it doesn't exist. (e.g. html page loading a js script)
 	Parent *Asset `json:"parent"`
 

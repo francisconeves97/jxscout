@@ -70,6 +70,10 @@ func (s *wsServer) getAnalysis(req getAnalysisRequest) (getAnalysisResponse, err
 		return getAnalysisResponse{}, errors.New("asset not found")
 	}
 
+	if !asset.IsBeautified {
+		return getAnalysisResponse{}, errors.New("asset is not yet beautified. please wait for the beautifier to finish")
+	}
+
 	// Trigger analysis
 	analysis, err := s.module.analyzeAsset(*asset)
 	if err != nil {
