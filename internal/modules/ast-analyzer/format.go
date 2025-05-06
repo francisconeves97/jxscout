@@ -6,32 +6,6 @@ import (
 	"github.com/francisconeves97/jxscout/internal/core/common"
 )
 
-var tagToLabel = map[string]string{
-	"add-event-listener":               "addEventListener",
-	"onmessage":                        "onmessage",
-	"postMessage":                      "postMessage",
-	"onhashchange":                     "onhashchange",
-	"eval":                             "eval",
-	"document-domain":                  "document.domain",
-	"window-open":                      "window.open",
-	"inner-html":                       "innerHTML",
-	"fetch":                            "fetch",
-	"url-search-params":                "new URLSearchParams",
-	"location":                         "Location",
-	"window-name":                      "window.name",
-	"fetch-options":                    "Fetch Options",
-	"cookie":                           "Cookie",
-	"local-storage":                    "localStorage",
-	"session-storage":                  "sessionStorage",
-	"urls":                             "URLs",
-	"path":                             "Path",
-	"hostname":                         "Hostname",
-	"regex":                            "Regex",
-	"secret":                           "Secret",
-	"graphql":                          "GraphQL",
-	"react-dangerously-set-inner-html": "dangerouslySetInnerHTML",
-}
-
 type AnalyzerMatch struct {
 	FilePath     string          `json:"filePath"`
 	AnalyzerName string          `json:"analyzerName"`
@@ -64,11 +38,15 @@ func createNavigationTreeNode(node ASTAnalyzerTreeNode) ASTAnalyzerTreeNode {
 	return node
 }
 
+func normalizeLabel(s string) string {
+	return strings.Join(strings.Fields(strings.ReplaceAll(s, "\n", " ")), " ")
+}
+
 func matchToTreeNode(match AnalyzerMatch) ASTAnalyzerTreeNode {
 	return ASTAnalyzerTreeNode{
 		Type:        ASTAnalyzerTreeNodeTypeMatch,
 		Data:        match,
-		Label:       match.Value,
+		Label:       normalizeLabel(match.Value),
 		Description: match.FilePath,
 	}
 }
@@ -90,7 +68,38 @@ func formatMatchesV1(matches []AnalyzerMatch) []ASTAnalyzerTreeNode {
 		rootNodes = append(rootNodes, behaviorNode)
 	}
 
+	// Object Schemas
+	if hasAnyMatches(matchesByTag, objectSchemasTags) {
+		objectSchemasNode := buildObjectSchemasTree(matchesByTag)
+		rootNodes = append(rootNodes, objectSchemasNode)
+	}
+
 	return rootNodes
+}
+
+// Object Schemas
+// fetch options Tags
+var fetchOptionsTags = []string{"fetch-options"}
+
+var objectSchemasTags = common.AppendAll(
+	fetchOptionsTags,
+)
+
+func buildObjectSchemasTree(matchesByTag map[string][]AnalyzerMatch) ASTAnalyzerTreeNode {
+	objectSchemasNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
+		Label: "Object Schemas",
+	})
+
+	if hasAnyMatches(matchesByTag, fetchOptionsTags) {
+		fetchOptionsNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
+			Label: "Fetch Options",
+		})
+
+		addMatchesToNode(&fetchOptionsNode, matchesByTag, fetchOptionsTags)
+		objectSchemasNode.Children = append(objectSchemasNode.Children, fetchOptionsNode)
+	}
+
+	return objectSchemasNode
 }
 
 // Client Behavior Tags
@@ -164,12 +173,12 @@ func buildClientBehaviorTree(matchesByTag map[string][]AnalyzerMatch) ASTAnalyze
 		}
 
 		// onmessage
-		if hasAnyMatches(matchesByTag, []string{"onmessage"}) {
+		if hasAnyMatches(matchesByTag, onmessageTags) {
 			onmessageNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
 				Label: "onmessage",
 			})
 
-			addMatchesToNode(&onmessageNode, matchesByTag, []string{"onmessage"})
+			addMatchesToNode(&onmessageNode, matchesByTag, onmessageTags)
 			eventsNode.Children = append(eventsNode.Children, onmessageNode)
 		}
 
