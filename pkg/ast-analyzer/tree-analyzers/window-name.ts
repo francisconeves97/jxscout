@@ -29,7 +29,7 @@ const windowNameAnalyzerBuilder = (
           start: node.loc.start,
           end: node.loc.end,
           tags: {
-            "name-assignment": true,
+            "window-name-assignment": true,
           },
         };
 
@@ -60,7 +60,7 @@ const windowNameAnalyzerBuilder = (
           start: node.loc.start,
           end: node.loc.end,
           tags: {
-            "name-read": true,
+            "window-name-read": true,
           },
         };
 

@@ -12,7 +12,7 @@
       "column": 31
     },
     "tags": {
-      "name-read": true
+      "window-name-read": true
     }
   },
   {
@@ -28,7 +28,7 @@
       "column": 23
     },
     "tags": {
-      "name-read": true
+      "window-name-read": true
     }
   },
   {
@@ -44,7 +44,7 @@
       "column": 28
     },
     "tags": {
-      "name-read": true
+      "window-name-read": true
     }
   },
   {
@@ -60,7 +60,7 @@
       "column": 22
     },
     "tags": {
-      "name-read": true
+      "window-name-read": true
     }
   },
   {
@@ -76,7 +76,7 @@
       "column": 26
     },
     "tags": {
-      "name-read": true
+      "window-name-read": true
     }
   },
   {
@@ -92,7 +92,7 @@
       "column": 27
     },
     "tags": {
-      "name-assignment": true
+      "window-name-assignment": true
     }
   },
   {
@@ -108,7 +108,7 @@
       "column": 26
     },
     "tags": {
-      "name-assignment": true
+      "window-name-assignment": true
     }
   },
   {
@@ -124,7 +124,7 @@
       "column": 29
     },
     "tags": {
-      "name-assignment": true
+      "window-name-assignment": true
     }
   }
 ]

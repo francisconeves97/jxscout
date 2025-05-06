@@ -148,3 +148,21 @@ func ExponentialBackoff(retry int) time.Duration {
 
 	return delay
 }
+
+func AppendAll[T any](slices ...[]T) []T {
+	// Calculate total length
+	totalLen := 0
+	for _, s := range slices {
+		totalLen += len(s)
+	}
+
+	// Pre-allocate the result slice
+	result := make([]T, 0, totalLen)
+
+	// Append all slices
+	for _, s := range slices {
+		result = append(result, s...)
+	}
+
+	return result
+}
