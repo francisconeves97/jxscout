@@ -162,12 +162,14 @@ var dataTags = common.AppendAll(
 
 func buildDataTree(matchesByTag map[string][]AnalyzerMatch) ASTAnalyzerTreeNode {
 	dataNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-		Label: "Data",
+		Label:    "Data",
+		IconName: "resources:data",
 	})
 
 	if hasAnyMatches(matchesByTag, urlTags) {
 		urlNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-			Label: "URLs",
+			Label:    "URLs",
+			IconName: "resources:http",
 		})
 
 		addMatchesToNode(&urlNode, matchesByTag, urlTags)
@@ -176,12 +178,14 @@ func buildDataTree(matchesByTag map[string][]AnalyzerMatch) ASTAnalyzerTreeNode 
 
 	if hasAnyMatches(matchesByTag, pathTags) {
 		pathNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-			Label: "Paths",
+			Label:    "Paths",
+			IconName: "resources:path",
 		})
 
 		if hasAnyMatches(matchesByTag, apiTags) {
 			apiNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-				Label: "API",
+				Label:    "API",
+				IconName: "resources:api",
 			})
 
 			addMatchesToNode(&apiNode, matchesByTag, apiTags)
@@ -190,7 +194,8 @@ func buildDataTree(matchesByTag map[string][]AnalyzerMatch) ASTAnalyzerTreeNode 
 
 		if hasAnyMatches(matchesByTag, isPathOnlyTags) {
 			isPathOnlyNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-				Label: "Paths",
+				Label:    "Paths",
+				IconName: "resources:path",
 			})
 
 			addMatchesToNode(&isPathOnlyNode, matchesByTag, isPathOnlyTags)
@@ -199,7 +204,8 @@ func buildDataTree(matchesByTag map[string][]AnalyzerMatch) ASTAnalyzerTreeNode 
 
 		if hasAnyMatches(matchesByTag, isUrlTags) {
 			isUrlNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-				Label: "URL Paths",
+				Label:    "URL Paths",
+				IconName: "resources:http",
 			})
 
 			addMatchesToNode(&isUrlNode, matchesByTag, isUrlTags)
@@ -208,7 +214,8 @@ func buildDataTree(matchesByTag map[string][]AnalyzerMatch) ASTAnalyzerTreeNode 
 
 		if hasAnyMatches(matchesByTag, queryTags) {
 			queryNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-				Label: "Query",
+				Label:    "Query",
+				IconName: "resources:query",
 			})
 
 			addMatchesToNode(&queryNode, matchesByTag, queryTags)
@@ -217,7 +224,8 @@ func buildDataTree(matchesByTag map[string][]AnalyzerMatch) ASTAnalyzerTreeNode 
 
 		if hasAnyMatches(matchesByTag, fragmentTags) {
 			fragmentNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-				Label: "Fragment",
+				Label:    "Fragment",
+				IconName: "resources:hash",
 			})
 
 			addMatchesToNode(&fragmentNode, matchesByTag, fragmentTags)
@@ -229,7 +237,8 @@ func buildDataTree(matchesByTag map[string][]AnalyzerMatch) ASTAnalyzerTreeNode 
 
 	if hasAnyMatches(matchesByTag, hostnameTags) {
 		hostnameNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-			Label: "Hostname",
+			Label:    "Hostname",
+			IconName: "resources:hostname",
 		})
 
 		addMatchesToNode(&hostnameNode, matchesByTag, hostnameTags)
@@ -238,12 +247,14 @@ func buildDataTree(matchesByTag map[string][]AnalyzerMatch) ASTAnalyzerTreeNode 
 
 	if hasAnyMatches(matchesByTag, regexTags) {
 		regexNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-			Label: "Regex",
+			Label:    "Regex",
+			IconName: "resources:regex",
 		})
 
 		if hasAnyMatches(matchesByTag, regexMatchTags) {
 			regexMatchNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-				Label: "Regex Match",
+				Label:    "Regex Match",
+				IconName: "resources:regex",
 			})
 
 			addMatchesToNode(&regexMatchNode, matchesByTag, regexMatchTags)
@@ -252,7 +263,8 @@ func buildDataTree(matchesByTag map[string][]AnalyzerMatch) ASTAnalyzerTreeNode 
 
 		if hasAnyMatches(matchesByTag, regexPatternTags) {
 			regexPatternNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-				Label: "Regex Pattern",
+				Label:    "Regex Pattern",
+				IconName: "resources:regex",
 			})
 
 			addMatchesToNode(&regexPatternNode, matchesByTag, regexPatternTags)
@@ -264,7 +276,8 @@ func buildDataTree(matchesByTag map[string][]AnalyzerMatch) ASTAnalyzerTreeNode 
 
 	if hasAnyMatches(matchesByTag, secretTags) {
 		secretNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-			Label: "Secrets",
+			Label:    "Secrets",
+			IconName: "resources:key",
 		})
 
 		matches := getMatchesForTags(matchesByTag, secretTags)
@@ -282,12 +295,14 @@ func buildDataTree(matchesByTag map[string][]AnalyzerMatch) ASTAnalyzerTreeNode 
 
 	if hasAnyMatches(matchesByTag, graphqlTags) {
 		graphqlNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-			Label: "GraphQL",
+			Label:    "GraphQL",
+			IconName: "resources:graphql",
 		})
 
 		if hasAnyMatches(matchesByTag, graphqlQueryTags) {
 			graphqlQueryNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-				Label: "Query",
+				Label:    "Query",
+				IconName: "resources:graphql",
 			})
 
 			addMatchesToNode(&graphqlQueryNode, matchesByTag, graphqlQueryTags)
@@ -296,7 +311,8 @@ func buildDataTree(matchesByTag map[string][]AnalyzerMatch) ASTAnalyzerTreeNode 
 
 		if hasAnyMatches(matchesByTag, graphqlMutationTags) {
 			graphqlMutationNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-				Label: "Mutation",
+				Label:    "Mutation",
+				IconName: "resources:graphql",
 			})
 
 			addMatchesToNode(&graphqlMutationNode, matchesByTag, graphqlMutationTags)
@@ -305,7 +321,8 @@ func buildDataTree(matchesByTag map[string][]AnalyzerMatch) ASTAnalyzerTreeNode 
 
 		if hasAnyMatches(matchesByTag, graphqlOtherTags) {
 			graphqlOtherNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-				Label: "Other",
+				Label:    "Other",
+				IconName: "resources:graphql",
 			})
 
 			addMatchesToNode(&graphqlOtherNode, matchesByTag, graphqlOtherTags)
@@ -326,16 +343,19 @@ var frameworkTags = common.AppendAll(
 
 func buildFrameworksTree(matchesByTag map[string][]AnalyzerMatch) ASTAnalyzerTreeNode {
 	frameworksNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-		Label: "Frameworks",
+		Label:    "Frameworks",
+		IconName: "resources:framework",
 	})
 
 	if hasAnyMatches(matchesByTag, reactTags) {
 		reactNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-			Label: "React",
+			Label:    "React",
+			IconName: "resources:react",
 		})
 
 		dangerouslySetInnerHTMLNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-			Label: "dangerouslySetInnerHTML",
+			Label:    "dangerouslySetInnerHTML",
+			IconName: "resources:react",
 		})
 
 		addMatchesToNode(&dangerouslySetInnerHTMLNode, matchesByTag, reactTags)
@@ -357,12 +377,14 @@ var objectSchemasTags = common.AppendAll(
 
 func buildObjectSchemasTree(matchesByTag map[string][]AnalyzerMatch) ASTAnalyzerTreeNode {
 	objectSchemasNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-		Label: "Object Schemas",
+		Label:    "Object Schemas",
+		IconName: "resources:schema",
 	})
 
 	if hasAnyMatches(matchesByTag, fetchOptionsTags) {
 		fetchOptionsNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-			Label: "Fetch Options",
+			Label:    "Fetch Options",
+			IconName: "resources:schema",
 		})
 
 		addMatchesToNode(&fetchOptionsNode, matchesByTag, fetchOptionsTags)
@@ -438,19 +460,22 @@ var clientBehaviorTags = common.AppendAll(
 
 func buildClientBehaviorTree(matchesByTag map[string][]AnalyzerMatch) ASTAnalyzerTreeNode {
 	behaviorNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-		Label: "Client Behavior",
+		Label:    "Client Behavior",
+		IconName: "resources:javascript",
 	})
 
 	// Events
 	if hasAnyMatches(matchesByTag, eventTags) {
 		eventsNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-			Label: "Events",
+			Label:    "Events",
+			IconName: "resources:event",
 		})
 
 		// add event listener matches
 		if hasAnyMatches(matchesByTag, addEventListenerTags) {
 			eventListenerNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-				Label: "addEventListener",
+				Label:    "addEventListener",
+				IconName: "resources:event",
 			})
 
 			addMatchesToNode(&eventListenerNode, matchesByTag, addEventListenerTags)
@@ -460,7 +485,8 @@ func buildClientBehaviorTree(matchesByTag map[string][]AnalyzerMatch) ASTAnalyze
 		// onmessage
 		if hasAnyMatches(matchesByTag, onmessageTags) {
 			onmessageNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-				Label: "onmessage",
+				Label:    "onmessage",
+				IconName: "resources:mail",
 			})
 
 			addMatchesToNode(&onmessageNode, matchesByTag, onmessageTags)
@@ -470,7 +496,8 @@ func buildClientBehaviorTree(matchesByTag map[string][]AnalyzerMatch) ASTAnalyze
 		// postmessage
 		if hasAnyMatches(matchesByTag, postMessageTags) {
 			postmessageNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-				Label: "postMessage",
+				Label:    "postMessage",
+				IconName: "resources:mail",
 			})
 
 			addMatchesToNode(&postmessageNode, matchesByTag, postMessageTags)
@@ -480,7 +507,8 @@ func buildClientBehaviorTree(matchesByTag map[string][]AnalyzerMatch) ASTAnalyze
 		// onhashchange
 		if hasAnyMatches(matchesByTag, onhashchangeTags) {
 			onhashchangeNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-				Label: "onhashchange",
+				Label:    "onhashchange",
+				IconName: "resources:event",
 			})
 
 			addMatchesToNode(&onhashchangeNode, matchesByTag, onhashchangeTags)
@@ -492,7 +520,8 @@ func buildClientBehaviorTree(matchesByTag map[string][]AnalyzerMatch) ASTAnalyze
 
 	if hasAnyMatches(matchesByTag, evalTags) {
 		evalNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-			Label: "eval",
+			Label:    "eval",
+			IconName: "resources:javascript",
 		})
 
 		addMatchesToNode(&evalNode, matchesByTag, evalTags)
@@ -501,12 +530,14 @@ func buildClientBehaviorTree(matchesByTag map[string][]AnalyzerMatch) ASTAnalyze
 
 	if hasAnyMatches(matchesByTag, documentDomainTags) {
 		documentDomainNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-			Label: "document.domain",
+			Label:    "document.domain",
+			IconName: "resources:javascript",
 		})
 
 		if hasAnyMatches(matchesByTag, documentDomainAssignmentTags) {
 			assignmentNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-				Label: "Assignment",
+				Label:    "Assignment",
+				IconName: "resources:javascript",
 			})
 
 			addMatchesToNode(&assignmentNode, matchesByTag, documentDomainAssignmentTags)
@@ -515,7 +546,8 @@ func buildClientBehaviorTree(matchesByTag map[string][]AnalyzerMatch) ASTAnalyze
 
 		if hasAnyMatches(matchesByTag, documentDomainReadTags) {
 			readNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-				Label: "Read",
+				Label:    "Read",
+				IconName: "resources:javascript",
 			})
 
 			addMatchesToNode(&readNode, matchesByTag, documentDomainReadTags)
@@ -527,7 +559,8 @@ func buildClientBehaviorTree(matchesByTag map[string][]AnalyzerMatch) ASTAnalyze
 
 	if hasAnyMatches(matchesByTag, windowOpenTags) {
 		windowOpenNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-			Label: "window.open",
+			Label:    "window.open",
+			IconName: "resources:javascript",
 		})
 
 		addMatchesToNode(&windowOpenNode, matchesByTag, windowOpenTags)
@@ -536,7 +569,8 @@ func buildClientBehaviorTree(matchesByTag map[string][]AnalyzerMatch) ASTAnalyze
 
 	if hasAnyMatches(matchesByTag, innerHTMLTags) {
 		innerHTMLNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-			Label: "innerHTML",
+			Label:    "innerHTML",
+			IconName: "resources:javascript",
 		})
 
 		addMatchesToNode(&innerHTMLNode, matchesByTag, innerHTMLTags)
@@ -545,7 +579,8 @@ func buildClientBehaviorTree(matchesByTag map[string][]AnalyzerMatch) ASTAnalyze
 
 	if hasAnyMatches(matchesByTag, fetchTags) {
 		fetchNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-			Label: "fetch",
+			Label:    "fetch",
+			IconName: "resources:javascript",
 		})
 
 		addMatchesToNode(&fetchNode, matchesByTag, fetchTags)
@@ -554,7 +589,8 @@ func buildClientBehaviorTree(matchesByTag map[string][]AnalyzerMatch) ASTAnalyze
 
 	if hasAnyMatches(matchesByTag, urlSearchParamsTags) {
 		urlSearchParamsNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-			Label: "URLSearchParams",
+			Label:    "URLSearchParams",
+			IconName: "resources:javascript",
 		})
 
 		addMatchesToNode(&urlSearchParamsNode, matchesByTag, urlSearchParamsTags)
@@ -563,12 +599,14 @@ func buildClientBehaviorTree(matchesByTag map[string][]AnalyzerMatch) ASTAnalyze
 
 	if hasAnyMatches(matchesByTag, locationTags) {
 		locationNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-			Label: "Location",
+			Label:    "Location",
+			IconName: "resources:javascript",
 		})
 
 		if hasAnyMatches(matchesByTag, locationAssignmentTags) {
 			assignmentNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-				Label: "Assignment",
+				Label:    "Assignment",
+				IconName: "resources:javascript",
 			})
 
 			matches := getMatchesForTags(matchesByTag, locationAssignmentTags)
@@ -576,7 +614,8 @@ func buildClientBehaviorTree(matchesByTag map[string][]AnalyzerMatch) ASTAnalyze
 			matchesByTag := groupMatchesByTagStartingWith(matches, "property-")
 			for tag, matches := range matchesByTag {
 				propertyNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-					Label: tag,
+					Label:    tag,
+					IconName: "resources:javascript",
 				})
 				addAllMatchesToNode(&propertyNode, matches)
 				assignmentNode.Children = append(assignmentNode.Children, propertyNode)
@@ -587,7 +626,8 @@ func buildClientBehaviorTree(matchesByTag map[string][]AnalyzerMatch) ASTAnalyze
 
 		if hasAnyMatches(matchesByTag, locationReadTags) {
 			readNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-				Label: "Read",
+				Label:    "Read",
+				IconName: "resources:javascript",
 			})
 
 			matches := getMatchesForTags(matchesByTag, locationReadTags)
@@ -595,7 +635,8 @@ func buildClientBehaviorTree(matchesByTag map[string][]AnalyzerMatch) ASTAnalyze
 			matchesByTag := groupMatchesByTagStartingWith(matches, "property-")
 			for tag, matches := range matchesByTag {
 				propertyNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-					Label: tag,
+					Label:    tag,
+					IconName: "resources:javascript",
 				})
 
 				addAllMatchesToNode(&propertyNode, matches)
@@ -610,12 +651,14 @@ func buildClientBehaviorTree(matchesByTag map[string][]AnalyzerMatch) ASTAnalyze
 
 	if hasAnyMatches(matchesByTag, windowNameTags) {
 		windowNameNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-			Label: "window.name",
+			Label:    "window.name",
+			IconName: "resources:javascript",
 		})
 
 		if hasAnyMatches(matchesByTag, windowNameAssignmentTags) {
 			assignmentNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-				Label: "Assignment",
+				Label:    "Assignment",
+				IconName: "resources:javascript",
 			})
 
 			addMatchesToNode(&assignmentNode, matchesByTag, windowNameAssignmentTags)
@@ -624,7 +667,8 @@ func buildClientBehaviorTree(matchesByTag map[string][]AnalyzerMatch) ASTAnalyze
 
 		if hasAnyMatches(matchesByTag, windowNameReadTags) {
 			readNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-				Label: "Read",
+				Label:    "Read",
+				IconName: "resources:javascript",
 			})
 
 			addMatchesToNode(&readNode, matchesByTag, windowNameReadTags)
@@ -636,17 +680,20 @@ func buildClientBehaviorTree(matchesByTag map[string][]AnalyzerMatch) ASTAnalyze
 
 	if hasAnyMatches(matchesByTag, storageTags) {
 		storageNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-			Label: "Storage",
+			Label:    "Storage",
+			IconName: "resources:storage",
 		})
 
 		if hasAnyMatches(matchesByTag, cookieTags) {
 			cookieNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-				Label: "Cookie",
+				Label:    "Cookie",
+				IconName: "resources:cookie",
 			})
 
 			if hasAnyMatches(matchesByTag, cookieAssignmentTags) {
 				assignmentNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-					Label: "Assignment",
+					Label:    "Assignment",
+					IconName: "resources:cookie",
 				})
 
 				addMatchesToNode(&assignmentNode, matchesByTag, cookieAssignmentTags)
@@ -655,7 +702,8 @@ func buildClientBehaviorTree(matchesByTag map[string][]AnalyzerMatch) ASTAnalyze
 
 			if hasAnyMatches(matchesByTag, cookieReadTags) {
 				readNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-					Label: "Read",
+					Label:    "Read",
+					IconName: "resources:cookie",
 				})
 
 				addMatchesToNode(&readNode, matchesByTag, cookieReadTags)
@@ -667,13 +715,15 @@ func buildClientBehaviorTree(matchesByTag map[string][]AnalyzerMatch) ASTAnalyze
 
 		if hasAnyMatches(matchesByTag, localStorageTags) {
 			localStorageNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-				Label: "localStorage",
+				Label:    "localStorage",
+				IconName: "resources:storage",
 			})
 
 			matches := getMatchesForTags(matchesByTag, localStorageTags)
 			for tag, matches := range groupMatchesByTagStartingWith(matches, "property-") {
 				propertyNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-					Label: tag,
+					Label:    tag,
+					IconName: "resources:storage",
 				})
 
 				addAllMatchesToNode(&propertyNode, matches)
@@ -685,13 +735,15 @@ func buildClientBehaviorTree(matchesByTag map[string][]AnalyzerMatch) ASTAnalyze
 
 		if hasAnyMatches(matchesByTag, sessionStorageTags) {
 			sessionStorageNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-				Label: "sessionStorage",
+				Label:    "sessionStorage",
+				IconName: "resources:storage",
 			})
 
 			matches := getMatchesForTags(matchesByTag, sessionStorageTags)
 			for tag, matches := range groupMatchesByTagStartingWith(matches, "property-") {
 				propertyNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-					Label: tag,
+					Label:    tag,
+					IconName: "resources:storage",
 				})
 
 				addAllMatchesToNode(&propertyNode, matches)
@@ -732,6 +784,7 @@ func addMatchesToNode(node *ASTAnalyzerTreeNode, matchesByTag map[string][]Analy
 		if matches, exists := matchesByTag[tag]; exists && len(matches) > 0 {
 			for _, match := range matches {
 				matchNode := matchToTreeNode(match)
+				matchNode.IconName = node.IconName
 				node.Children = append(node.Children, matchNode)
 			}
 		}
