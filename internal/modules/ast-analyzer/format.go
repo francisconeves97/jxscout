@@ -39,7 +39,13 @@ func createNavigationTreeNode(node ASTAnalyzerTreeNode) ASTAnalyzerTreeNode {
 }
 
 func normalizeLabel(s string) string {
-	return strings.Join(strings.Fields(strings.ReplaceAll(s, "\n", " ")), " ")
+	s = strings.TrimPrefix(s, "\"")
+	s = strings.TrimSuffix(s, "\"")
+	s = strings.TrimSuffix(s, "'")
+	s = strings.TrimPrefix(s, "'")
+	s = strings.ReplaceAll(s, "\n", " ")
+
+	return strings.Join(strings.Fields(s), " ")
 }
 
 func matchToTreeNode(match AnalyzerMatch) ASTAnalyzerTreeNode {
@@ -80,7 +86,99 @@ func formatMatchesV1(matches []AnalyzerMatch) []ASTAnalyzerTreeNode {
 		rootNodes = append(rootNodes, frameworksNode)
 	}
 
+	if hasAnyMatches(matchesByTag, dataTags) {
+		dataNode := buildDataTree(matchesByTag)
+		rootNodes = append(rootNodes, dataNode)
+	}
+
 	return rootNodes
+}
+
+// Data Tags
+// url Tags
+var urlTags = []string{"url"}
+
+// path Tags
+var pathTags = []string{"path"}
+var apiTags = []string{"api"}
+var isUrlTags = []string{"is-url"}
+var isPathOnlyTags = []string{"is-path-only"}
+var queryTags = []string{"query"}
+var fragmentTags = []string{"fragment"}
+
+var dataTags = common.AppendAll(
+	urlTags,
+	pathTags,
+)
+
+func buildDataTree(matchesByTag map[string][]AnalyzerMatch) ASTAnalyzerTreeNode {
+	dataNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
+		Label: "Data",
+	})
+
+	if hasAnyMatches(matchesByTag, urlTags) {
+		urlNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
+			Label: "URLs",
+		})
+
+		addMatchesToNode(&urlNode, matchesByTag, urlTags)
+		dataNode.Children = append(dataNode.Children, urlNode)
+	}
+
+	if hasAnyMatches(matchesByTag, pathTags) {
+		pathNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
+			Label: "Paths",
+		})
+
+		if hasAnyMatches(matchesByTag, apiTags) {
+			apiNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
+				Label: "API",
+			})
+
+			addMatchesToNode(&apiNode, matchesByTag, apiTags)
+			pathNode.Children = append(pathNode.Children, apiNode)
+		}
+
+		if hasAnyMatches(matchesByTag, isPathOnlyTags) {
+			isPathOnlyNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
+				Label: "Paths",
+			})
+
+			addMatchesToNode(&isPathOnlyNode, matchesByTag, isPathOnlyTags)
+			pathNode.Children = append(pathNode.Children, isPathOnlyNode)
+		}
+
+		if hasAnyMatches(matchesByTag, isUrlTags) {
+			isUrlNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
+				Label: "URL Paths",
+			})
+
+			addMatchesToNode(&isUrlNode, matchesByTag, isUrlTags)
+			pathNode.Children = append(pathNode.Children, isUrlNode)
+		}
+
+		if hasAnyMatches(matchesByTag, queryTags) {
+			queryNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
+				Label: "Query",
+			})
+
+			addMatchesToNode(&queryNode, matchesByTag, queryTags)
+			pathNode.Children = append(pathNode.Children, queryNode)
+		}
+
+		if hasAnyMatches(matchesByTag, fragmentTags) {
+			fragmentNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
+				Label: "Fragment",
+			})
+
+			addMatchesToNode(&fragmentNode, matchesByTag, fragmentTags)
+			pathNode.Children = append(pathNode.Children, fragmentNode)
+		}
+
+		dataNode.Children = append(dataNode.Children, pathNode)
+	}
+
+	return dataNode
 }
 
 // Frameworks Tags

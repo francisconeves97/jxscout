@@ -371,7 +371,8 @@ function createPathMatch(
     tags: {
       path: true,
       ...(isTemplate && { template: true }),
-      ...(isUrl && { url: true }),
+      ...(isUrl && { "is-url": true }),
+      ...(!isUrl && { "is-path-only": true }),
       ...(value.includes("api") && { api: true }),
       ...(value.includes("?") && { query: true }),
       ...(value.includes("#") && { fragment: true }),

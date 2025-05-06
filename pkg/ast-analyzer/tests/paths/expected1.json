@@ -13,6 +13,7 @@
     },
     "tags": {
       "path": true,
+      "is-path-only": true,
       "api": true
     }
   },
@@ -30,6 +31,7 @@
     },
     "tags": {
       "path": true,
+      "is-path-only": true,
       "api": true
     }
   },
@@ -47,6 +49,7 @@
     },
     "tags": {
       "path": true,
+      "is-path-only": true,
       "api": true
     }
   },
@@ -64,6 +67,7 @@
     },
     "tags": {
       "path": true,
+      "is-path-only": true,
       "api": true
     }
   },
@@ -81,6 +85,7 @@
     },
     "tags": {
       "path": true,
+      "is-path-only": true,
       "api": true,
       "query": true
     }
@@ -99,6 +104,7 @@
     },
     "tags": {
       "path": true,
+      "is-path-only": true,
       "api": true
     }
   },
@@ -116,6 +122,7 @@
     },
     "tags": {
       "path": true,
+      "is-path-only": true,
       "api": true
     }
   },
@@ -133,6 +140,7 @@
     },
     "tags": {
       "path": true,
+      "is-path-only": true,
       "query": true
     }
   },
@@ -149,7 +157,8 @@
       "column": 45
     },
     "tags": {
-      "path": true
+      "path": true,
+      "is-path-only": true
     }
   },
   {
@@ -165,7 +174,8 @@
       "column": 45
     },
     "tags": {
-      "path": true
+      "path": true,
+      "is-path-only": true
     }
   },
   {
@@ -181,7 +191,8 @@
       "column": 46
     },
     "tags": {
-      "path": true
+      "path": true,
+      "is-path-only": true
     }
   },
   {
@@ -197,7 +208,8 @@
       "column": 45
     },
     "tags": {
-      "path": true
+      "path": true,
+      "is-path-only": true
     }
   },
   {
@@ -213,7 +225,8 @@
       "column": 45
     },
     "tags": {
-      "path": true
+      "path": true,
+      "is-path-only": true
     }
   },
   {
@@ -229,7 +242,8 @@
       "column": 45
     },
     "tags": {
-      "path": true
+      "path": true,
+      "is-path-only": true
     }
   },
   {
@@ -245,7 +259,8 @@
       "column": 46
     },
     "tags": {
-      "path": true
+      "path": true,
+      "is-path-only": true
     }
   },
   {
@@ -261,7 +276,8 @@
       "column": 57
     },
     "tags": {
-      "path": true
+      "path": true,
+      "is-path-only": true
     }
   },
   {
@@ -277,7 +293,8 @@
       "column": 59
     },
     "tags": {
-      "path": true
+      "path": true,
+      "is-path-only": true
     }
   },
   {
@@ -293,7 +310,8 @@
       "column": 39
     },
     "tags": {
-      "path": true
+      "path": true,
+      "is-path-only": true
     }
   },
   {
@@ -310,6 +328,7 @@
     },
     "tags": {
       "path": true,
+      "is-path-only": true,
       "query": true
     }
   },
@@ -326,7 +345,8 @@
       "column": 33
     },
     "tags": {
-      "path": true
+      "path": true,
+      "is-path-only": true
     }
   },
   {
@@ -343,6 +363,7 @@
     },
     "tags": {
       "path": true,
+      "is-path-only": true,
       "api": true,
       "fragment": true
     }
@@ -361,6 +382,7 @@
     },
     "tags": {
       "path": true,
+      "is-path-only": true,
       "api": true
     }
   },
@@ -377,7 +399,8 @@
       "column": 16
     },
     "tags": {
-      "path": true
+      "path": true,
+      "is-path-only": true
     }
   },
   {
@@ -394,7 +417,7 @@
     },
     "tags": {
       "path": true,
-      "url": true
+      "is-url": true
     }
   },
   {
@@ -411,7 +434,7 @@
     },
     "tags": {
       "path": true,
-      "url": true,
+      "is-url": true,
       "api": true
     }
   },
@@ -428,7 +451,8 @@
       "column": 61
     },
     "tags": {
-      "path": true
+      "path": true,
+      "is-path-only": true
     }
   },
   {
