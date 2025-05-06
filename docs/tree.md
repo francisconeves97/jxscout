@@ -21,7 +21,7 @@ Client Behavior
 -- -- -- search ✅
 -- -- -- href ✅
 -- -- -- location ✅
--- window.name
+-- window.name ✅
 Object Schemas ✅
 -- fetch options ✅
 Storage ✅
