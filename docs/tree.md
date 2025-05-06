@@ -6,7 +6,7 @@ Client Behavior
 -- -- onhashchange ✅
 -- eval ✅
 -- document.domain ✅
--- window.open
+-- window.open ✅
 -- -- Assignment ✅
 -- -- Read ✅
 -- innerHTML ✅
