@@ -1,6 +1,7 @@
 package astanalyzer
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/francisconeves97/jxscout/internal/core/common"
@@ -53,7 +54,7 @@ func matchToTreeNode(match AnalyzerMatch) ASTAnalyzerTreeNode {
 		Type:        ASTAnalyzerTreeNodeTypeMatch,
 		Data:        match,
 		Label:       normalizeLabel(match.Value),
-		Description: match.FilePath,
+		Description: fmt.Sprintf("%d:%d..%d:%d", match.Start.Line, match.Start.Column, match.End.Line, match.End.Column),
 	}
 }
 
