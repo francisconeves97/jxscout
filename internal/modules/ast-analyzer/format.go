@@ -40,10 +40,18 @@ func createNavigationTreeNode(node ASTAnalyzerTreeNode) ASTAnalyzerTreeNode {
 }
 
 func normalizeLabel(s string) string {
-	s = strings.TrimPrefix(s, "\"")
-	s = strings.TrimSuffix(s, "\"")
-	s = strings.TrimSuffix(s, "'")
-	s = strings.TrimPrefix(s, "'")
+	if strings.HasPrefix(s, "\"") && strings.HasSuffix(s, "\"") {
+		s = strings.TrimPrefix(s, "\"")
+		s = strings.TrimSuffix(s, "\"")
+	}
+	if strings.HasPrefix(s, "'") && strings.HasSuffix(s, "'") {
+		s = strings.TrimPrefix(s, "'")
+		s = strings.TrimSuffix(s, "'")
+	}
+	if strings.HasPrefix(s, "`") && strings.HasSuffix(s, "`") {
+		s = strings.TrimPrefix(s, "`")
+		s = strings.TrimSuffix(s, "`")
+	}
 	s = strings.ReplaceAll(s, "\n", " ")
 
 	return strings.Join(strings.Fields(s), " ")
@@ -51,11 +59,26 @@ func normalizeLabel(s string) string {
 
 func matchToTreeNode(match AnalyzerMatch) ASTAnalyzerTreeNode {
 	return ASTAnalyzerTreeNode{
-		Type:        ASTAnalyzerTreeNodeTypeMatch,
-		Data:        match,
-		Label:       normalizeLabel(match.Value),
-		Description: fmt.Sprintf("%d:%d..%d:%d", match.Start.Line, match.Start.Column, match.End.Line, match.End.Column),
+		Type:  ASTAnalyzerTreeNodeTypeMatch,
+		Data:  match,
+		Label: normalizeLabel(match.Value),
 	}
+}
+
+func updateNodeDescriptionsWithCounts(node *ASTAnalyzerTreeNode) int {
+	if node.Type != ASTAnalyzerTreeNodeTypeNavigation {
+		return 1
+	}
+
+	totalCount := 0
+	for i := range node.Children {
+		totalCount += updateNodeDescriptionsWithCounts(&node.Children[i])
+	}
+
+	if totalCount > 0 {
+		node.Description = fmt.Sprintf("[%d]", totalCount)
+	}
+	return totalCount
 }
 
 func formatMatchesV1(matches []AnalyzerMatch) []ASTAnalyzerTreeNode {
@@ -90,6 +113,11 @@ func formatMatchesV1(matches []AnalyzerMatch) []ASTAnalyzerTreeNode {
 	if hasAnyMatches(matchesByTag, dataTags) {
 		dataNode := buildDataTree(matchesByTag)
 		rootNodes = append(rootNodes, dataNode)
+	}
+
+	// Update descriptions with counts
+	for i := range rootNodes {
+		updateNodeDescriptionsWithCounts(&rootNodes[i])
 	}
 
 	return rootNodes
