@@ -420,23 +420,7 @@ const pathsAnalyzerBuilder = (
       });
 
       if (hasPathLikeQuasis) {
-        const match: AnalyzerMatch = {
-          filePath: args.filePath,
-          analyzerName: PATHS_ANALYZER_NAME,
-          value: rawValue,
-          start: node.loc.start,
-          end: node.loc.end,
-          tags: {
-            path: true,
-            template: true,
-            dynamic: true,
-            ...(rawValue.includes("api") && { api: true }),
-            ...(rawValue.includes("?") && { query: true }),
-            ...(rawValue.includes("#") && { fragment: true }),
-          },
-        };
-
-        matchesReturn.push(match);
+        matchesReturn.push(createPathMatch(args, node, rawValue, true));
       }
     },
   };
