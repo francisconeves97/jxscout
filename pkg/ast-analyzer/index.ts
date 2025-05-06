@@ -32,9 +32,9 @@ import { dangerousHtmlAnalyzerBuilder } from "./tree-analyzers/react-dangerously
 export function parseFile(filePath: string): AnalyzerParams {
   const fileContent = fs.readFileSync(filePath, "utf-8");
 
-  let extension = path.extname(filePath).replace(".", "");
-  if (!["js", "jsx", "ts", "tsx"].includes(extension)) {
-    extension = "js";
+  let extension: "jsx" | "tsx" = "jsx";
+  if (!["ts"].includes(extension)) {
+    extension = "tsx";
   }
 
   let parsed: ParseResult;
@@ -42,13 +42,13 @@ export function parseFile(filePath: string): AnalyzerParams {
     parsed = parseSync(filePath, fileContent, {
       sourceType: "module",
       astType: "ts",
-      lang: extension as "js" | "ts" | "jsx" | "tsx",
+      lang: extension,
     });
   } catch (error) {
     parsed = parseSync(filePath, fileContent, {
       sourceType: "module",
       astType: "ts",
-      lang: extension as "js" | "ts" | "jsx" | "tsx",
+      lang: extension,
     });
   }
 
