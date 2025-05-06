@@ -43,7 +43,6 @@ const windowOpenAnalyzerBuilder = (
           end: node.loc.end,
           tags: {
             "window-open": true,
-            "property-open": true,
           },
         };
 
