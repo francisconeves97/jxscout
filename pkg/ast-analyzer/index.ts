@@ -46,11 +46,15 @@ import { urlSearchParamsAnalyzerBuilder } from "./tree-analyzers/url-search-para
 import { pathsAnalyzerBuilder } from "./tree-analyzers/paths";
 import { windowNameAnalyzerBuilder } from "./tree-analyzers/window-name";
 import { windowOpenAnalyzerBuilder } from "./tree-analyzers/window-open";
+import { dangerousHtmlAnalyzerBuilder } from "./tree-analyzers/react-dangerously-set-inner-html";
 
 export function parseFile(filePath: string): AnalyzerParams {
   const fileContent = fs.readFileSync(filePath, "utf-8");
 
-  const extension = path.extname(filePath).replace(".", "");
+  let extension = path.extname(filePath).replace(".", "");
+  if (!["js", "jsx", "ts", "tsx"].includes(extension)) {
+    extension = "js";
+  }
 
   let parsed: ParseResult;
   try {
@@ -118,7 +122,8 @@ export type AnalyzerType =
   | "url-search-params"
   | "paths"
   | "window-name"
-  | "window-open";
+  | "window-open"
+  | "dangerous-html";
 
 export function analyzeFile(
   filePath: string,
@@ -274,6 +279,10 @@ export function analyzeFile(
     "window-open",
     windowOpenAnalyzerBuilder
   );
+  const dangerousHtmlAnalyzer = createAnalyzer(
+    "dangerous-html",
+    dangerousHtmlAnalyzerBuilder
+  );
 
   traverse(args.source, args.ast, {
     Literal(node, ancestors) {
@@ -411,6 +420,10 @@ export function analyzeFile(
     },
     ObjectExpression(node, ancestors) {
       fetchOptionsAnalyzer?.ObjectExpression?.(node, ancestors);
+      dangerousHtmlAnalyzer?.ObjectExpression?.(node, ancestors);
+    },
+    JSXElement(node, ancestors) {
+      dangerousHtmlAnalyzer?.JSXElement?.(node, ancestors);
     },
   });
 

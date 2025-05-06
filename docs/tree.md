@@ -53,6 +53,6 @@ Data
 -- -- other ✅
 Frameworks
 -- React
--- -- dangerouslySetInnerHTML
--- -- jsx
--- -- js
+-- dangerouslySetInnerHTML ✅
+-- -- jsx ✅
+-- -- js ✅
