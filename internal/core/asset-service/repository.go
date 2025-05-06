@@ -28,17 +28,18 @@ type GetAssetsParams struct {
 }
 
 type DBAsset struct {
-	ID             int64     `db:"id"`
-	URL            string    `db:"url"`
-	ContentHash    string    `db:"content_hash"`
-	ContentType    string    `db:"content_type"`
-	FileSystemPath string    `db:"fs_path"`
-	Project        string    `db:"project"`
-	RequestHeaders string    `db:"request_headers"`
-	CreatedAt      time.Time `db:"created_at"`
-	UpdatedAt      time.Time `db:"updated_at"`
-	IsInlineJS     bool      `db:"is_inline_js"`
-	Parent         *DBAsset
+	ID                int64     `db:"id"`
+	URL               string    `db:"url"`
+	ContentHash       string    `db:"content_hash"`
+	ContentType       string    `db:"content_type"`
+	FileSystemPath    string    `db:"fs_path"`
+	Project           string    `db:"project"`
+	RequestHeaders    string    `db:"request_headers"`
+	CreatedAt         time.Time `db:"created_at"`
+	UpdatedAt         time.Time `db:"updated_at"`
+	IsInlineJS        bool      `db:"is_inline_js"`
+	IsChunkDiscovered bool      `db:"is_chunk_discovered"`
+	Parent            *DBAsset
 
 	Children []DBAsset
 }
@@ -87,6 +88,10 @@ func initializeRepo(db *sqlx.DB) error {
 		return errutil.Wrap(err, "failed to run migrations")
 	}
 
+	if err := migrateAddIsChunkDiscovered(db); err != nil {
+		return errutil.Wrap(err, "failed to run migrations")
+	}
+
 	return nil
 }
 
@@ -116,15 +121,41 @@ func migrateAddIsInlineJS(db *sqlx.DB) error {
 	return nil
 }
 
+// migrateAddIsChunkDiscovered safely adds the is_chunk_discovered column if it doesn't exist
+func migrateAddIsChunkDiscovered(db *sqlx.DB) error {
+	// Check if column exists
+	var count int
+	err := db.Get(&count, `
+		SELECT COUNT(*) FROM pragma_table_info('assets') 
+		WHERE name = 'is_chunk_discovered'
+	`)
+	if err != nil {
+		return errutil.Wrap(err, "failed to check if column exists")
+	}
+
+	// If column doesn't exist, add it
+	if count == 0 {
+		_, err := db.Exec(`
+			ALTER TABLE assets 
+			ADD COLUMN is_chunk_discovered BOOLEAN DEFAULT FALSE
+		`)
+		if err != nil {
+			return errutil.Wrap(err, "failed to add is_chunk_discovered column")
+		}
+	}
+
+	return nil
+}
+
 func SaveAsset(ctx context.Context, db queryer, asset DBAsset) (int64, error) {
 	var assetID int64
 	err := sqlx.GetContext(ctx, db, &assetID, `
-	INSERT INTO assets (url, content_hash, content_type, fs_path, project, request_headers, is_inline_js, created_at, updated_at)
-	VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-	ON CONFLICT(url) DO UPDATE SET content_hash = ?, content_type = ?, fs_path = ?, project = ?, request_headers = ?, is_inline_js = ?, updated_at = CURRENT_TIMESTAMP
+	INSERT INTO assets (url, content_hash, content_type, fs_path, project, request_headers, is_inline_js, is_chunk_discovered, created_at, updated_at)
+	VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+	ON CONFLICT(url) DO UPDATE SET content_hash = ?, content_type = ?, fs_path = ?, project = ?, request_headers = ?, is_inline_js = ?, is_chunk_discovered = ?, updated_at = CURRENT_TIMESTAMP
 	RETURNING id
-	`, asset.URL, asset.ContentHash, asset.ContentType, asset.FileSystemPath, asset.Project, asset.RequestHeaders, asset.IsInlineJS,
-		asset.ContentHash, asset.ContentType, asset.FileSystemPath, asset.Project, asset.RequestHeaders, asset.IsInlineJS)
+	`, asset.URL, asset.ContentHash, asset.ContentType, asset.FileSystemPath, asset.Project, asset.RequestHeaders, asset.IsInlineJS, asset.IsChunkDiscovered,
+		asset.ContentHash, asset.ContentType, asset.FileSystemPath, asset.Project, asset.RequestHeaders, asset.IsInlineJS, asset.IsChunkDiscovered)
 	if err != nil {
 		return 0, errutil.Wrap(err, "failed to insert the asset")
 	}

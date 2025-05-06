@@ -64,13 +64,6 @@ const (
 	// Chunk discovery configuration
 	FlagChunkDiscovererBruteForceLimit = "chunk-discoverer-bruteforce-limit"
 
-	// Cache configuration
-	FlagJavascriptRequestsCacheTTL = "js-requests-cache-ttl"
-	FlagHTMLRequestsCacheTTL       = "html-requests-cache-ttl"
-
-	// Git commiter configuration
-	FlagGitCommitInterval = "git-commit-interval"
-
 	// Rate limiting configuration
 	FlagRateLimitingMaxRequestsPerSecond = "rate-limiter-max-requests-per-second"
 	FlagRateLimitingMaxRequestsPerMinute = "rate-limiter-max-requests-per-minute"
@@ -108,13 +101,6 @@ const (
 
 	// Chunk discovery configuration
 	DescriptionChunkDiscovererBruteForceLimit = "how many potential chunks to bruteforce when automatic discovery fails"
-
-	// Cache configuration
-	DescriptionJavascriptRequestsCacheTTL = "how long to wait before re-downloading the same JS file"
-	DescriptionHTMLRequestsCacheTTL       = "how long to wait before re-downloading the same HTML page"
-
-	// Git commiter configuration
-	DescriptionGitCommitInterval = "how often commits are made to the working directory"
 
 	// Rate limiting configuration
 	DescriptionRateLimitingMaxRequestsPerMinute = "max requests per minute for source maps and chunk discovery (0 = unlimited)"

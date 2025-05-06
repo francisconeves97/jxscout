@@ -42,7 +42,7 @@ func (m *gitCommiterModule) Initialize(sdk *jxscouttypes.ModuleSDK) error {
 	pollInterval := 5 * time.Second
 	heartbeatInterval := 10 * time.Second
 
-	m.sdk.DBEventBus.Subscribe(m.sdk.Ctx, beautifier.TopicBeautifierAssetSaved, "ast-analyzer", func(ctx context.Context, payload []byte) error {
+	m.sdk.DBEventBus.Subscribe(m.sdk.Ctx, beautifier.TopicBeautifierAssetSaved, "git-commiter", func(ctx context.Context, payload []byte) error {
 		var event beautifier.EventBeautifierAssetSaved
 		err := json.Unmarshal(payload, &event)
 		if err != nil {
@@ -72,7 +72,7 @@ func (m *gitCommiterModule) Initialize(sdk *jxscouttypes.ModuleSDK) error {
 		HeartbeatInterval: heartbeatInterval,
 	})
 
-	m.sdk.DBEventBus.Subscribe(m.sdk.Ctx, sourcemaps.TopicSourcemapsReversedSourcemapSaved, "ast-analyzer", func(ctx context.Context, payload []byte) error {
+	m.sdk.DBEventBus.Subscribe(m.sdk.Ctx, sourcemaps.TopicSourcemapsReversedSourcemapSaved, "git-commiter", func(ctx context.Context, payload []byte) error {
 		var event sourcemaps.EventSourcemapsReversedSourcemapSaved
 		err := json.Unmarshal(payload, &event)
 		if err != nil {

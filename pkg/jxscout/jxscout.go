@@ -21,6 +21,7 @@ import (
 	"github.com/francisconeves97/jxscout/internal/modules/beautifier"
 	chunkdiscoverer "github.com/francisconeves97/jxscout/internal/modules/chunk-discoverer"
 	gitcommiter "github.com/francisconeves97/jxscout/internal/modules/git-committer"
+	htmlingestion "github.com/francisconeves97/jxscout/internal/modules/html-ingestion"
 	"github.com/francisconeves97/jxscout/internal/modules/ingestion"
 	jsingestion "github.com/francisconeves97/jxscout/internal/modules/js-ingestion"
 	"github.com/francisconeves97/jxscout/internal/modules/overrides"
@@ -146,6 +147,7 @@ func (s *jxscout) registerCoreModules() {
 	coreModules := []jxscouttypes.Module{
 		ingestion.NewIngestionModule(),
 		jsingestion.NewJSIngestionModule(s.options.DownloadReferedJS),
+		htmlingestion.NewHTMLIngestionModule(),
 		beautifier.NewBeautifier(s.options.BeautifierConcurrency),
 		chunkdiscoverer.NewChunkDiscovererModule(
 			s.options.ChunkDiscovererConcurrency,

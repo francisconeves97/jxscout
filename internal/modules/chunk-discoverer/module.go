@@ -192,9 +192,12 @@ func (s *chunkDiscovererModule) discoverPossibleChunks(ctx context.Context, asse
 			}
 
 			asset := assetservice.Asset{
-				URL:         chunk,
-				ContentType: common.ContentTypeJS,
-				Content:     content,
+				URL:               chunk,
+				ContentType:       common.ContentTypeJS,
+				Content:           content,
+				Project:           s.sdk.Options.ProjectName,
+				RequestHeaders:    asset.RequestHeaders,
+				IsChunkDiscovered: true,
 			}
 
 			if common.StrPtr(asset.GetParentURL()) != "" {

@@ -40,6 +40,8 @@ type Asset struct {
 	RequestHeaders map[string]string `json:"request_headers"`
 	// IsInlineJS is true if the asset is an inline js
 	IsInlineJS bool `json:"is_inline_js"`
+	// IsChunkDiscovered is true if the asset is a chunk
+	IsChunkDiscovered bool `json:"is_chunk_discovered"`
 	// Parent is the asset that loaded the current asset, nil if it doesn't exist. (e.g. html page loading a js script)
 	Parent *Asset `json:"parent"`
 
@@ -169,13 +171,14 @@ func (s *assetService) handleSaveAssetRequest(ctx context.Context, asset Asset) 
 	}
 
 	repoAsset := DBAsset{
-		URL:            asset.URL,
-		ContentHash:    common.Hash(asset.Content),
-		ContentType:    asset.ContentType,
-		FileSystemPath: path,
-		Project:        asset.Project,
-		RequestHeaders: string(headers),
-		IsInlineJS:     asset.IsInlineJS,
+		URL:               asset.URL,
+		ContentHash:       common.Hash(asset.Content),
+		ContentType:       asset.ContentType,
+		FileSystemPath:    path,
+		Project:           asset.Project,
+		RequestHeaders:    string(headers),
+		IsInlineJS:        asset.IsInlineJS,
+		IsChunkDiscovered: asset.IsChunkDiscovered,
 	}
 
 	if asset.Parent != nil {
@@ -185,12 +188,13 @@ func (s *assetService) handleSaveAssetRequest(ctx context.Context, asset Asset) 
 		}
 
 		repoAsset.Parent = &DBAsset{
-			URL:            asset.Parent.URL,
-			ContentHash:    common.Hash(asset.Parent.Content),
-			ContentType:    asset.Parent.ContentType,
-			Project:        asset.Parent.Project,
-			RequestHeaders: string(headers),
-			IsInlineJS:     asset.Parent.IsInlineJS,
+			URL:               asset.Parent.URL,
+			ContentHash:       common.Hash(asset.Parent.Content),
+			ContentType:       asset.Parent.ContentType,
+			Project:           asset.Parent.Project,
+			RequestHeaders:    string(headers),
+			IsInlineJS:        asset.Parent.IsInlineJS,
+			IsChunkDiscovered: asset.Parent.IsChunkDiscovered,
 		}
 	}
 
