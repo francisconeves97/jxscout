@@ -1,4 +1,6 @@
-import { createRegexAnalyzer } from "./regex-analyzer";
+import { createRegexAnalyzer } from "../regex-analyzer";
+import { AnalyzerMatch, AnalyzerParams } from "../types";
+import { Visitor } from "../walker";
 
 // Define the patterns for secrets detection
 
@@ -5731,21 +5733,36 @@ const SECRET_PATTERNS = [
 
 export const SECRETS_ANALYZER_NAME = "secrets";
 
-const secretsAnalyzerBuilder = createRegexAnalyzer({
-  analyzerName: SECRETS_ANALYZER_NAME,
-  regex: /./,
-  filter: (match) => {
-    // Test each pattern individually
-    for (const pattern of SECRET_PATTERNS) {
-      if (pattern.regex.test(match.value)) {
-        match.tags["secret"] = true;
-        match.tags[pattern.name.toLowerCase().replace(/\s+/g, "-")] = true;
-        return true;
+const secretsAnalyzerBuilder = (
+  args: AnalyzerParams,
+  matchesReturn: AnalyzerMatch[]
+): Visitor => {
+  return {
+    Literal(node, ancestors) {
+      if (!node.loc || typeof node.value !== "string") {
+        return;
       }
-    }
 
-    return false;
-  },
-});
+      for (const pattern of SECRET_PATTERNS) {
+        if (pattern.regex.test(node.value)) {
+          const match: AnalyzerMatch = {
+            filePath: args.filePath,
+            analyzerName: SECRETS_ANALYZER_NAME,
+            value: node.value,
+            start: node.loc.start,
+            end: node.loc.end,
+            tags: {
+              secret: true,
+              [`secret-type-${pattern.name.toLowerCase().replace(/\s+/g, "-")}`]:
+                true,
+            },
+          };
+
+          matchesReturn.push(match);
+        }
+      }
+    },
+  };
+};
 
 export { secretsAnalyzerBuilder };

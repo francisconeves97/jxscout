@@ -22,7 +22,7 @@ import { html5StorageManipulationAnalyzerBuilder } from "./html5-storage-manipul
 import { xpathInjectionAnalyzerBuilder } from "./xpath-injection";
 import { domDataManipulationAnalyzerBuilder } from "./dom-data-manipulation";
 import { commonSourcesAnalyzerBuilder } from "./common-sources";
-import { secretsAnalyzerBuilder } from "./secrets";
+import { secretsAnalyzerBuilder } from "./tree-analyzers/secrets";
 import { piiAnalyzerBuilder } from "./pii";
 import { fileExtensionsAnalyzerBuilder } from "./extensions";
 import { addEventListenerAnalyzerBuilder } from "./tree-analyzers/add-event-listener";
@@ -286,7 +286,6 @@ export function analyzeFile(
       emailsAnalyzer?.TemplateLiteral?.(node, ancestors);
       graphqlAnalyzer?.TemplateLiteral?.(node, ancestors);
       urlsAnalyzer?.TemplateLiteral?.(node, ancestors);
-      secretsAnalyzer?.TemplateLiteral?.(node, ancestors);
       piiAnalyzer?.TemplateLiteral?.(node, ancestors);
       extensionsAnalyzer?.TemplateLiteral?.(node, ancestors);
       pathsAnalyzer?.TemplateLiteral?.(node, ancestors);
