@@ -97,7 +97,8 @@
       "column": 53
     },
     "tags": {
-      "graphql": true
+      "graphql": true,
+      "graphql-other": true
     }
   }
 ]

@@ -79,12 +79,19 @@ const graphqlAnalyzerBuilder = (
           },
         };
 
+        let typeFound = false;
         if (node.value.includes("query")) {
           match.tags["graphql-query"] = true;
+          typeFound = true;
         }
 
         if (node.value.includes("mutation")) {
           match.tags["graphql-mutation"] = true;
+          typeFound = true;
+        }
+
+        if (!typeFound) {
+          match.tags["graphql-other"] = true;
         }
 
         matchesReturn.push(match);

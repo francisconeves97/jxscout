@@ -106,9 +106,29 @@ var isPathOnlyTags = []string{"is-path-only"}
 var queryTags = []string{"query"}
 var fragmentTags = []string{"fragment"}
 
+// hostname Tags
+var hostnameTags = []string{"hostname-string"}
+
+// regex Tags
+var regexTags = []string{"regex-match", "regex-pattern"}
+var regexMatchTags = []string{"regex-match"}
+var regexPatternTags = []string{"regex-pattern"}
+
+// secret Tags
+var secretTags = []string{"secret"}
+
+// graphql Tags
+var graphqlTags = []string{"graphql"}
+var graphqlQueryTags = []string{"graphql-query"}
+var graphqlMutationTags = []string{"graphql-mutation"}
+var graphqlOtherTags = []string{"graphql-other"}
+
 var dataTags = common.AppendAll(
 	urlTags,
 	pathTags,
+	hostnameTags,
+	regexTags,
+	secretTags,
 )
 
 func buildDataTree(matchesByTag map[string][]AnalyzerMatch) ASTAnalyzerTreeNode {
@@ -178,6 +198,93 @@ func buildDataTree(matchesByTag map[string][]AnalyzerMatch) ASTAnalyzerTreeNode 
 		dataNode.Children = append(dataNode.Children, pathNode)
 	}
 
+	if hasAnyMatches(matchesByTag, hostnameTags) {
+		hostnameNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
+			Label: "Hostname",
+		})
+
+		addMatchesToNode(&hostnameNode, matchesByTag, hostnameTags)
+		dataNode.Children = append(dataNode.Children, hostnameNode)
+	}
+
+	if hasAnyMatches(matchesByTag, regexTags) {
+		regexNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
+			Label: "Regex",
+		})
+
+		if hasAnyMatches(matchesByTag, regexMatchTags) {
+			regexMatchNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
+				Label: "Regex Match",
+			})
+
+			addMatchesToNode(&regexMatchNode, matchesByTag, regexMatchTags)
+			regexNode.Children = append(regexNode.Children, regexMatchNode)
+		}
+
+		if hasAnyMatches(matchesByTag, regexPatternTags) {
+			regexPatternNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
+				Label: "Regex Pattern",
+			})
+
+			addMatchesToNode(&regexPatternNode, matchesByTag, regexPatternTags)
+			regexNode.Children = append(regexNode.Children, regexPatternNode)
+		}
+
+		dataNode.Children = append(dataNode.Children, regexNode)
+	}
+
+	if hasAnyMatches(matchesByTag, secretTags) {
+		secretNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
+			Label: "Secrets",
+		})
+
+		matches := getMatchesForTags(matchesByTag, secretTags)
+		for tag, matches := range groupMatchesByTagStartingWith(matches, "secret-type-") {
+			secretTypeNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
+				Label: tag,
+			})
+
+			addAllMatchesToNode(&secretTypeNode, matches)
+			secretNode.Children = append(secretNode.Children, secretTypeNode)
+		}
+
+		dataNode.Children = append(dataNode.Children, secretNode)
+	}
+
+	if hasAnyMatches(matchesByTag, graphqlTags) {
+		graphqlNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
+			Label: "GraphQL",
+		})
+
+		if hasAnyMatches(matchesByTag, graphqlQueryTags) {
+			graphqlQueryNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
+				Label: "Query",
+			})
+
+			addMatchesToNode(&graphqlQueryNode, matchesByTag, graphqlQueryTags)
+			graphqlNode.Children = append(graphqlNode.Children, graphqlQueryNode)
+		}
+
+		if hasAnyMatches(matchesByTag, graphqlMutationTags) {
+			graphqlMutationNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
+				Label: "Mutation",
+			})
+
+			addMatchesToNode(&graphqlMutationNode, matchesByTag, graphqlMutationTags)
+			graphqlNode.Children = append(graphqlNode.Children, graphqlMutationNode)
+		}
+
+		if hasAnyMatches(matchesByTag, graphqlOtherTags) {
+			graphqlOtherNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
+				Label: "Other",
+			})
+
+			addMatchesToNode(&graphqlOtherNode, matchesByTag, graphqlOtherTags)
+			graphqlNode.Children = append(graphqlNode.Children, graphqlOtherNode)
+		}
+
+		dataNode.Children = append(dataNode.Children, graphqlNode)
+	}
 	return dataNode
 }
 
