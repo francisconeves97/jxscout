@@ -1,4 +1,3 @@
-import { createRegexAnalyzer } from "../regex-analyzer";
 import { AnalyzerMatch, AnalyzerParams } from "../types";
 import { Visitor } from "../walker";
 
