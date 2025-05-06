@@ -8,7 +8,7 @@ import { hashChangeAnalyzerBuilder } from "./hash-change";
 import { regexAnalyzerBuilder } from "./tree-analyzers/regex-pattern";
 import { domXssAnalyzerBuilder } from "./dom-xss";
 import { graphqlAnalyzerBuilder } from "./tree-analyzers/graphql";
-import { urlsAnalyzerBuilder } from "./urls";
+import { urlsAnalyzerBuilder } from "./tree-analyzers/urls";
 import { jqueryDomXssAnalyzerBuilder } from "./jquery-dom-xss";
 import { openRedirectionAnalyzerBuilder } from "./open-redirection";
 import { cookieManipulationAnalyzerBuilder } from "./cookie-manipulation";

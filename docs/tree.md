@@ -34,7 +34,7 @@ Storage ✅
 -- -- getItem ✅
 -- -- setItem ✅
 Data
--- URLs
+-- URLs ✅
 -- Path ✅
 -- -- API ✅
 -- -- Path ✅
