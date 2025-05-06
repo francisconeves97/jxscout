@@ -9,7 +9,7 @@ import (
 var tagToLabel = map[string]string{
 	"add-event-listener":               "addEventListener",
 	"onmessage":                        "onmessage",
-	"postmessage":                      "postMessage",
+	"postMessage":                      "postMessage",
 	"onhashchange":                     "onhashchange",
 	"eval":                             "eval",
 	"document-domain":                  "document.domain",
@@ -95,8 +95,11 @@ func formatMatchesV1(matches []AnalyzerMatch) []ASTAnalyzerTreeNode {
 
 // Client Behavior Tags
 // Event Tags
-var eventTags = []string{"add-event-listener", "onmessage", "postmessage", "onhashchange"}
+var eventTags = []string{"add-event-listener", "onmessage", "postMessage", "onhashchange"}
 var addEventListenerTags = []string{"add-event-listener"}
+var onmessageTags = []string{"onmessage"}
+var postMessageTags = []string{"postMessage"}
+var onhashchangeTags = []string{"onhashchange"}
 
 // eval Tags
 var evalTags = []string{"eval"}
@@ -113,7 +116,7 @@ var windowOpenTags = []string{"window-open"}
 var innerHTMLTags = []string{"inner-html"}
 
 // fetch Tags
-var fetchTags = []string{"fetch"}
+var fetchTags = []string{"fetch-call"}
 
 // URLSearchParams Tags
 var urlSearchParamsTags = []string{"url-search-params"}
@@ -124,7 +127,7 @@ var locationAssignmentTags = []string{"location-assignment"}
 var locationReadTags = []string{"location-read"}
 
 // window.name Tags
-var windowNameTags = []string{"window-name"}
+var windowNameTags = []string{"window-name-assignment", "window-name-read"}
 var windowNameAssignmentTags = []string{"window-name-assignment"}
 var windowNameReadTags = []string{"window-name-read"}
 
@@ -171,22 +174,22 @@ func buildClientBehaviorTree(matchesByTag map[string][]AnalyzerMatch) ASTAnalyze
 		}
 
 		// postmessage
-		if hasAnyMatches(matchesByTag, []string{"postmessage"}) {
+		if hasAnyMatches(matchesByTag, postMessageTags) {
 			postmessageNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
 				Label: "postMessage",
 			})
 
-			addMatchesToNode(&postmessageNode, matchesByTag, []string{"postmessage"})
+			addMatchesToNode(&postmessageNode, matchesByTag, postMessageTags)
 			eventsNode.Children = append(eventsNode.Children, postmessageNode)
 		}
 
 		// onhashchange
-		if hasAnyMatches(matchesByTag, []string{"onhashchange"}) {
+		if hasAnyMatches(matchesByTag, onhashchangeTags) {
 			onhashchangeNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
 				Label: "onhashchange",
 			})
 
-			addMatchesToNode(&onhashchangeNode, matchesByTag, []string{"onhashchange"})
+			addMatchesToNode(&onhashchangeNode, matchesByTag, onhashchangeTags)
 			eventsNode.Children = append(eventsNode.Children, onhashchangeNode)
 		}
 
@@ -281,10 +284,11 @@ func buildClientBehaviorTree(matchesByTag map[string][]AnalyzerMatch) ASTAnalyze
 				propertyNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
 					Label: tag,
 				})
-				assignmentNode.Children = append(assignmentNode.Children, propertyNode)
-
 				addAllMatchesToNode(&propertyNode, matches)
+				assignmentNode.Children = append(assignmentNode.Children, propertyNode)
 			}
+
+			locationNode.Children = append(locationNode.Children, assignmentNode)
 		}
 
 		if hasAnyMatches(matchesByTag, locationReadTags) {
@@ -299,10 +303,12 @@ func buildClientBehaviorTree(matchesByTag map[string][]AnalyzerMatch) ASTAnalyze
 				propertyNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
 					Label: tag,
 				})
-				readNode.Children = append(readNode.Children, propertyNode)
 
 				addAllMatchesToNode(&propertyNode, matches)
+				readNode.Children = append(readNode.Children, propertyNode)
 			}
+
+			locationNode.Children = append(locationNode.Children, readNode)
 		}
 
 		behaviorNode.Children = append(behaviorNode.Children, locationNode)
@@ -369,13 +375,13 @@ func addMatchesToNode(node *ASTAnalyzerTreeNode, matchesByTag map[string][]Analy
 }
 
 func getMatchesForTags(matchesByTag map[string][]AnalyzerMatch, tags []string) []AnalyzerMatch {
-	matches := make([]AnalyzerMatch, 0)
+	result := make([]AnalyzerMatch, 0)
 	for _, tag := range tags {
 		if matches, exists := matchesByTag[tag]; exists && len(matches) > 0 {
-			matches = append(matches, matches...)
+			result = append(result, matches...)
 		}
 	}
-	return matches
+	return result
 }
 
 func hasAnyMatches(matchesByTag map[string][]AnalyzerMatch, tags []string) bool {

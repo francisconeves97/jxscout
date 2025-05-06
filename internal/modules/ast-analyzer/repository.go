@@ -101,7 +101,7 @@ func (r *astAnalyzerRepository) createAnalysis(ctx context.Context, analysis ast
 
 func (r *astAnalyzerRepository) getAssetByPath(ctx context.Context, filePath string) (*asset, error) {
 	query := `
-		SELECT id, fs_path
+		SELECT id, fs_path, asset_type
 		FROM (
 			SELECT id, fs_path, 'asset' as asset_type
 			FROM assets
