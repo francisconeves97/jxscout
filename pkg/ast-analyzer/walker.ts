@@ -24,10 +24,26 @@ export type Visitor = {
   ) => void;
 };
 
-function getPosition(source: string, pos: number): Position {
-  const lines = source.slice(0, pos).split("\n");
-  const line = lines.length;
-  const column = lines[lines.length - 1].length;
+function getPosition(
+  source: string,
+  pos: number,
+  lineOffsets: number[]
+): Position {
+  // Binary search to find the line number
+  let low = 0;
+  let high = lineOffsets.length - 1;
+
+  while (low <= high) {
+    const mid = Math.floor((low + high) / 2);
+    if (lineOffsets[mid] <= pos) {
+      low = mid + 1;
+    } else {
+      high = mid - 1;
+    }
+  }
+
+  const line = low;
+  const column = pos - lineOffsets[line - 1];
   return { line, column };
 }
 
@@ -44,12 +60,21 @@ export function ancestors(
 ) {
   const ancestors: NodeWithLoc[] = [];
 
+  // Precompute line offsets
+  const lineOffsets: number[] = [0]; // First line starts at position 0
+  for (let i = 0; i < sourceCode.length; i++) {
+    if (sourceCode[i] === "\n") {
+      lineOffsets.push(i + 1);
+    }
+  }
+  lineOffsets.push(sourceCode.length + 1); // Add sentinel value
+
   // Add loc property to the node if it doesn't exist
   const nodeWithLoc = node as NodeWithLoc;
   if (!nodeWithLoc.loc) {
     nodeWithLoc.loc = {
-      start: getPosition(sourceCode, node.start),
-      end: getPosition(sourceCode, node.end),
+      start: getPosition(sourceCode, node.start, lineOffsets),
+      end: getPosition(sourceCode, node.end, lineOffsets),
     };
   }
 
@@ -63,8 +88,8 @@ export function ancestors(
         const nodeWithLoc = node as NodeWithLoc;
         if (!nodeWithLoc.loc) {
           nodeWithLoc.loc = {
-            start: getPosition(sourceCode, node.start),
-            end: getPosition(sourceCode, node.end),
+            start: getPosition(sourceCode, node.start, lineOffsets),
+            end: getPosition(sourceCode, node.end, lineOffsets),
           };
         }
         ancestors.push(nodeWithLoc);
