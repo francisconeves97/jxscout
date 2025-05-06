@@ -34,6 +34,7 @@ Storage ✅
 -- -- getItem ✅
 -- -- setItem ✅
 Data
+-- URLs
 -- Path ✅
 -- -- API ✅
 -- -- Path ✅
@@ -43,12 +44,12 @@ Data
 -- Regex ✅
 -- -- Match ✅
 -- -- Pattern ✅
--- Secret
--- -- [dynamic]
--- GraphQL
--- -- mutation
--- -- query
--- -- other
+-- Secret ✅
+-- -- [dynamic] ✅
+-- GraphQL ✅
+-- -- mutation ✅
+-- -- query ✅
+-- -- other ✅
 Frameworks
 -- React
 -- -- dangerouslySetInnerHTML

@@ -434,7 +434,7 @@
   {
     "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/paths/files/1.js",
     "analyzerName": "paths",
-    "value": "`${apiBaseUrl}/api/products/${productId}`",
+    "value": "${apiBaseUrl}/api/products/${productId}",
     "start": {
       "line": 56,
       "column": 15
@@ -453,7 +453,7 @@
   {
     "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/paths/files/1.js",
     "analyzerName": "paths",
-    "value": "`${apiBaseUrl}${orderEndpointPath}/${orderId}/status`",
+    "value": "${apiBaseUrl}${orderEndpointPath}/${orderId}/status",
     "start": {
       "line": 60,
       "column": 15
@@ -472,7 +472,7 @@
   {
     "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/paths/files/1.js",
     "analyzerName": "paths",
-    "value": "`${apiBaseUrl}${userEndpointPath}/${userId}`",
+    "value": "${apiBaseUrl}${userEndpointPath}/${userId}",
     "start": {
       "line": 52,
       "column": 15

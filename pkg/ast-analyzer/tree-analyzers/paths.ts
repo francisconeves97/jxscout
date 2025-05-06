@@ -406,7 +406,9 @@ const pathsAnalyzerBuilder = (
       }
 
       // Get the raw template literal value
-      const rawValue = args.source.slice(node.start, node.end);
+      const rawValue = args.source
+        .slice(node.start, node.end)
+        .replaceAll("`", "");
 
       // Check if any of the quasis (static parts) contain a path-like pattern
       const hasPathLikeQuasis = node.quasis.some((quasi) => {

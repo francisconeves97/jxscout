@@ -7,7 +7,7 @@ import { messageListenerAnalyzerBuilder } from "./message-listener";
 import { hashChangeAnalyzerBuilder } from "./hash-change";
 import { regexAnalyzerBuilder } from "./tree-analyzers/regex-pattern";
 import { domXssAnalyzerBuilder } from "./dom-xss";
-import { graphqlAnalyzerBuilder } from "./graphql";
+import { graphqlAnalyzerBuilder } from "./tree-analyzers/graphql";
 import { urlsAnalyzerBuilder } from "./urls";
 import { jqueryDomXssAnalyzerBuilder } from "./jquery-dom-xss";
 import { openRedirectionAnalyzerBuilder } from "./open-redirection";
@@ -284,11 +284,11 @@ export function analyzeFile(
     },
     TemplateLiteral(node, ancestors) {
       emailsAnalyzer?.TemplateLiteral?.(node, ancestors);
-      graphqlAnalyzer?.TemplateLiteral?.(node, ancestors);
       urlsAnalyzer?.TemplateLiteral?.(node, ancestors);
       piiAnalyzer?.TemplateLiteral?.(node, ancestors);
       extensionsAnalyzer?.TemplateLiteral?.(node, ancestors);
       pathsAnalyzer?.TemplateLiteral?.(node, ancestors);
+      graphqlAnalyzer?.TemplateLiteral?.(node, ancestors);
     },
     CallExpression(node, ancestors) {
       postMessageAnalyzer?.CallExpression?.(node, ancestors);
