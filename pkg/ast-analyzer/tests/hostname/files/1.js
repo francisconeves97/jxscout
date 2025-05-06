@@ -32,3 +32,4 @@ const notHostname7 = 'example@com'; // Invalid character
 const notHostname8 = 'example.com/'; // Invalid character
 const notHostname9 = 'example.com:8080'; // Port number
 const notHostname10 = 'http://example.com'; // URL scheme 
+const notHostname11 = 'abc.svg'; // Invalid character

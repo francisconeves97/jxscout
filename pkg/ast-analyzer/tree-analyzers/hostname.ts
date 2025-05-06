@@ -11,7 +11,7 @@ export const HOSTNAME_ANALYZER_NAME = "hostname";
 // - Each label must start and end with a letter or number
 // - Labels cannot start or end with hyphens
 const HOSTNAME_REGEX = new RegExp(
-  `^[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9](?:\\.[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9])*\\.[a-zA-Z]{2,}$`,
+  `^(?!.*\\.(js|ts|jsx|tsx|html|css|json|md|txt|xml|yaml|yml|svg|png|jpg|jpeg|gif|webp|ico|woff|woff2|ttf|eot|otf|mp4|webm|mp3|wav|pdf|zip|tar|gz|rar|7z|sql|db|sqlite|env|log|lock|map|min|bundle|config|conf|ini|toml|lock|pem|key|crt|cer|p12|pfx|bak|tmp|temp)$)[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9](?:\\.[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9])*\\.[a-zA-Z]{2,}$`,
   "i"
 );
 
