@@ -12,6 +12,7 @@
       "column": 34
     },
     "tags": {
+      "location": true,
       "location-read": true,
       "property-hash": true
     }
@@ -29,6 +30,7 @@
       "column": 34
     },
     "tags": {
+      "location": true,
       "location-read": true,
       "property-host": true
     }
@@ -46,6 +48,7 @@
       "column": 54
     },
     "tags": {
+      "location": true,
       "location-read": true,
       "property-host": true
     }
@@ -63,6 +66,7 @@
       "column": 33
     },
     "tags": {
+      "location": true,
       "location-read": true,
       "property-href": true
     }
@@ -80,6 +84,7 @@
       "column": 17
     },
     "tags": {
+      "location": true,
       "location-read": true,
       "property-href": true
     }
@@ -97,6 +102,7 @@
       "column": 37
     },
     "tags": {
+      "location": true,
       "location-assignment": true,
       "property-href": true
     }
@@ -114,6 +120,7 @@
       "column": 39
     },
     "tags": {
+      "location": true,
       "location-assignment": true,
       "property-href": true
     }
@@ -131,6 +138,7 @@
       "column": 37
     },
     "tags": {
+      "location": true,
       "location-assignment": true,
       "property-href": true
     }
@@ -148,6 +156,7 @@
       "column": 40
     },
     "tags": {
+      "location": true,
       "location-assignment": true,
       "property-href": true
     }
@@ -165,6 +174,7 @@
       "column": 41
     },
     "tags": {
+      "location": true,
       "location-assignment": true,
       "property-href": true
     }
@@ -182,6 +192,7 @@
       "column": 43
     },
     "tags": {
+      "location": true,
       "location-assignment": true,
       "property-href": true
     }
@@ -199,6 +210,7 @@
       "column": 21
     },
     "tags": {
+      "location": true,
       "location-assignment": true,
       "property-href": true
     }
@@ -216,6 +228,7 @@
       "column": 21
     },
     "tags": {
+      "location": true,
       "location-assignment": true,
       "property-href": true
     }
@@ -233,6 +246,7 @@
       "column": 23
     },
     "tags": {
+      "location": true,
       "location-assignment": true,
       "property-href": true
     }
@@ -250,6 +264,7 @@
       "column": 42
     },
     "tags": {
+      "location": true,
       "location-read": true,
       "property-pathname": true
     }
@@ -267,6 +282,7 @@
       "column": 74
     },
     "tags": {
+      "location": true,
       "location-read": true,
       "property-pathname": true
     }
@@ -284,6 +300,7 @@
       "column": 42
     },
     "tags": {
+      "location": true,
       "location-read": true,
       "property-protocol": true
     }
@@ -301,6 +318,7 @@
       "column": 36
     },
     "tags": {
+      "location": true,
       "location-read": true,
       "property-protocol": true
     }
@@ -318,6 +336,7 @@
       "column": 25
     },
     "tags": {
+      "location": true,
       "location-read": true,
       "property-protocol": true
     }
@@ -335,6 +354,7 @@
       "column": 38
     },
     "tags": {
+      "location": true,
       "location-read": true,
       "property-search": true
     }
@@ -352,6 +372,7 @@
       "column": 39
     },
     "tags": {
+      "location": true,
       "location-read": true,
       "property-hash": true
     }
@@ -369,6 +390,7 @@
       "column": 39
     },
     "tags": {
+      "location": true,
       "location-read": true,
       "property-host": true
     }
@@ -386,6 +408,7 @@
       "column": 39
     },
     "tags": {
+      "location": true,
       "location-read": true,
       "property-href": true
     }
@@ -403,6 +426,7 @@
       "column": 44
     },
     "tags": {
+      "location": true,
       "location-assignment": true,
       "property-href": true
     }
@@ -420,6 +444,7 @@
       "column": 28
     },
     "tags": {
+      "location": true,
       "location-assignment": true,
       "property-href": true
     }
@@ -437,6 +462,7 @@
       "column": 28
     },
     "tags": {
+      "location": true,
       "location-assignment": true,
       "property-href": true
     }
@@ -454,6 +480,7 @@
       "column": 30
     },
     "tags": {
+      "location": true,
       "location-assignment": true,
       "property-href": true
     }
@@ -471,6 +498,7 @@
       "column": 47
     },
     "tags": {
+      "location": true,
       "location-read": true,
       "property-pathname": true
     }
@@ -488,6 +516,7 @@
       "column": 47
     },
     "tags": {
+      "location": true,
       "location-read": true,
       "property-protocol": true
     }
@@ -505,6 +534,7 @@
       "column": 43
     },
     "tags": {
+      "location": true,
       "location-read": true,
       "property-search": true
     }

@@ -29,6 +29,7 @@ const cookieAnalyzerBuilder = (
           start: node.loc.start,
           end: node.loc.end,
           tags: {
+            cookie: true,
             "cookie-assignment": true,
           },
         };
@@ -65,6 +66,7 @@ const cookieAnalyzerBuilder = (
           start: node.loc.start,
           end: node.loc.end,
           tags: {
+            cookie: true,
             "cookie-read": true,
           },
         };

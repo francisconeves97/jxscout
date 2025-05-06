@@ -12,6 +12,7 @@
       "column": 35
     },
     "tags": {
+      "cookie": true,
       "cookie-read": true
     }
   },
@@ -28,6 +29,7 @@
       "column": 33
     },
     "tags": {
+      "cookie": true,
       "cookie-read": true
     }
   },
@@ -44,6 +46,7 @@
       "column": 24
     },
     "tags": {
+      "cookie": true,
       "cookie-read": true
     }
   },
@@ -60,6 +63,7 @@
       "column": 69
     },
     "tags": {
+      "cookie": true,
       "cookie-assignment": true
     }
   },
@@ -76,6 +80,7 @@
       "column": 38
     },
     "tags": {
+      "cookie": true,
       "cookie-assignment": true
     }
   },
@@ -92,6 +97,7 @@
       "column": 30
     },
     "tags": {
+      "cookie": true,
       "cookie-assignment": true
     }
   },
@@ -108,6 +114,7 @@
       "column": 38
     },
     "tags": {
+      "cookie": true,
       "cookie-assignment": true
     }
   }

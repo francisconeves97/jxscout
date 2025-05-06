@@ -1,5 +1,31 @@
 package astanalyzer
 
+var tagToLabel = map[string]string{
+	"add-event-listener":               "addEventListener",
+	"onmessage":                        "onmessage",
+	"postmessage":                      "postMessage",
+	"onhashchange":                     "onhashchange",
+	"eval":                             "eval",
+	"document-domain":                  "document.domain",
+	"window-open":                      "window.open",
+	"inner-html":                       "innerHTML",
+	"fetch":                            "fetch",
+	"url-search-params":                "new URLSearchParams",
+	"location":                         "Location",
+	"window-name":                      "window.name",
+	"fetch-options":                    "Fetch Options",
+	"cookie":                           "Cookie",
+	"local-storage":                    "localStorage",
+	"session-storage":                  "sessionStorage",
+	"urls":                             "URLs",
+	"path":                             "Path",
+	"hostname":                         "Hostname",
+	"regex":                            "Regex",
+	"secret":                           "Secret",
+	"graphql":                          "GraphQL",
+	"react-dangerously-set-inner-html": "dangerouslySetInnerHTML",
+}
+
 type AnalyzerMatch struct {
 	FilePath     string          `json:"filePath"`
 	AnalyzerName string          `json:"analyzerName"`
@@ -34,8 +60,10 @@ func createNavigationTreeNode(node ASTAnalyzerTreeNode) ASTAnalyzerTreeNode {
 
 func matchToTreeNode(match AnalyzerMatch) ASTAnalyzerTreeNode {
 	return ASTAnalyzerTreeNode{
-		Type: ASTAnalyzerTreeNodeTypeMatch,
-		Data: match,
+		Type:        ASTAnalyzerTreeNodeTypeMatch,
+		Data:        match,
+		Label:       match.Value,
+		Description: match.FilePath,
 	}
 }
 
@@ -52,75 +80,7 @@ func formatMatchesV1(matches []AnalyzerMatch) []ASTAnalyzerTreeNode {
 
 	// Client Behavior
 	if hasClientBehaviorMatches(matchesByTag) {
-		behaviorNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-			Label: "Client Behavior",
-		})
-
-		// Events
-		if hasEventMatches(matchesByTag) {
-			eventsNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-				Label: "Events",
-			})
-			addEventMatches(&eventsNode, matchesByTag)
-			behaviorNode.Children = append(behaviorNode.Children, eventsNode)
-		}
-
-		// Individual behavior analyzers
-		behaviorAnalyzers := []struct {
-			tag  string
-			name string
-		}{
-			{"eval", "eval"},
-			{"document-domain", "document.domain"},
-			{"window-open", "window.open"},
-			{"inner-html", "innerHTML"},
-			{"fetch", "fetch"},
-			{"url-search-params", "URLSearchParams"},
-			{"window-name", "window.name"},
-		}
-
-		for _, analyzer := range behaviorAnalyzers {
-			if matches, exists := matchesByTag[analyzer.tag]; exists && len(matches) > 0 {
-				analyzerNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-					Label: analyzer.name,
-				})
-				for _, match := range matches {
-					matchNode := matchToTreeNode(match)
-					matchNode.Label = match.Value
-					matchNode.Description = match.FilePath
-					analyzerNode.Children = append(analyzerNode.Children, matchNode)
-				}
-				behaviorNode.Children = append(behaviorNode.Children, analyzerNode)
-			}
-		}
-
-		// Window Location
-		if hasLocationMatches(matchesByTag) {
-			locationNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-				Label: "Window Location",
-			})
-
-			// Assignment
-			if hasLocationAssignmentMatches(matchesByTag) {
-				assignmentNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-					Label: "Assignment",
-				})
-				addLocationAssignmentMatches(&assignmentNode, matchesByTag)
-				locationNode.Children = append(locationNode.Children, assignmentNode)
-			}
-
-			// Read
-			if hasLocationReadMatches(matchesByTag) {
-				readNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-					Label: "Read",
-				})
-				addLocationReadMatches(&readNode, matchesByTag)
-				locationNode.Children = append(locationNode.Children, readNode)
-			}
-
-			behaviorNode.Children = append(behaviorNode.Children, locationNode)
-		}
-
+		behaviorNode := buildClientBehaviorTree(matchesByTag)
 		rootNodes = append(rootNodes, behaviorNode)
 	}
 
@@ -244,12 +204,110 @@ func formatMatchesV1(matches []AnalyzerMatch) []ASTAnalyzerTreeNode {
 	return rootNodes
 }
 
+var eventTags = []string{"add-event-listener", "onmessage", "postmessage", "onhashchange"}
+var addEventListenerTags = []string{"add-event-listener"}
+
+func buildClientBehaviorTree(matchesByTag map[string][]AnalyzerMatch) ASTAnalyzerTreeNode {
+	behaviorNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
+		Label: "Client Behavior",
+	})
+
+	// Events
+	if hasAnyMatches(matchesByTag, eventTags) {
+		eventsNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
+			Label: "Events",
+		})
+
+		// add event listener matches
+		if hasAnyMatches(matchesByTag, addEventListenerTags) {
+			eventListenerNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
+				Label: "addEventListener",
+			})
+
+			addMatchesToNode(&eventListenerNode, matchesByTag, addEventListenerTags)
+			eventsNode.Children = append(eventsNode.Children, eventListenerNode)
+		}
+
+		addEventMatches(&eventsNode, matchesByTag)
+		behaviorNode.Children = append(behaviorNode.Children, eventsNode)
+	}
+
+	// Individual behavior analyzers
+	behaviorAnalyzers := []struct {
+		tag  string
+		name string
+	}{
+		{"eval", "eval"},
+		{"document-domain", "document.domain"},
+		{"window-open", "window.open"},
+		{"inner-html", "innerHTML"},
+		{"fetch", "fetch"},
+		{"url-search-params", "URLSearchParams"},
+		{"window-name", "window.name"},
+	}
+
+	for _, analyzer := range behaviorAnalyzers {
+		if matches, exists := matchesByTag[analyzer.tag]; exists && len(matches) > 0 {
+			analyzerNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
+				Label: analyzer.name,
+			})
+			for _, match := range matches {
+				matchNode := matchToTreeNode(match)
+				matchNode.Label = match.Value
+				matchNode.Description = match.FilePath
+				analyzerNode.Children = append(analyzerNode.Children, matchNode)
+			}
+			behaviorNode.Children = append(behaviorNode.Children, analyzerNode)
+		}
+	}
+
+	// Window Location
+	if hasLocationMatches(matchesByTag) {
+		locationNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
+			Label: "Window Location",
+		})
+
+		// Assignment
+		if hasLocationAssignmentMatches(matchesByTag) {
+			assignmentNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
+				Label: "Assignment",
+			})
+			addLocationAssignmentMatches(&assignmentNode, matchesByTag)
+			locationNode.Children = append(locationNode.Children, assignmentNode)
+		}
+
+		// Read
+		if hasLocationReadMatches(matchesByTag) {
+			readNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
+				Label: "Read",
+			})
+			addLocationReadMatches(&readNode, matchesByTag)
+			locationNode.Children = append(locationNode.Children, readNode)
+		}
+
+		behaviorNode.Children = append(behaviorNode.Children, locationNode)
+	}
+
+	return behaviorNode
+}
+
+func addMatchesToNode(node *ASTAnalyzerTreeNode, matchesByTag map[string][]AnalyzerMatch, tags []string) {
+	for _, tag := range tags {
+		if matches, exists := matchesByTag[tag]; exists && len(matches) > 0 {
+			for _, match := range matches {
+				matchNode := matchToTreeNode(match)
+				node.Children = append(node.Children, matchNode)
+			}
+		}
+	}
+}
+
 // Helper functions for checking matches
 func hasClientBehaviorMatches(matchesByTag map[string][]AnalyzerMatch) bool {
 	behaviorTags := []string{
 		"add-event-listener", "onmessage", "postmessage", "onhashchange",
 		"eval", "document-domain", "window-open", "inner-html", "fetch",
-		"url-search-params", "window-name", "location-assignment", "location-read",
+		"url-search-params", "location", "window-name",
 	}
 	return hasAnyMatches(matchesByTag, behaviorTags)
 }

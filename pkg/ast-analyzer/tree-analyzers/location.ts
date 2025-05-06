@@ -73,6 +73,7 @@ const locationAnalyzerBuilder = (
           start: node.loc.start,
           end: node.loc.end,
           tags: {
+            location: true,
             "location-assignment": true,
             [`property-${propertyName}`]: true,
           },
@@ -140,6 +141,7 @@ const locationAnalyzerBuilder = (
           start: node.loc.start,
           end: node.loc.end,
           tags: {
+            location: true,
             "location-read": true,
             [`property-${propertyName}`]: true,
           },
