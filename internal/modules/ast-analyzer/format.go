@@ -74,7 +74,43 @@ func formatMatchesV1(matches []AnalyzerMatch) []ASTAnalyzerTreeNode {
 		rootNodes = append(rootNodes, objectSchemasNode)
 	}
 
+	// Frameworks
+	if hasAnyMatches(matchesByTag, frameworkTags) {
+		frameworksNode := buildFrameworksTree(matchesByTag)
+		rootNodes = append(rootNodes, frameworksNode)
+	}
+
 	return rootNodes
+}
+
+// Frameworks Tags
+var reactTags = []string{"dangerouslySetInnerHTML-jsx", "dangerouslySetInnerHTML-object"}
+
+var frameworkTags = common.AppendAll(
+	reactTags,
+)
+
+func buildFrameworksTree(matchesByTag map[string][]AnalyzerMatch) ASTAnalyzerTreeNode {
+	frameworksNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
+		Label: "Frameworks",
+	})
+
+	if hasAnyMatches(matchesByTag, reactTags) {
+		reactNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
+			Label: "React",
+		})
+
+		dangerouslySetInnerHTMLNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
+			Label: "dangerouslySetInnerHTML",
+		})
+
+		addMatchesToNode(&dangerouslySetInnerHTMLNode, matchesByTag, reactTags)
+
+		reactNode.Children = append(reactNode.Children, dangerouslySetInnerHTMLNode)
+		frameworksNode.Children = append(frameworksNode.Children, reactNode)
+	}
+
+	return frameworksNode
 }
 
 // Object Schemas

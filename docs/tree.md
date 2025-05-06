@@ -51,8 +51,6 @@ Data
 -- -- mutation ✅
 -- -- query ✅
 -- -- other ✅
-Frameworks
--- React
--- dangerouslySetInnerHTML ✅
--- -- jsx ✅
--- -- js ✅
+Frameworks ✅
+-- React ✅
+-- -- dangerouslySetInnerHTML ✅
