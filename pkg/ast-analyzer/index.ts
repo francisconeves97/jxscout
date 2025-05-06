@@ -44,6 +44,7 @@ import { regexAnalyzerBuilder as regexPatternAnalyzerBuilder } from "./tree-anal
 import { sessionStorageAnalyzerBuilder } from "./tree-analyzers/session-storage";
 import { urlSearchParamsAnalyzerBuilder } from "./tree-analyzers/url-search-params";
 import { pathsAnalyzerBuilder } from "./tree-analyzers/paths";
+import { windowNameAnalyzerBuilder } from "./tree-analyzers/window-name";
 
 export function parseFile(filePath: string): AnalyzerParams {
   const fileContent = fs.readFileSync(filePath, "utf-8");
@@ -114,7 +115,8 @@ export type AnalyzerType =
   | "onmessage"
   | "regex-pattern"
   | "url-search-params"
-  | "paths";
+  | "paths"
+  | "window-name";
 
 export function analyzeFile(
   filePath: string,
@@ -262,6 +264,10 @@ export function analyzeFile(
     urlSearchParamsAnalyzerBuilder
   );
   const pathsAnalyzer = createAnalyzer("paths", pathsAnalyzerBuilder);
+  const windowNameAnalyzer = createAnalyzer(
+    "window-name",
+    windowNameAnalyzerBuilder
+  );
 
   traverse(args.source, args.ast, {
     Literal(node, ancestors) {
@@ -360,6 +366,7 @@ export function analyzeFile(
       locationAnalyzer?.AssignmentExpression?.(node, ancestors);
       onhashchangeAnalyzer?.AssignmentExpression?.(node, ancestors);
       onmessageAnalyzer?.AssignmentExpression?.(node, ancestors);
+      windowNameAnalyzer?.AssignmentExpression?.(node, ancestors);
     },
     MemberExpression(node, ancestors) {
       postMessageAnalyzer?.MemberExpression?.(node, ancestors);
@@ -390,6 +397,7 @@ export function analyzeFile(
       localStorageAnalyzer?.MemberExpression?.(node, ancestors);
       sessionStorageAnalyzer?.MemberExpression?.(node, ancestors);
       locationAnalyzer?.MemberExpression?.(node, ancestors);
+      windowNameAnalyzer?.MemberExpression?.(node, ancestors);
     },
     VariableDeclarator(node, ancestors) {
       documentDomainAnalyzer?.VariableDeclarator?.(node, ancestors);
