@@ -22,18 +22,18 @@ Client Behavior
 -- -- -- href ✅
 -- -- -- location ✅
 -- window.name ✅
+-- Storage ✅
+-- -- Cookie ✅
+-- -- -- Assignment ✅
+-- -- -- Read ✅
+-- -- localStorage ✅
+-- -- -- getItem ✅
+-- -- -- setItem ✅
+-- -- sessionStorage ✅
+-- -- -- getItem ✅
+-- -- -- setItem ✅
 Object Schemas ✅
 -- fetch options ✅
-Storage ✅
--- Cookie ✅
--- -- Assignment ✅
--- -- Read ✅
--- localStorage ✅
--- -- getItem ✅
--- -- setItem ✅
--- sessionStorage ✅
--- -- getItem ✅
--- -- setItem ✅
 Data
 -- URLs ✅
 -- Path ✅

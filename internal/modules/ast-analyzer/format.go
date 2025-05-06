@@ -140,6 +140,20 @@ var windowNameTags = []string{"window-name-assignment", "window-name-read"}
 var windowNameAssignmentTags = []string{"window-name-assignment"}
 var windowNameReadTags = []string{"window-name-read"}
 
+// Storage tags
+var storageTags = []string{"cookie", "local-storage", "session-storage"}
+
+// cookie tags
+var cookieTags = []string{"cookie"}
+var cookieAssignmentTags = []string{"cookie-assignment"}
+var cookieReadTags = []string{"cookie-read"}
+
+// local-storage tags
+var localStorageTags = []string{"local-storage"}
+
+// session-storage tags
+var sessionStorageTags = []string{"session-storage"}
+
 var clientBehaviorTags = common.AppendAll(
 	eventTags,
 	evalTags,
@@ -149,6 +163,7 @@ var clientBehaviorTags = common.AppendAll(
 	fetchTags,
 	urlSearchParamsTags,
 	locationTags,
+	storageTags,
 )
 
 func buildClientBehaviorTree(matchesByTag map[string][]AnalyzerMatch) ASTAnalyzerTreeNode {
@@ -347,6 +362,76 @@ func buildClientBehaviorTree(matchesByTag map[string][]AnalyzerMatch) ASTAnalyze
 		}
 
 		behaviorNode.Children = append(behaviorNode.Children, windowNameNode)
+	}
+
+	if hasAnyMatches(matchesByTag, storageTags) {
+		storageNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
+			Label: "Storage",
+		})
+
+		if hasAnyMatches(matchesByTag, cookieTags) {
+			cookieNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
+				Label: "Cookie",
+			})
+
+			if hasAnyMatches(matchesByTag, cookieAssignmentTags) {
+				assignmentNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
+					Label: "Assignment",
+				})
+
+				addMatchesToNode(&assignmentNode, matchesByTag, cookieAssignmentTags)
+				cookieNode.Children = append(cookieNode.Children, assignmentNode)
+			}
+
+			if hasAnyMatches(matchesByTag, cookieReadTags) {
+				readNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
+					Label: "Read",
+				})
+
+				addMatchesToNode(&readNode, matchesByTag, cookieReadTags)
+				cookieNode.Children = append(cookieNode.Children, readNode)
+			}
+
+			storageNode.Children = append(storageNode.Children, cookieNode)
+		}
+
+		if hasAnyMatches(matchesByTag, localStorageTags) {
+			localStorageNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
+				Label: "localStorage",
+			})
+
+			matches := getMatchesForTags(matchesByTag, localStorageTags)
+			for tag, matches := range groupMatchesByTagStartingWith(matches, "property-") {
+				propertyNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
+					Label: tag,
+				})
+
+				addAllMatchesToNode(&propertyNode, matches)
+				localStorageNode.Children = append(localStorageNode.Children, propertyNode)
+			}
+
+			storageNode.Children = append(storageNode.Children, localStorageNode)
+		}
+
+		if hasAnyMatches(matchesByTag, sessionStorageTags) {
+			sessionStorageNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
+				Label: "sessionStorage",
+			})
+
+			matches := getMatchesForTags(matchesByTag, sessionStorageTags)
+			for tag, matches := range groupMatchesByTagStartingWith(matches, "property-") {
+				propertyNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
+					Label: tag,
+				})
+
+				addAllMatchesToNode(&propertyNode, matches)
+				sessionStorageNode.Children = append(sessionStorageNode.Children, propertyNode)
+			}
+
+			storageNode.Children = append(storageNode.Children, sessionStorageNode)
+		}
+
+		behaviorNode.Children = append(behaviorNode.Children, storageNode)
 	}
 
 	return behaviorNode
