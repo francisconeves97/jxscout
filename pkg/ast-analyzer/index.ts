@@ -1,30 +1,12 @@
 import fs from "fs";
+import path from "path";
 import { ParseResult, parseSync } from "oxc-parser";
 import { ancestors as traverse } from "./walker";
 import { AnalyzerParams, AnalyzerMatch } from "./types";
-import { emailsAnalyzerBuilder } from "./emails";
-import { messageListenerAnalyzerBuilder } from "./message-listener";
-import { hashChangeAnalyzerBuilder } from "./hash-change";
 import { regexAnalyzerBuilder } from "./tree-analyzers/regex-pattern";
-import { domXssAnalyzerBuilder } from "./dom-xss";
 import { graphqlAnalyzerBuilder } from "./tree-analyzers/graphql";
 import { urlsAnalyzerBuilder } from "./tree-analyzers/urls";
-import { jqueryDomXssAnalyzerBuilder } from "./jquery-dom-xss";
-import { openRedirectionAnalyzerBuilder } from "./open-redirection";
-import { cookieManipulationAnalyzerBuilder } from "./cookie-manipulation";
-import { javascriptInjectionAnalyzerBuilder } from "./javascript-injection";
-import { documentDomainManipulationAnalyzerBuilder } from "./document-domain-manipulation";
-import { websocketUrlPoisoningAnalyzerBuilder } from "./websocket-url-poisoning";
-import { linkManipulationAnalyzerBuilder } from "./link-manipulation";
-import { ajaxRequestHeaderManipulationAnalyzerBuilder } from "./ajax-request-header-manipulation";
-import { localFilePathManipulationAnalyzerBuilder } from "./local-file-path-manipulation";
-import { html5StorageManipulationAnalyzerBuilder } from "./html5-storage-manipulation";
-import { xpathInjectionAnalyzerBuilder } from "./xpath-injection";
-import { domDataManipulationAnalyzerBuilder } from "./dom-data-manipulation";
-import { commonSourcesAnalyzerBuilder } from "./common-sources";
 import { secretsAnalyzerBuilder } from "./tree-analyzers/secrets";
-import { piiAnalyzerBuilder } from "./pii";
-import { fileExtensionsAnalyzerBuilder } from "./extensions";
 import { addEventListenerAnalyzerBuilder } from "./tree-analyzers/add-event-listener";
 import { cookieAnalyzerBuilder } from "./tree-analyzers/cookie";
 import { documentDomainAnalyzerBuilder } from "./tree-analyzers/document-domain";
@@ -37,7 +19,6 @@ import { localStorageAnalyzerBuilder } from "./tree-analyzers/local-storage";
 import { locationAnalyzerBuilder } from "./tree-analyzers/location";
 import { onhashchangeAnalyzerBuilder } from "./tree-analyzers/onhashchange";
 import { onmessageAnalyzerBuilder } from "./tree-analyzers/onmessage";
-import path from "path";
 import { postmessageAnalyzerBuilder } from "./tree-analyzers/postmessage";
 import { regexMatchAnalyzerBuilder } from "./tree-analyzers/regex-match";
 import { regexAnalyzerBuilder as regexPatternAnalyzerBuilder } from "./tree-analyzers/regex-pattern";
@@ -146,81 +127,14 @@ export function analyzeFile(
     return builder(args, results);
   };
 
-  const emailsAnalyzer = createAnalyzer("emails", emailsAnalyzerBuilder);
   const postMessageAnalyzer = createAnalyzer(
     "postmessage",
     postmessageAnalyzerBuilder
   );
-  const messageListenerAnalyzer = createAnalyzer(
-    "message-listener",
-    messageListenerAnalyzerBuilder
-  );
-  const hashChangeAnalyzer = createAnalyzer(
-    "hash-change",
-    hashChangeAnalyzerBuilder
-  );
   const regexAnalyzer = createAnalyzer("regex", regexAnalyzerBuilder);
-  const domXssAnalyzer = createAnalyzer("dom-xss", domXssAnalyzerBuilder);
   const graphqlAnalyzer = createAnalyzer("graphql", graphqlAnalyzerBuilder);
   const urlsAnalyzer = createAnalyzer("urls", urlsAnalyzerBuilder);
-  const jqueryDomXssAnalyzer = createAnalyzer(
-    "jquery-dom-xss",
-    jqueryDomXssAnalyzerBuilder
-  );
-  const openRedirectionAnalyzer = createAnalyzer(
-    "open-redirection",
-    openRedirectionAnalyzerBuilder
-  );
-  const cookieManipulationAnalyzer = createAnalyzer(
-    "cookie-manipulation",
-    cookieManipulationAnalyzerBuilder
-  );
-  const javascriptInjectionAnalyzer = createAnalyzer(
-    "javascript-injection",
-    javascriptInjectionAnalyzerBuilder
-  );
-  const documentDomainManipulationAnalyzer = createAnalyzer(
-    "document-domain-manipulation",
-    documentDomainManipulationAnalyzerBuilder
-  );
-  const websocketUrlPoisoningAnalyzer = createAnalyzer(
-    "websocket-url-poisoning",
-    websocketUrlPoisoningAnalyzerBuilder
-  );
-  const linkManipulationAnalyzer = createAnalyzer(
-    "link-manipulation",
-    linkManipulationAnalyzerBuilder
-  );
-  const ajaxRequestHeaderManipulationAnalyzer = createAnalyzer(
-    "ajax-request-header-manipulation",
-    ajaxRequestHeaderManipulationAnalyzerBuilder
-  );
-  const localFilePathManipulationAnalyzer = createAnalyzer(
-    "local-file-path-manipulation",
-    localFilePathManipulationAnalyzerBuilder
-  );
-  const html5StorageManipulationAnalyzer = createAnalyzer(
-    "html5-storage-manipulation",
-    html5StorageManipulationAnalyzerBuilder
-  );
-  const xpathInjectionAnalyzer = createAnalyzer(
-    "xpath-injection",
-    xpathInjectionAnalyzerBuilder
-  );
-  const domDataManipulationAnalyzer = createAnalyzer(
-    "dom-data-manipulation",
-    domDataManipulationAnalyzerBuilder
-  );
-  const commonSourcesAnalyzer = createAnalyzer(
-    "common-sources",
-    commonSourcesAnalyzerBuilder
-  );
   const secretsAnalyzer = createAnalyzer("secrets", secretsAnalyzerBuilder);
-  const piiAnalyzer = createAnalyzer("pii", piiAnalyzerBuilder);
-  const extensionsAnalyzer = createAnalyzer(
-    "extensions",
-    fileExtensionsAnalyzerBuilder
-  );
   const addEventListenerAnalyzer = createAnalyzer(
     "add-event-listener",
     addEventListenerAnalyzerBuilder
@@ -286,48 +200,26 @@ export function analyzeFile(
 
   traverse(args.source, args.ast, {
     Literal(node, ancestors) {
-      emailsAnalyzer?.Literal?.(node, ancestors);
       regexAnalyzer?.Literal?.(node, ancestors);
       graphqlAnalyzer?.Literal?.(node, ancestors);
       urlsAnalyzer?.Literal?.(node, ancestors);
       secretsAnalyzer?.Literal?.(node, ancestors);
-      piiAnalyzer?.Literal?.(node, ancestors);
-      extensionsAnalyzer?.Literal?.(node, ancestors);
       hostnameAnalyzer?.Literal?.(node, ancestors);
       regexPatternAnalyzer?.Literal?.(node, ancestors);
       pathsAnalyzer?.Literal?.(node, ancestors);
     },
     NewExpression(node, ancestors) {
       regexAnalyzer?.NewExpression?.(node, ancestors);
-      websocketUrlPoisoningAnalyzer?.NewExpression?.(node, ancestors);
       regexPatternAnalyzer?.NewExpression?.(node, ancestors);
       urlSearchParamsAnalyzer?.NewExpression?.(node, ancestors);
     },
     TemplateLiteral(node, ancestors) {
-      emailsAnalyzer?.TemplateLiteral?.(node, ancestors);
       urlsAnalyzer?.TemplateLiteral?.(node, ancestors);
-      piiAnalyzer?.TemplateLiteral?.(node, ancestors);
-      extensionsAnalyzer?.TemplateLiteral?.(node, ancestors);
       pathsAnalyzer?.TemplateLiteral?.(node, ancestors);
       graphqlAnalyzer?.TemplateLiteral?.(node, ancestors);
     },
     CallExpression(node, ancestors) {
       postMessageAnalyzer?.CallExpression?.(node, ancestors);
-      messageListenerAnalyzer?.CallExpression?.(node, ancestors);
-      domXssAnalyzer?.CallExpression?.(node, ancestors);
-      jqueryDomXssAnalyzer?.CallExpression?.(node, ancestors);
-      openRedirectionAnalyzer?.CallExpression?.(node, ancestors);
-      cookieManipulationAnalyzer?.CallExpression?.(node, ancestors);
-      javascriptInjectionAnalyzer?.CallExpression?.(node, ancestors);
-      documentDomainManipulationAnalyzer?.CallExpression?.(node, ancestors);
-      websocketUrlPoisoningAnalyzer?.CallExpression?.(node, ancestors);
-      linkManipulationAnalyzer?.CallExpression?.(node, ancestors);
-      ajaxRequestHeaderManipulationAnalyzer?.CallExpression?.(node, ancestors);
-      localFilePathManipulationAnalyzer?.CallExpression?.(node, ancestors);
-      html5StorageManipulationAnalyzer?.CallExpression?.(node, ancestors);
-      xpathInjectionAnalyzer?.CallExpression?.(node, ancestors);
-      domDataManipulationAnalyzer?.CallExpression?.(node, ancestors);
-      commonSourcesAnalyzer?.CallExpression?.(node, ancestors);
       addEventListenerAnalyzer?.CallExpression?.(node, ancestors);
       cookieAnalyzer?.CallExpression?.(node, ancestors);
       documentDomainAnalyzer?.CallExpression?.(node, ancestors);
@@ -346,30 +238,6 @@ export function analyzeFile(
     },
     AssignmentExpression(node, ancestors) {
       postMessageAnalyzer?.AssignmentExpression?.(node, ancestors);
-      hashChangeAnalyzer?.AssignmentExpression?.(node, ancestors);
-      domXssAnalyzer?.AssignmentExpression?.(node, ancestors);
-      jqueryDomXssAnalyzer?.AssignmentExpression?.(node, ancestors);
-      openRedirectionAnalyzer?.AssignmentExpression?.(node, ancestors);
-      cookieManipulationAnalyzer?.AssignmentExpression?.(node, ancestors);
-      javascriptInjectionAnalyzer?.AssignmentExpression?.(node, ancestors);
-      documentDomainManipulationAnalyzer?.AssignmentExpression?.(
-        node,
-        ancestors
-      );
-      websocketUrlPoisoningAnalyzer?.AssignmentExpression?.(node, ancestors);
-      linkManipulationAnalyzer?.AssignmentExpression?.(node, ancestors);
-      ajaxRequestHeaderManipulationAnalyzer?.AssignmentExpression?.(
-        node,
-        ancestors
-      );
-      localFilePathManipulationAnalyzer?.AssignmentExpression?.(
-        node,
-        ancestors
-      );
-      html5StorageManipulationAnalyzer?.AssignmentExpression?.(node, ancestors);
-      xpathInjectionAnalyzer?.AssignmentExpression?.(node, ancestors);
-      domDataManipulationAnalyzer?.AssignmentExpression?.(node, ancestors);
-      commonSourcesAnalyzer?.AssignmentExpression?.(node, ancestors);
       addEventListenerAnalyzer?.AssignmentExpression?.(node, ancestors);
       cookieAnalyzer?.AssignmentExpression?.(node, ancestors);
       documentDomainAnalyzer?.AssignmentExpression?.(node, ancestors);
@@ -386,23 +254,6 @@ export function analyzeFile(
     },
     MemberExpression(node, ancestors) {
       postMessageAnalyzer?.MemberExpression?.(node, ancestors);
-      domXssAnalyzer?.MemberExpression?.(node, ancestors);
-      jqueryDomXssAnalyzer?.MemberExpression?.(node, ancestors);
-      openRedirectionAnalyzer?.MemberExpression?.(node, ancestors);
-      cookieManipulationAnalyzer?.MemberExpression?.(node, ancestors);
-      javascriptInjectionAnalyzer?.MemberExpression?.(node, ancestors);
-      documentDomainManipulationAnalyzer?.MemberExpression?.(node, ancestors);
-      websocketUrlPoisoningAnalyzer?.MemberExpression?.(node, ancestors);
-      linkManipulationAnalyzer?.MemberExpression?.(node, ancestors);
-      ajaxRequestHeaderManipulationAnalyzer?.MemberExpression?.(
-        node,
-        ancestors
-      );
-      localFilePathManipulationAnalyzer?.MemberExpression?.(node, ancestors);
-      html5StorageManipulationAnalyzer?.MemberExpression?.(node, ancestors);
-      xpathInjectionAnalyzer?.MemberExpression?.(node, ancestors);
-      domDataManipulationAnalyzer?.MemberExpression?.(node, ancestors);
-      commonSourcesAnalyzer?.MemberExpression?.(node, ancestors);
       addEventListenerAnalyzer?.MemberExpression?.(node, ancestors);
       cookieAnalyzer?.MemberExpression?.(node, ancestors);
       documentDomainAnalyzer?.MemberExpression?.(node, ancestors);
