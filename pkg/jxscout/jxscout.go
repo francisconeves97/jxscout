@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"path/filepath"
 	"sync"
+	"time"
 
 	assetfetcher "github.com/francisconeves97/jxscout/internal/core/asset-fetcher"
 	assetservice "github.com/francisconeves97/jxscout/internal/core/asset-service"
@@ -262,6 +263,11 @@ func (s *jxscout) Stop() error {
 	}
 
 	s.log.Info("shutting down server")
+
+	if err := s.websocketServer.Shutdown(time.Second * 10); err != nil {
+		s.log.Error("failed to shutdown websocket server gracefully", "error", err)
+		return errutil.Wrap(err, "failed to shutdown websocket server gracefully")
+	}
 
 	if err := s.server.Shutdown(s.ctx); err != nil {
 		s.log.Error("failed to shutdown server gracefully", "error", err)

@@ -1,10 +1,13 @@
 package websocket
 
 import (
+	"context"
 	"encoding/json"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"sync"
+	"time"
 
 	"github.com/go-chi/chi"
 	"github.com/gorilla/websocket"
@@ -19,9 +22,13 @@ type WebsocketServer struct {
 
 	handlersMutex sync.RWMutex
 	handlers      map[string]WebsocketHandler
+
+	ctx    context.Context
+	cancel context.CancelFunc
 }
 
 func NewWebsocketServer(r chi.Router, logger *slog.Logger) *WebsocketServer {
+	ctx, cancel := context.WithCancel(context.Background())
 	wsServer := &WebsocketServer{
 		router: r,
 		upgrader: websocket.Upgrader{
@@ -32,11 +39,40 @@ func NewWebsocketServer(r chi.Router, logger *slog.Logger) *WebsocketServer {
 		clients:  make(map[*websocket.Conn]bool),
 		log:      logger,
 		handlers: make(map[string]WebsocketHandler),
+		ctx:      ctx,
+		cancel:   cancel,
 	}
 
 	r.HandleFunc("/ws", wsServer.handleWebsocket)
 
 	return wsServer
+}
+
+// Shutdown gracefully shuts down the websocket server
+func (s *WebsocketServer) Shutdown(timeout time.Duration) error {
+	s.cancel() // Signal all goroutines to stop
+
+	// Create a channel to signal when shutdown is complete
+	done := make(chan struct{})
+
+	// Start a goroutine to close all client connections
+	go func() {
+		s.clientsMutex.Lock()
+		for conn := range s.clients {
+			conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, "server shutting down"))
+			conn.Close()
+		}
+		s.clientsMutex.Unlock()
+		close(done)
+	}()
+
+	// Wait for either timeout or completion
+	select {
+	case <-done:
+		return nil
+	case <-time.After(timeout):
+		return fmt.Errorf("shutdown timed out after %v", timeout)
+	}
 }
 
 func (s *WebsocketServer) handleWebsocket(w http.ResponseWriter, r *http.Request) {
@@ -59,25 +95,55 @@ func (s *WebsocketServer) handleWebsocket(w http.ResponseWriter, r *http.Request
 		s.clientsMutex.Unlock()
 	}()
 
-	for {
-		var msg WebsocketMessage
-		err := conn.ReadJSON(&msg)
-		if err != nil {
-			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-				s.log.Error("websocket read error", "err", err)
+	// Set read deadline
+	conn.SetReadDeadline(time.Now().Add(60 * time.Second))
+	conn.SetPongHandler(func(string) error {
+		conn.SetReadDeadline(time.Now().Add(60 * time.Second))
+		return nil
+	})
+
+	// Start ping ticker
+	ticker := time.NewTicker(30 * time.Second)
+	defer ticker.Stop()
+
+	// Start a goroutine to handle pings
+	go func() {
+		for {
+			select {
+			case <-ticker.C:
+				if err := conn.WriteMessage(websocket.PingMessage, nil); err != nil {
+					return
+				}
+			case <-s.ctx.Done():
+				return
 			}
-			break
 		}
+	}()
 
-		s.log.Debug("received websocket message", "msg_type", msg.Type, "msg_id", msg.ID)
+	for {
+		select {
+		case <-s.ctx.Done():
+			return
+		default:
+			var msg WebsocketMessage
+			err := conn.ReadJSON(&msg)
+			if err != nil {
+				if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
+					s.log.Error("websocket read error", "err", err)
+				}
+				return
+			}
 
-		handler, found := s.handlers[msg.Type]
-		if !found {
-			s.SendGenericError(conn, msg.ID, "unknown message type")
-			continue
+			s.log.Debug("received websocket message", "msg_type", msg.Type, "msg_id", msg.ID)
+
+			handler, found := s.handlers[msg.Type]
+			if !found {
+				s.SendGenericError(conn, msg.ID, "unknown message type")
+				continue
+			}
+
+			handler(msg, conn)
 		}
-
-		handler(msg, conn)
 	}
 }
 
