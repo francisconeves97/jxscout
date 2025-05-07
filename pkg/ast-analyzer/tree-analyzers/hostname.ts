@@ -38,6 +38,10 @@ const hostnameAnalyzerBuilder = (
           },
         };
 
+        if (node.value.includes("www.w3.org")) {
+          return;
+        }
+
         matchesReturn.push(match);
       }
     },

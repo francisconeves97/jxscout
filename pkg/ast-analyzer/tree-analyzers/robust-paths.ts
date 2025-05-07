@@ -3,6 +3,23 @@ import { Analyzer, AnalyzerMatch, AnalyzerParams } from "../types";
 import { Visitor } from "../walker";
 import { COMMON_MIME_TYPES } from "./paths";
 
+function isHighEntropy(str: string, threshold = 4.9): boolean {
+  const freq: Record<string, number> = {};
+  for (const char of str) {
+    freq[char] = (freq[char] || 0) + 1;
+  }
+
+  let entropy = 0;
+  const len = str.length;
+
+  for (const char in freq) {
+    const p = freq[char] / len;
+    entropy -= p * Math.log2(p);
+  }
+
+  return entropy >= threshold;
+}
+
 // most logic stolen from https://github.com/BishopFox/jsluice
 // all credit to them
 
@@ -85,6 +102,16 @@ function hasPrefix(str: string, prefix: string): boolean {
 }
 
 function isValidPath(value: string): boolean {
+  // Check if path starts with a letter or forward slash
+  if (!/^[a-zA-Z/]/.test(value)) {
+    return false;
+  }
+
+  // Check if path contains at least one letter
+  if (!/[a-zA-Z]/.test(value)) {
+    return false;
+  }
+
   // Basic path-like check
   if (!value.includes("/")) {
     return false;
@@ -97,6 +124,12 @@ function isValidPath(value: string): boolean {
 
   // Exclude paths that are just "./" or "../"
   if (/^\.\.?\/?$/.test(value)) {
+    return false;
+  }
+
+  // Check if at least one path segment is longer than 3 characters
+  const parts = value.split("/").filter(Boolean);
+  if (!parts.some((part) => part.length > 3)) {
     return false;
   }
 
@@ -121,6 +154,10 @@ function isValidPath(value: string): boolean {
         return false;
       }
 
+      if (url.hostname === "www.w3.org") {
+        return false;
+      }
+
       // Check hostname
       if (url.hostname.split(".").length > 1) {
         return true;
@@ -142,8 +179,11 @@ function isValidPath(value: string): boolean {
     }
   }
 
+  if (value.includes("www.w3.org")) {
+    return false;
+  }
+
   // For relative paths, check if they have a valid structure
-  const parts = value.split("/").filter(Boolean);
   if (parts.length === 0) {
     return false;
   }
@@ -156,6 +196,10 @@ function isValidPath(value: string): boolean {
   // Check if it has query parameters
   if (value.includes("?")) {
     return true;
+  }
+
+  if (isHighEntropy(value)) {
+    return false;
   }
 
   // If it has multiple segments, it's likely a path
@@ -247,8 +291,9 @@ function createPathMatch(
     start: node.loc!.start,
     end: node.loc!.end,
     tags: {
-      ...(isMimeType ? { "mime-type": true } : { path: true }),
+      ...(isMimeType && { "mime-type": true }),
       ...(extension && { [`extension-${extension}`]: true }),
+      ...(extension && { "is-extension": true }),
       ...(isUrl && { "is-url": true }),
       ...(!isUrl && !isMimeType && !extension && { "is-path-only": true }),
       ...(value.includes("api") && { api: true }),
