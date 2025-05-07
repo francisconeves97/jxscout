@@ -31,10 +31,6 @@ export async function reverseSourcemap(mapPath: string, outputDir: string) {
     const mapContent = fs.readFileSync(mapPath, "utf8");
     const consumer = await new SourceMapConsumer(JSON.parse(mapContent));
 
-    if (!consumer.hasContentsOfAllSources()) {
-      throw new Error("Not all sources were included in the sourcemap");
-    }
-
     const sources = consumer.sources;
     for (const source of sources) {
       const fileName = source;
@@ -42,7 +38,8 @@ export async function reverseSourcemap(mapPath: string, outputDir: string) {
       const contents = consumer.sourceContentFor(source, true);
 
       if (!contents) {
-        throw new Error(`No content found for source: ${source}`);
+        console.error(`No content found for source: ${source}`);
+        continue;
       }
 
       const filePath = writeSources(cleanName, contents, outputDir);
