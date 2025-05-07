@@ -343,7 +343,7 @@ function isValidPath(value: string): boolean {
 
   // Check if at least one path segment is longer than 3 characters
   const parts = value.split("/").filter(Boolean);
-  if (!parts.some((part) => part.length > 3)) {
+  if (!parts.some((part) => part.length >= 3)) {
     return false;
   }
 

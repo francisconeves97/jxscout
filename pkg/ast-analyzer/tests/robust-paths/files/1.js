@@ -130,3 +130,5 @@ const nonApiPath2 = "neither-is-this-one"; // should not detect
 
 const w3 = "www.w3.org/asd"
 const w32 = "https://www.w3.org/asd"
+
+const asd = "/adn/api"

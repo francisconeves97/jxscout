@@ -51,7 +51,7 @@ const urlsAnalyzerBuilder = (
       }
 
       const value = node.value;
-      if (URL_REGEX.test(value)) {
+      if (URL_REGEX.test(value) && !value.includes("www.w3.org")) {
         matchesReturn.push(createUrlMatch(args, node, value));
       }
     },
@@ -72,7 +72,7 @@ const urlsAnalyzerBuilder = (
         return URL_REGEX.test(value);
       });
 
-      if (hasUrlLikeQuasis) {
+      if (hasUrlLikeQuasis && !rawValue.includes("www.w3.org")) {
         matchesReturn.push(createUrlMatch(args, node, rawValue, true));
       }
     },
