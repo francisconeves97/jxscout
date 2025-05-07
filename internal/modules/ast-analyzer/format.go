@@ -320,7 +320,8 @@ func buildDataTree(matchesByTag map[string][]AnalyzerMatch) ASTAnalyzerTreeNode 
 		matches := getMatchesForTags(matchesByTag, secretTags)
 		for tag, matches := range groupMatchesByTagStartingWith(matches, "secret-type-") {
 			secretTypeNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-				Label: tag,
+				Label:    tag,
+				IconName: "resources:key",
 			})
 
 			addAllMatchesToNode(&secretTypeNode, matches)
