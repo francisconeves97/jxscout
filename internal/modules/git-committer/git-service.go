@@ -3,7 +3,7 @@ package gitcommiter
 import (
 	"os"
 	"os/exec"
-	"path/filepath"
+	"path"
 	"strings"
 
 	"github.com/francisconeves97/jxscout/internal/core/errutil"
@@ -25,7 +25,7 @@ func (g *gitService) ensureGitRepo() error {
 		return errutil.Wrap(err, "failed to create repository directory")
 	}
 
-	_, err := os.Stat(filepath.Join(g.repoPath, ".git"))
+	_, err := os.Stat(path.Join(g.repoPath, ".git"))
 	if os.IsNotExist(err) {
 		cmd := exec.Command("git", "init")
 		cmd.Dir = g.repoPath
@@ -39,8 +39,8 @@ func (g *gitService) ensureGitRepo() error {
 	return errutil.Wrap(err, "failed to ensure git repo exists")
 }
 
-func (g *gitService) add(path string) error {
-	cmd := exec.Command("git", "add", path)
+func (g *gitService) addAll() error {
+	cmd := exec.Command("git", "add", "-A")
 	cmd.Dir = g.repoPath
 	return cmd.Run()
 }

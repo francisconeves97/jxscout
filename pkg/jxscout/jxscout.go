@@ -154,7 +154,7 @@ func (s *jxscout) registerCoreModules() {
 			s.options.ChunkDiscovererConcurrency,
 			s.options.ChunkDiscovererBruteForceLimit,
 		),
-		gitcommiter.NewGitCommiter(),
+		gitcommiter.NewGitCommiter(time.Minute * 5),
 		sourcemaps.NewSourceMaps(s.options.AssetSaveConcurrency),
 		overridesModule,
 		astanalyzer.NewAstAnalyzerModule(s.options.ASTAnalyzerConcurrency),

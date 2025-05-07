@@ -1,32 +1,26 @@
 package gitcommiter
 
 import (
-	"context"
-	"encoding/json"
 	"fmt"
-	"sync"
 	"time"
 
 	"github.com/francisconeves97/jxscout/internal/core/common"
-	"github.com/francisconeves97/jxscout/internal/core/dbeventbus"
 	"github.com/francisconeves97/jxscout/internal/core/errutil"
-	"github.com/francisconeves97/jxscout/internal/modules/beautifier"
-	"github.com/francisconeves97/jxscout/internal/modules/sourcemaps"
 	jxscouttypes "github.com/francisconeves97/jxscout/pkg/types"
 )
 
 type gitCommiterModule struct {
-	sdk        *jxscouttypes.ModuleSDK
-	gitService *gitService
-	gitMutex   sync.Mutex
+	sdk            *jxscouttypes.ModuleSDK
+	commitInterval time.Duration
+	gitService     *gitService
+	stopChan       chan struct{}
 }
 
-func NewGitCommiter() jxscouttypes.Module {
-	return &gitCommiterModule{}
-}
-
-type asset struct {
-	Path string `json:"path"`
+func NewGitCommiter(commitInterval time.Duration) jxscouttypes.Module {
+	return &gitCommiterModule{
+		commitInterval: commitInterval,
+		stopChan:       make(chan struct{}),
+	}
 }
 
 func (m *gitCommiterModule) Initialize(sdk *jxscouttypes.ModuleSDK) error {
@@ -38,78 +32,36 @@ func (m *gitCommiterModule) Initialize(sdk *jxscouttypes.ModuleSDK) error {
 		return errutil.Wrap(err, "failed to ensure git repository exists")
 	}
 
-	concurrency := 1
-	pollInterval := 5 * time.Second
-	heartbeatInterval := 10 * time.Second
-
-	m.sdk.DBEventBus.Subscribe(m.sdk.Ctx, beautifier.TopicBeautifierAssetSaved, "git-commiter", func(ctx context.Context, payload []byte) error {
-		var event beautifier.EventBeautifierAssetSaved
-		err := json.Unmarshal(payload, &event)
+	go func() {
+		err := m.startGitCommiterTask()
 		if err != nil {
-			return errutil.Wrap(err, "failed to unmarshal payload")
+			m.sdk.Logger.Error("failed to start git commiter task", "err", err)
+			return
 		}
-
-		assetServiceAsset, err := m.sdk.AssetService.GetAssetByID(ctx, event.AssetID)
-		if err != nil {
-			return dbeventbus.NewRetriableError(errutil.Wrap(err, "failed to get asset"))
-		}
-
-		asset := asset{
-			Path: assetServiceAsset.Path,
-		}
-
-		err = m.commitAsset(asset)
-		if err != nil {
-			return errutil.Wrapf(err, "failed to commit asset: %s", asset.Path)
-		}
-
-		return nil
-	}, dbeventbus.Options{
-		Concurrency:       concurrency, // save one asset at a time
-		MaxRetries:        3,
-		Backoff:           common.ExponentialBackoff,
-		PollInterval:      pollInterval,
-		HeartbeatInterval: heartbeatInterval,
-	})
-
-	m.sdk.DBEventBus.Subscribe(m.sdk.Ctx, sourcemaps.TopicSourcemapsReversedSourcemapSaved, "git-commiter", func(ctx context.Context, payload []byte) error {
-		var event sourcemaps.EventSourcemapsReversedSourcemapSaved
-		err := json.Unmarshal(payload, &event)
-		if err != nil {
-			return errutil.Wrap(err, "failed to unmarshal payload")
-		}
-
-		var reversedSourcemap sourcemaps.ReversedSourcemap
-		err = m.sdk.Database.GetContext(ctx, &reversedSourcemap, "SELECT * FROM reversed_sourcemaps WHERE id = ?", event.ReversedSourcemapID)
-		if err != nil {
-			return dbeventbus.NewRetriableError(errutil.Wrap(err, "failed to get reversed sourcemap"))
-		}
-
-		asset := asset{
-			Path: reversedSourcemap.Path,
-		}
-
-		err = m.commitAsset(asset)
-		if err != nil {
-			return errutil.Wrapf(err, "failed to commit asset: %s", asset.Path)
-		}
-
-		return nil
-	}, dbeventbus.Options{
-		Concurrency:       concurrency, // save one asset at a time
-		MaxRetries:        3,
-		Backoff:           common.ExponentialBackoff,
-		PollInterval:      pollInterval,
-		HeartbeatInterval: heartbeatInterval,
-	})
+	}()
 
 	return nil
 }
 
-func (m *gitCommiterModule) commitAsset(asset asset) error {
-	m.gitMutex.Lock()
-	defer m.gitMutex.Unlock()
+func (m *gitCommiterModule) startGitCommiterTask() error {
+	ticker := time.NewTicker(m.commitInterval)
+	defer ticker.Stop()
 
+	for {
+		select {
+		case <-ticker.C:
+			err := m.commit()
+			if err != nil {
+				m.sdk.Logger.Error("failed to create snapshot", "err", err)
+			}
+		case <-m.stopChan:
+			return nil
+		}
+	}
+}
+
+func (m *gitCommiterModule) commit() error {
+	// Check for changes before doing anything
 	hasChanges, err := m.gitService.hasChanges()
 	if err != nil {
 		return errutil.Wrap(err, "failed to check for changes")
@@ -119,11 +71,13 @@ func (m *gitCommiterModule) commitAsset(asset asset) error {
 		return nil
 	}
 
-	err = m.gitService.add(asset.Path)
-	if err != nil {
-		return errutil.Wrap(err, "failed to add asset to git")
+	// Add all changes
+	if err := m.gitService.addAll(); err != nil {
+		return errutil.Wrap(err, "failed to add changes to git")
 	}
 
+	// Double-check for changes after adding
+	// This catches scenarios where all changes are ignored by .gitignore
 	hasChanges, err = m.gitService.hasChanges()
 	if err != nil {
 		return errutil.Wrap(err, "failed to check for changes after add")
@@ -134,11 +88,13 @@ func (m *gitCommiterModule) commitAsset(asset asset) error {
 	}
 
 	now := time.Now()
-	commitMessage := fmt.Sprintf("Saved update on %s at %s", asset.Path, now.Format("02-01-2006 15:04"))
+	commitMessage := fmt.Sprintf("Snapshot %s", now.Format("02-01-2006 15:04"))
 
+	// Create commit
 	if err := m.gitService.commit(commitMessage); err != nil {
 		return errutil.Wrap(err, "failed to create snapshot commit")
 	}
 
+	m.sdk.Logger.Info("created snapshot commit 💾", "message", commitMessage)
 	return nil
 }
