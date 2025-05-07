@@ -813,6 +813,7 @@ func groupMatchesByTagStartingWith(matches []AnalyzerMatch, prefix string) map[s
 func addAllMatchesToNode(node *ASTAnalyzerTreeNode, matches []AnalyzerMatch) {
 	for _, match := range matches {
 		matchNode := matchToTreeNode(match)
+		matchNode.IconName = node.IconName
 		node.Children = append(node.Children, matchNode)
 	}
 }
