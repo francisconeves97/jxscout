@@ -86,7 +86,7 @@ function hasPrefix(str: string, prefix: string): boolean {
 
 function isValidPath(value: string): boolean {
   // Basic path-like check
-  if (!containsAny(value, "/?.")) {
+  if (!value.includes("/")) {
     return false;
   }
 
@@ -95,15 +95,20 @@ function isValidPath(value: string): boolean {
     return false;
   }
 
+  // Exclude paths that are just "./" or "../"
+  if (/^\.\.?\/?$/.test(value)) {
+    return false;
+  }
+
   // Paths starting with slash are likely valid
-  if (hasPrefix(value, "/")) {
+  if (hasPrefix(value, "/") && !value.startsWith("//")) {
     return true;
   }
 
   // Try to parse as URL first
-  if (value.includes("://")) {
+  if (value.includes("://") || value.startsWith("//")) {
     try {
-      const url = new URL(value);
+      const url = new URL(value.startsWith("//") ? `http:${value}` : value);
 
       // Check scheme
       const scheme = url.protocol.toLowerCase().replace(":", "");
@@ -111,7 +116,7 @@ function isValidPath(value: string): boolean {
         return false;
       }
 
-      // url matcher will take care of this
+      // Must have a path component
       if (url.pathname.trim() === "" || url.pathname.trim() === "/") {
         return false;
       }
@@ -162,7 +167,7 @@ function getFileExtension(path: string): string | null {
   if (lastDotIndex === -1) return null;
 
   const extension = path.slice(lastDotIndex).toLowerCase();
-  return FILE_EXTENSIONS.has(extension) ? extension : null;
+  return FILE_EXTENSIONS.has(extension) ? extension.replace(".", "") : null;
 }
 
 function processTemplateLiteral(template: string): string {
@@ -231,7 +236,7 @@ function createPathMatch(
   value: string,
   isTemplate = false
 ): AnalyzerMatch {
-  const isUrl = value.includes("http") && value.includes("://");
+  const isUrl = value.includes("://") || value.startsWith("//");
   const extension = getFileExtension(value);
   const isMimeType = COMMON_MIME_TYPES.has(value);
 
@@ -244,9 +249,8 @@ function createPathMatch(
     tags: {
       ...(isMimeType ? { "mime-type": true } : { path: true }),
       ...(extension && { [`extension-${extension}`]: true }),
-      ...(isTemplate && { template: true }),
       ...(isUrl && { "is-url": true }),
-      ...(!isUrl && { "is-path-only": true }),
+      ...(!isUrl && !isMimeType && !extension && { "is-path-only": true }),
       ...(value.includes("api") && { api: true }),
       ...(value.includes("?") && { query: true }),
       ...(value.includes("#") && { fragment: true }),

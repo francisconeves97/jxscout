@@ -14,3 +14,6 @@ var a = "./foo/bar.html";
 var a = "~[A-Z](?=[/|([{\u003c\\\"'])";
 var a = "./";
 var a = "foo/bar";
+var b = `foo/${bar}`
+var c = `https://example.com/foo/${bar}`
+var d = "api" + "/" + abc + "/foo"
