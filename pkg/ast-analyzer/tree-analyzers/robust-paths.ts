@@ -353,7 +353,12 @@ function isValidPath(value: string): boolean {
   }
 
   // If all parts are just "EXPR", it's not a valid path
-  if (parts.every((part) => part === "EXPR")) {
+  if (
+    parts.every(
+      (part) =>
+        part === "EXPR" || (part.startsWith("EXPR") && part.endsWith("EXPR"))
+    )
+  ) {
     return false;
   }
 
