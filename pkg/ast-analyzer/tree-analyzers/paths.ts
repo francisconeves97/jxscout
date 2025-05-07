@@ -16,7 +16,7 @@ const PATH_REGEX =
   /^(?:(?:https?:\/\/[^\/]+)(?:\/[A-Za-z0-9\-._~!$&'()*+,;=:@{}]+)+(?:\?[^#]*)?(?:#[^]*)?|(?:\/)?(?:[A-Za-z0-9\-._~!$&'()*+,;=:@{}]+\/)*[A-Za-z0-9\-._~!$&'()*+,;=:@{}]+(?:\?[^#]*)?(?:#[^]*)?)$/;
 
 // Common MIME types that should be excluded
-const COMMON_MIME_TYPES = new Set([
+export const COMMON_MIME_TYPES = new Set([
   "application/json",
   "application/ld+json",
   "application/xml",

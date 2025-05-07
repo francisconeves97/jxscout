@@ -25,6 +25,7 @@ import { regexAnalyzerBuilder as regexPatternAnalyzerBuilder } from "./tree-anal
 import { sessionStorageAnalyzerBuilder } from "./tree-analyzers/session-storage";
 import { urlSearchParamsAnalyzerBuilder } from "./tree-analyzers/url-search-params";
 import { pathsAnalyzerBuilder } from "./tree-analyzers/paths";
+import { robustPathsAnalyzerBuilder } from "./tree-analyzers/robust-paths";
 import { windowNameAnalyzerBuilder } from "./tree-analyzers/window-name";
 import { windowOpenAnalyzerBuilder } from "./tree-analyzers/window-open";
 import { dangerousHtmlAnalyzerBuilder } from "./tree-analyzers/react-dangerously-set-inner-html";
@@ -102,6 +103,7 @@ export type AnalyzerType =
   | "regex-pattern"
   | "url-search-params"
   | "paths"
+  | "robust-paths"
   | "window-name"
   | "window-open"
   | "dangerous-html";
@@ -185,6 +187,10 @@ export function analyzeFile(
     urlSearchParamsAnalyzerBuilder
   );
   const pathsAnalyzer = createAnalyzer("paths", pathsAnalyzerBuilder);
+  const robustPathsAnalyzer = createAnalyzer(
+    "robust-paths",
+    robustPathsAnalyzerBuilder
+  );
   const windowNameAnalyzer = createAnalyzer(
     "window-name",
     windowNameAnalyzerBuilder
@@ -207,6 +213,7 @@ export function analyzeFile(
       hostnameAnalyzer?.Literal?.(node, ancestors);
       regexPatternAnalyzer?.Literal?.(node, ancestors);
       pathsAnalyzer?.Literal?.(node, ancestors);
+      robustPathsAnalyzer?.Literal?.(node, ancestors);
     },
     NewExpression(node, ancestors) {
       regexAnalyzer?.NewExpression?.(node, ancestors);
@@ -216,6 +223,7 @@ export function analyzeFile(
     TemplateLiteral(node, ancestors) {
       urlsAnalyzer?.TemplateLiteral?.(node, ancestors);
       pathsAnalyzer?.TemplateLiteral?.(node, ancestors);
+      robustPathsAnalyzer?.TemplateLiteral?.(node, ancestors);
       graphqlAnalyzer?.TemplateLiteral?.(node, ancestors);
     },
     CallExpression(node, ancestors) {
@@ -235,6 +243,7 @@ export function analyzeFile(
       onmessageAnalyzer?.CallExpression?.(node, ancestors);
       regexMatchAnalyzer?.CallExpression?.(node, ancestors);
       windowOpenAnalyzer?.CallExpression?.(node, ancestors);
+      robustPathsAnalyzer?.CallExpression?.(node, ancestors);
     },
     AssignmentExpression(node, ancestors) {
       postMessageAnalyzer?.AssignmentExpression?.(node, ancestors);
@@ -275,6 +284,9 @@ export function analyzeFile(
     },
     JSXElement(node, ancestors) {
       dangerousHtmlAnalyzer?.JSXElement?.(node, ancestors);
+    },
+    BinaryExpression(node, ancestors) {
+      robustPathsAnalyzer?.BinaryExpression?.(node, ancestors);
     },
   });
 
