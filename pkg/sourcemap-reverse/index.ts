@@ -38,12 +38,13 @@ export async function reverseSourcemap(mapPath: string, outputDir: string) {
       const contents = consumer.sourceContentFor(source, true);
 
       if (!contents) {
-        console.error(`No content found for source: ${source}`);
         continue;
       }
 
-      const filePath = writeSources(cleanName, contents, outputDir);
-      console.log(filePath);
+      try {
+        const filePath = writeSources(cleanName, contents, outputDir);
+        console.log(filePath);
+      } catch (error) {}
     }
   } catch (error) {
     throw new Error(
