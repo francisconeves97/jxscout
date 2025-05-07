@@ -132,3 +132,9 @@ const w3 = "www.w3.org/asd"
 const w32 = "https://www.w3.org/asd"
 
 const asd = "/adn/api"
+
+const falsePositive = "Node.js/"
+
+"/" + a(e.source) + "/" + a(s(e))
+"/" + a(e.source) + "/"
+"/" + a(e.source)

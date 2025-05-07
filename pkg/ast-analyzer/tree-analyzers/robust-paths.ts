@@ -341,9 +341,19 @@ function isValidPath(value: string): boolean {
     return false;
   }
 
+  // Exclude paths that end with a slash and have no actual path content
+  if (/^[^/]*\/$/.test(value)) {
+    return false;
+  }
+
   // Check if at least one path segment is longer than 3 characters
   const parts = value.split("/").filter(Boolean);
   if (!parts.some((part) => part.length >= 3)) {
+    return false;
+  }
+
+  // If all parts are just "EXPR", it's not a valid path
+  if (parts.every((part) => part === "EXPR")) {
     return false;
   }
 
