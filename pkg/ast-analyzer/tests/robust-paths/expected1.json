@@ -777,6 +777,30 @@
   {
     "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/robust-paths/files/1.js",
     "analyzerName": "robust-paths",
+    "value": "\"https://www.w3asd.org/asd.png?v1=123\"",
+    "start": {
+      "line": 144,
+      "column": 15
+    },
+    "end": {
+      "line": 144,
+      "column": 53
+    },
+    "tags": {
+      "extension-png": true,
+      "is-extension": true,
+      "is-url": true,
+      "query": true
+    },
+    "extra": {
+      "hostname": "www.w3asd.org",
+      "pathname": "/asd.png",
+      "query-params": "v1=123"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/robust-paths/files/1.js",
+    "analyzerName": "robust-paths",
     "value": "\"image/png\"",
     "start": {
       "line": 101,

@@ -1,6 +1,7 @@
 import { Node } from "acorn";
 import { Analyzer, AnalyzerMatch, AnalyzerParams } from "../types";
 import { Visitor } from "../walker";
+import path from "path";
 
 const COMMON_MIME_TYPES = new Set([
   "application/json",
@@ -436,11 +437,13 @@ function isValidPath(value: string): boolean {
   return parts.length > 1;
 }
 
-function getFileExtension(path: string): string | null {
-  const lastDotIndex = path.lastIndexOf(".");
+function getFileExtension(url: URL | null): string | null {
+  if (!url) return null;
+
+  const lastDotIndex = url.pathname.lastIndexOf(".");
   if (lastDotIndex === -1) return null;
 
-  const extension = path.slice(lastDotIndex).toLowerCase();
+  const extension = url.pathname.slice(lastDotIndex).toLowerCase();
   return FILE_EXTENSIONS.has(extension) ? extension.replace(".", "") : null;
 }
 
@@ -513,7 +516,22 @@ function createPathMatch(
 ): AnalyzerMatch {
   const isUrl =
     processedValue.includes("://") || processedValue.startsWith("//");
-  const extension = getFileExtension(processedValue);
+
+  let parsedUrl: URL | null = null;
+  try {
+    if (isUrl) {
+      let url = processedValue;
+      if (processedValue.startsWith("//")) {
+        url = `http:${processedValue}`;
+      }
+
+      parsedUrl = new URL(processedValue);
+    } else {
+      parsedUrl = new URL(processedValue, "http://randombase.com");
+    }
+  } catch {}
+
+  const extension = getFileExtension(parsedUrl);
   let isMimeType = false;
 
   for (const mimeType of COMMON_MIME_TYPES) {
@@ -527,14 +545,8 @@ function createPathMatch(
 
   const extra: Record<string, any> = {};
 
-  if (isUrl) {
-    let url = processedValue;
-    if (processedValue.startsWith("//")) {
-      url = `http:${processedValue}`;
-    }
-
-    try {
-      const parsedUrl = new URL(url);
+  if (parsedUrl) {
+    if (isUrl) {
       if (parsedUrl.hostname) {
         extra["hostname"] = parsedUrl.hostname;
       }
@@ -550,10 +562,7 @@ function createPathMatch(
       if (parsedUrl.hash) {
         extra["hash"] = parsedUrl.hash;
       }
-    } catch {}
-  } else if (isPathOnly) {
-    try {
-      const parsedUrl = new URL(processedValue, "http://randombase.com");
+    } else if (isPathOnly) {
       if (parsedUrl.pathname) {
         extra["pathname"] = parsedUrl.pathname;
       }
@@ -563,7 +572,7 @@ function createPathMatch(
       if (parsedUrl.hash) {
         extra["hash"] = parsedUrl.hash;
       }
-    } catch (err) {}
+    }
   }
 
   return {

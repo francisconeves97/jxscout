@@ -140,3 +140,5 @@ const falsePositive = "Node.js/"
 "/" + a(e.source)
 
 "".concat(n).concat(f).concat(g, "/").concat(x, "?module=")
+
+const afasfa = "https://www.w3asd.org/asd.png?v1=123"
