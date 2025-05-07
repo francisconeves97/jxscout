@@ -2,6 +2,26 @@
   {
     "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/robust-paths/files/1.js",
     "analyzerName": "robust-paths",
+    "value": "\"/adn/api\"",
+    "start": {
+      "line": 134,
+      "column": 12
+    },
+    "end": {
+      "line": 134,
+      "column": 22
+    },
+    "tags": {
+      "is-path-only": true,
+      "api": true
+    },
+    "extra": {
+      "pathname": "/adn/api"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/robust-paths/files/1.js",
+    "analyzerName": "robust-paths",
     "value": "\"/api/orders\"",
     "start": {
       "line": 58,
@@ -62,6 +82,26 @@
   {
     "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/robust-paths/files/1.js",
     "analyzerName": "robust-paths",
+    "value": "\"/api/v1\"",
+    "start": {
+      "line": 66,
+      "column": 2
+    },
+    "end": {
+      "line": 66,
+      "column": 11
+    },
+    "tags": {
+      "is-path-only": true,
+      "api": true
+    },
+    "extra": {
+      "pathname": "/api/v1"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/robust-paths/files/1.js",
+    "analyzerName": "robust-paths",
     "value": "\"/api/v1/users/123/orders/456/status/and/more/segments/of/users/in/users?q=query&page=page\"",
     "start": {
       "line": 46,
@@ -104,6 +144,26 @@
   {
     "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/robust-paths/files/1.js",
     "analyzerName": "robust-paths",
+    "value": "\"/api/v2\"",
+    "start": {
+      "line": 67,
+      "column": 2
+    },
+    "end": {
+      "line": 67,
+      "column": 11
+    },
+    "tags": {
+      "is-path-only": true,
+      "api": true
+    },
+    "extra": {
+      "pathname": "/api/v2"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/robust-paths/files/1.js",
+    "analyzerName": "robust-paths",
     "value": "\"/filter?category=category&sort=sort\"",
     "start": {
       "line": 44,
@@ -120,6 +180,63 @@
     "extra": {
       "pathname": "/filter",
       "query-params": "category=category&sort=sort"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/robust-paths/files/1.js",
+    "analyzerName": "robust-paths",
+    "value": "\"/foo\"",
+    "start": {
+      "line": 19,
+      "column": 23
+    },
+    "end": {
+      "line": 19,
+      "column": 29
+    },
+    "tags": {
+      "is-path-only": true
+    },
+    "extra": {
+      "pathname": "/foo"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/robust-paths/files/1.js",
+    "analyzerName": "robust-paths",
+    "value": "\"/foo\"",
+    "start": {
+      "line": 20,
+      "column": 27
+    },
+    "end": {
+      "line": 20,
+      "column": 33
+    },
+    "tags": {
+      "is-path-only": true
+    },
+    "extra": {
+      "pathname": "/foo"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/robust-paths/files/1.js",
+    "analyzerName": "robust-paths",
+    "value": "\"/foo\"",
+    "start": {
+      "line": 20,
+      "column": 47
+    },
+    "end": {
+      "line": 20,
+      "column": 53
+    },
+    "tags": {
+      "is-path-only": true
+    },
+    "extra": {
+      "pathname": "/foo"
     }
   },
   {
@@ -347,6 +464,25 @@
   {
     "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/robust-paths/files/1.js",
     "analyzerName": "robust-paths",
+    "value": "\"abc/def\"",
+    "start": {
+      "line": 22,
+      "column": 27
+    },
+    "end": {
+      "line": 22,
+      "column": 36
+    },
+    "tags": {
+      "is-path-only": true
+    },
+    "extra": {
+      "pathname": "/abc/def"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/robust-paths/files/1.js",
+    "analyzerName": "robust-paths",
     "value": "\"api/\" + abc",
     "start": {
       "line": 19,
@@ -449,6 +585,26 @@
   {
     "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/robust-paths/files/1.js",
     "analyzerName": "robust-paths",
+    "value": "\"api/v3\"",
+    "start": {
+      "line": 68,
+      "column": 2
+    },
+    "end": {
+      "line": 68,
+      "column": 10
+    },
+    "tags": {
+      "is-path-only": true,
+      "api": true
+    },
+    "extra": {
+      "pathname": "/api/v3"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/robust-paths/files/1.js",
+    "analyzerName": "robust-paths",
     "value": "\"application/json\"",
     "start": {
       "line": 4,
@@ -496,6 +652,44 @@
       "mime-type": true
     },
     "extra": {}
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/robust-paths/files/1.js",
+    "analyzerName": "robust-paths",
+    "value": "\"asd/asd\"",
+    "start": {
+      "line": 24,
+      "column": 7
+    },
+    "end": {
+      "line": 24,
+      "column": 16
+    },
+    "tags": {
+      "is-path-only": true
+    },
+    "extra": {
+      "pathname": "/asd/asd"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/robust-paths/files/1.js",
+    "analyzerName": "robust-paths",
+    "value": "\"foo/bar\"",
+    "start": {
+      "line": 16,
+      "column": 8
+    },
+    "end": {
+      "line": 16,
+      "column": 17
+    },
+    "tags": {
+      "is-path-only": true
+    },
+    "extra": {
+      "pathname": "/foo/bar"
+    }
   },
   {
     "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/robust-paths/files/1.js",
@@ -670,6 +864,64 @@
   {
     "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/robust-paths/files/1.js",
     "analyzerName": "robust-paths",
+    "value": "${apiBaseUrl}/api/products/${productId}",
+    "start": {
+      "line": 77,
+      "column": 15
+    },
+    "end": {
+      "line": 77,
+      "column": 56
+    },
+    "tags": {
+      "is-path-only": true,
+      "api": true
+    },
+    "extra": {
+      "pathname": "/EXPR/api/products/EXPR"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/robust-paths/files/1.js",
+    "analyzerName": "robust-paths",
+    "value": "${apiBaseUrl}${orderEndpointPath}/${orderId}/status",
+    "start": {
+      "line": 81,
+      "column": 15
+    },
+    "end": {
+      "line": 81,
+      "column": 68
+    },
+    "tags": {
+      "is-path-only": true
+    },
+    "extra": {
+      "pathname": "/EXPREXPR/EXPR/status"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/robust-paths/files/1.js",
+    "analyzerName": "robust-paths",
+    "value": "${apiBaseUrl}${userEndpointPath}/${userId}",
+    "start": {
+      "line": 73,
+      "column": 15
+    },
+    "end": {
+      "line": 73,
+      "column": 59
+    },
+    "tags": {
+      "is-path-only": true
+    },
+    "extra": {
+      "pathname": "/EXPREXPR/EXPR"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/robust-paths/files/1.js",
+    "analyzerName": "robust-paths",
     "value": "foo/${bar}",
     "start": {
       "line": 17,
@@ -683,7 +935,7 @@
       "is-path-only": true
     },
     "extra": {
-      "pathname": "/foo/$%7Bbar%7D"
+      "pathname": "/foo/EXPR"
     }
   },
   {
@@ -703,7 +955,7 @@
     },
     "extra": {
       "hostname": "example.com",
-      "pathname": "/foo/$%7Bbar%7D"
+      "pathname": "/foo/EXPR"
     }
   }
 ]

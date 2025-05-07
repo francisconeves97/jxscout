@@ -429,7 +429,7 @@ function getFileExtension(path: string): string | null {
 }
 
 function processTemplateLiteral(template: string): string {
-  return template.replace(/\${[^}]+}/g, ":EXPR");
+  return template.replace(/\${[^}]+}/g, "EXPR");
 }
 
 interface BinaryExpression extends Node {
@@ -492,19 +492,21 @@ function createPathMatch(
   args: AnalyzerParams,
   node: Node,
   value: string,
-  isTemplate = false
+  isTemplate = false,
+  processedValue: string
 ): AnalyzerMatch {
-  const isUrl = value.includes("://") || value.startsWith("//");
-  const extension = getFileExtension(value);
-  const isMimeType = COMMON_MIME_TYPES.has(value);
+  const isUrl =
+    processedValue.includes("://") || processedValue.startsWith("//");
+  const extension = getFileExtension(processedValue);
+  const isMimeType = COMMON_MIME_TYPES.has(processedValue);
   const isPathOnly = !isUrl && !isMimeType && !extension;
 
   const extra: Record<string, any> = {};
 
   if (isUrl) {
-    let url = value;
-    if (value.startsWith("//")) {
-      url = `http:${value}`;
+    let url = processedValue;
+    if (processedValue.startsWith("//")) {
+      url = `http:${processedValue}`;
     }
 
     try {
@@ -527,7 +529,7 @@ function createPathMatch(
     } catch {}
   } else if (isPathOnly) {
     try {
-      const parsedUrl = new URL(value, "http://randombase.com");
+      const parsedUrl = new URL(processedValue, "http://randombase.com");
       if (parsedUrl.pathname) {
         extra["pathname"] = parsedUrl.pathname;
       }
@@ -552,9 +554,10 @@ function createPathMatch(
       ...(extension && { "is-extension": true }),
       ...(isUrl && { "is-url": true }),
       ...(isPathOnly && { "is-path-only": true }),
-      ...((value.includes("/api") || value.includes("api/")) && { api: true }),
-      ...(value.includes("?") && { query: true }),
-      ...(value.includes("#") && { fragment: true }),
+      ...((processedValue.includes("/api") ||
+        processedValue.includes("api/")) && { api: true }),
+      ...(processedValue.includes("?") && { query: true }),
+      ...(processedValue.includes("#") && { fragment: true }),
     },
     extra,
   };
@@ -572,7 +575,7 @@ const robustPathsAnalyzerBuilder = (
 
       const value = (node as Literal).value;
       if (isValidPath(value)) {
-        matchesReturn.push(createPathMatch(args, node, value));
+        matchesReturn.push(createPathMatch(args, node, value, false, value));
       }
     },
 
@@ -588,7 +591,9 @@ const robustPathsAnalyzerBuilder = (
       const processedValue = processTemplateLiteral(rawValue);
 
       if (isValidPath(processedValue)) {
-        matchesReturn.push(createPathMatch(args, node, rawValue, true));
+        matchesReturn.push(
+          createPathMatch(args, node, rawValue, true, processedValue)
+        );
       }
     },
 
@@ -597,7 +602,9 @@ const robustPathsAnalyzerBuilder = (
       if (binaryNode.operator === "+") {
         const processedValue = processStringConcatenation(node);
         if (isValidPath(processedValue)) {
-          matchesReturn.push(createPathMatch(args, node, processedValue));
+          matchesReturn.push(
+            createPathMatch(args, node, processedValue, false, processedValue)
+          );
         }
       }
     },
@@ -610,7 +617,9 @@ const robustPathsAnalyzerBuilder = (
       ) {
         const processedValue = processStringConcatenation(node);
         if (isValidPath(processedValue)) {
-          matchesReturn.push(createPathMatch(args, node, processedValue));
+          matchesReturn.push(
+            createPathMatch(args, node, processedValue, false, processedValue)
+          );
         }
       }
     },
