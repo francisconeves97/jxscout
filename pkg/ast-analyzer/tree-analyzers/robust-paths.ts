@@ -497,6 +497,7 @@ function createPathMatch(
   const isUrl = value.includes("://") || value.startsWith("//");
   const extension = getFileExtension(value);
   const isMimeType = COMMON_MIME_TYPES.has(value);
+  const isPathOnly = !isUrl && !isMimeType && !extension;
 
   const extra: Record<string, any> = {};
 
@@ -524,14 +525,19 @@ function createPathMatch(
         extra["hash"] = parsedUrl.hash;
       }
     } catch {}
-  } else {
-    if (value.includes("?")) {
-      extra["query-params"] = value.split("?")[1];
-    }
-
-    if (value.includes("#")) {
-      extra["hash"] = value.split("#")[1];
-    }
+  } else if (isPathOnly) {
+    try {
+      const parsedUrl = new URL(value, "http://randombase.com");
+      if (parsedUrl.pathname) {
+        extra["pathname"] = parsedUrl.pathname;
+      }
+      if (parsedUrl.searchParams.toString()) {
+        extra["query-params"] = parsedUrl.searchParams.toString();
+      }
+      if (parsedUrl.hash) {
+        extra["hash"] = parsedUrl.hash;
+      }
+    } catch (err) {}
   }
 
   return {
@@ -545,7 +551,7 @@ function createPathMatch(
       ...(extension && { [`extension-${extension}`]: true }),
       ...(extension && { "is-extension": true }),
       ...(isUrl && { "is-url": true }),
-      ...(!isUrl && !isMimeType && !extension && { "is-path-only": true }),
+      ...(isPathOnly && { "is-path-only": true }),
       ...((value.includes("/api") || value.includes("api/")) && { api: true }),
       ...(value.includes("?") && { query: true }),
       ...(value.includes("#") && { fragment: true }),

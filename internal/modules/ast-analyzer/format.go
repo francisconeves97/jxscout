@@ -14,6 +14,7 @@ type AnalyzerMatch struct {
 	Start        Position        `json:"start"`
 	End          Position        `json:"end"`
 	Tags         map[string]bool `json:"tags"`
+	Extra        map[string]any  `json:"extra"`
 }
 
 type ASTAnalyzerTreeNodeType string
