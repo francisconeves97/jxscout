@@ -24,7 +24,6 @@ import { regexMatchAnalyzerBuilder } from "./tree-analyzers/regex-match";
 import { regexAnalyzerBuilder as regexPatternAnalyzerBuilder } from "./tree-analyzers/regex-pattern";
 import { sessionStorageAnalyzerBuilder } from "./tree-analyzers/session-storage";
 import { urlSearchParamsAnalyzerBuilder } from "./tree-analyzers/url-search-params";
-import { pathsAnalyzerBuilder } from "./tree-analyzers/paths";
 import { robustPathsAnalyzerBuilder } from "./tree-analyzers/robust-paths";
 import { windowNameAnalyzerBuilder } from "./tree-analyzers/window-name";
 import { windowOpenAnalyzerBuilder } from "./tree-analyzers/window-open";
@@ -186,7 +185,6 @@ export function analyzeFile(
     "url-search-params",
     urlSearchParamsAnalyzerBuilder
   );
-  const pathsAnalyzer = createAnalyzer("paths", pathsAnalyzerBuilder);
   const robustPathsAnalyzer = createAnalyzer(
     "robust-paths",
     robustPathsAnalyzerBuilder
@@ -212,7 +210,6 @@ export function analyzeFile(
       secretsAnalyzer?.Literal?.(node, ancestors);
       hostnameAnalyzer?.Literal?.(node, ancestors);
       regexPatternAnalyzer?.Literal?.(node, ancestors);
-      pathsAnalyzer?.Literal?.(node, ancestors);
       robustPathsAnalyzer?.Literal?.(node, ancestors);
     },
     NewExpression(node, ancestors) {
@@ -222,7 +219,6 @@ export function analyzeFile(
     },
     TemplateLiteral(node, ancestors) {
       urlsAnalyzer?.TemplateLiteral?.(node, ancestors);
-      pathsAnalyzer?.TemplateLiteral?.(node, ancestors);
       robustPathsAnalyzer?.TemplateLiteral?.(node, ancestors);
       graphqlAnalyzer?.TemplateLiteral?.(node, ancestors);
     },

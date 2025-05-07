@@ -92,6 +92,18 @@ func formatMatchesV1(matches []AnalyzerMatch) []ASTAnalyzerTreeNode {
 
 	rootNodes := make([]ASTAnalyzerTreeNode, 0)
 
+	// Data
+	if hasAnyMatches(matchesByTag, dataTags) {
+		dataNode := buildDataTree(matchesByTag)
+		rootNodes = append(rootNodes, dataNode)
+	}
+
+	// Frameworks
+	if hasAnyMatches(matchesByTag, frameworkTags) {
+		frameworksNode := buildFrameworksTree(matchesByTag)
+		rootNodes = append(rootNodes, frameworksNode)
+	}
+
 	// Client Behavior
 	if hasAnyMatches(matchesByTag, clientBehaviorTags) {
 		behaviorNode := buildClientBehaviorTree(matchesByTag)
@@ -102,17 +114,6 @@ func formatMatchesV1(matches []AnalyzerMatch) []ASTAnalyzerTreeNode {
 	if hasAnyMatches(matchesByTag, objectSchemasTags) {
 		objectSchemasNode := buildObjectSchemasTree(matchesByTag)
 		rootNodes = append(rootNodes, objectSchemasNode)
-	}
-
-	// Frameworks
-	if hasAnyMatches(matchesByTag, frameworkTags) {
-		frameworksNode := buildFrameworksTree(matchesByTag)
-		rootNodes = append(rootNodes, frameworksNode)
-	}
-
-	if hasAnyMatches(matchesByTag, dataTags) {
-		dataNode := buildDataTree(matchesByTag)
-		rootNodes = append(rootNodes, dataNode)
 	}
 
 	// Update descriptions with counts
@@ -128,12 +129,18 @@ func formatMatchesV1(matches []AnalyzerMatch) []ASTAnalyzerTreeNode {
 var urlTags = []string{"url"}
 
 // path Tags
-var pathTags = []string{"path"}
+var pathTags = []string{"is-url", "is-path-only", "api", "query", "fragment"}
 var apiTags = []string{"api"}
 var isUrlTags = []string{"is-url"}
 var isPathOnlyTags = []string{"is-path-only"}
 var queryTags = []string{"query"}
 var fragmentTags = []string{"fragment"}
+
+// extension Tags
+var extensionTags = []string{"is-extension"}
+
+// mime-type Tags
+var mimeTypeTags = []string{"mime-type"}
 
 // hostname Tags
 var hostnameTags = []string{"hostname-string"}
@@ -166,31 +173,11 @@ func buildDataTree(matchesByTag map[string][]AnalyzerMatch) ASTAnalyzerTreeNode 
 		IconName: "resources:data",
 	})
 
-	if hasAnyMatches(matchesByTag, urlTags) {
-		urlNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-			Label:    "URLs",
-			IconName: "resources:http",
-		})
-
-		addMatchesToNode(&urlNode, matchesByTag, urlTags)
-		dataNode.Children = append(dataNode.Children, urlNode)
-	}
-
 	if hasAnyMatches(matchesByTag, pathTags) {
 		pathNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
 			Label:    "Paths",
 			IconName: "resources:path",
 		})
-
-		if hasAnyMatches(matchesByTag, apiTags) {
-			apiNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-				Label:    "API",
-				IconName: "resources:api",
-			})
-
-			addMatchesToNode(&apiNode, matchesByTag, apiTags)
-			pathNode.Children = append(pathNode.Children, apiNode)
-		}
 
 		if hasAnyMatches(matchesByTag, isPathOnlyTags) {
 			isPathOnlyNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
@@ -200,6 +187,16 @@ func buildDataTree(matchesByTag map[string][]AnalyzerMatch) ASTAnalyzerTreeNode 
 
 			addMatchesToNode(&isPathOnlyNode, matchesByTag, isPathOnlyTags)
 			pathNode.Children = append(pathNode.Children, isPathOnlyNode)
+		}
+
+		if hasAnyMatches(matchesByTag, apiTags) {
+			apiNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
+				Label:    "API",
+				IconName: "resources:api",
+			})
+
+			addMatchesToNode(&apiNode, matchesByTag, apiTags)
+			pathNode.Children = append(pathNode.Children, apiNode)
 		}
 
 		if hasAnyMatches(matchesByTag, isUrlTags) {
@@ -235,6 +232,36 @@ func buildDataTree(matchesByTag map[string][]AnalyzerMatch) ASTAnalyzerTreeNode 
 		dataNode.Children = append(dataNode.Children, pathNode)
 	}
 
+	if hasAnyMatches(matchesByTag, urlTags) {
+		urlNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
+			Label:    "URLs",
+			IconName: "resources:http",
+		})
+
+		addMatchesToNode(&urlNode, matchesByTag, urlTags)
+		dataNode.Children = append(dataNode.Children, urlNode)
+	}
+
+	if hasAnyMatches(matchesByTag, extensionTags) {
+		extensionNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
+			Label:    "Extensions",
+			IconName: "resources:extension",
+		})
+
+		matches := getMatchesForTags(matchesByTag, extensionTags)
+		for tag, matches := range groupMatchesByTagStartingWith(matches, "extension-") {
+			extensionTypeNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
+				Label:    tag,
+				IconName: "resources:extension",
+			})
+
+			addAllMatchesToNode(&extensionTypeNode, matches)
+			extensionNode.Children = append(extensionNode.Children, extensionTypeNode)
+		}
+
+		dataNode.Children = append(dataNode.Children, extensionNode)
+	}
+
 	if hasAnyMatches(matchesByTag, hostnameTags) {
 		hostnameNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
 			Label:    "Hostname",
@@ -243,6 +270,16 @@ func buildDataTree(matchesByTag map[string][]AnalyzerMatch) ASTAnalyzerTreeNode 
 
 		addMatchesToNode(&hostnameNode, matchesByTag, hostnameTags)
 		dataNode.Children = append(dataNode.Children, hostnameNode)
+	}
+
+	if hasAnyMatches(matchesByTag, mimeTypeTags) {
+		mimeTypeNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
+			Label:    "MIME Type",
+			IconName: "resources:mime",
+		})
+
+		addMatchesToNode(&mimeTypeNode, matchesByTag, mimeTypeTags)
+		dataNode.Children = append(dataNode.Children, mimeTypeNode)
 	}
 
 	if hasAnyMatches(matchesByTag, regexTags) {
@@ -518,6 +555,136 @@ func buildClientBehaviorTree(matchesByTag map[string][]AnalyzerMatch) ASTAnalyze
 		behaviorNode.Children = append(behaviorNode.Children, eventsNode)
 	}
 
+	if hasAnyMatches(matchesByTag, locationTags) {
+		locationNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
+			Label:    "Location",
+			IconName: "resources:javascript",
+		})
+
+		if hasAnyMatches(matchesByTag, locationAssignmentTags) {
+			assignmentNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
+				Label:    "Assignment",
+				IconName: "resources:javascript",
+			})
+
+			matches := getMatchesForTags(matchesByTag, locationAssignmentTags)
+
+			matchesByTag := groupMatchesByTagStartingWith(matches, "property-")
+			for tag, matches := range matchesByTag {
+				propertyNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
+					Label:    tag,
+					IconName: "resources:javascript",
+				})
+				addAllMatchesToNode(&propertyNode, matches)
+				assignmentNode.Children = append(assignmentNode.Children, propertyNode)
+			}
+
+			locationNode.Children = append(locationNode.Children, assignmentNode)
+		}
+
+		if hasAnyMatches(matchesByTag, locationReadTags) {
+			readNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
+				Label:    "Read",
+				IconName: "resources:javascript",
+			})
+
+			matches := getMatchesForTags(matchesByTag, locationReadTags)
+
+			matchesByTag := groupMatchesByTagStartingWith(matches, "property-")
+			for tag, matches := range matchesByTag {
+				propertyNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
+					Label:    tag,
+					IconName: "resources:javascript",
+				})
+
+				addAllMatchesToNode(&propertyNode, matches)
+				readNode.Children = append(readNode.Children, propertyNode)
+			}
+
+			locationNode.Children = append(locationNode.Children, readNode)
+		}
+
+		behaviorNode.Children = append(behaviorNode.Children, locationNode)
+	}
+
+	if hasAnyMatches(matchesByTag, storageTags) {
+		storageNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
+			Label:    "Storage",
+			IconName: "resources:storage",
+		})
+
+		if hasAnyMatches(matchesByTag, cookieTags) {
+			cookieNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
+				Label:    "Cookie",
+				IconName: "resources:cookie",
+			})
+
+			if hasAnyMatches(matchesByTag, cookieAssignmentTags) {
+				assignmentNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
+					Label:    "Assignment",
+					IconName: "resources:cookie",
+				})
+
+				addMatchesToNode(&assignmentNode, matchesByTag, cookieAssignmentTags)
+				cookieNode.Children = append(cookieNode.Children, assignmentNode)
+			}
+
+			if hasAnyMatches(matchesByTag, cookieReadTags) {
+				readNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
+					Label:    "Read",
+					IconName: "resources:cookie",
+				})
+
+				addMatchesToNode(&readNode, matchesByTag, cookieReadTags)
+				cookieNode.Children = append(cookieNode.Children, readNode)
+			}
+
+			storageNode.Children = append(storageNode.Children, cookieNode)
+		}
+
+		if hasAnyMatches(matchesByTag, localStorageTags) {
+			localStorageNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
+				Label:    "localStorage",
+				IconName: "resources:storage",
+			})
+
+			matches := getMatchesForTags(matchesByTag, localStorageTags)
+			for tag, matches := range groupMatchesByTagStartingWith(matches, "property-") {
+				propertyNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
+					Label:    tag,
+					IconName: "resources:storage",
+				})
+
+				addAllMatchesToNode(&propertyNode, matches)
+				localStorageNode.Children = append(localStorageNode.Children, propertyNode)
+			}
+
+			storageNode.Children = append(storageNode.Children, localStorageNode)
+		}
+
+		if hasAnyMatches(matchesByTag, sessionStorageTags) {
+			sessionStorageNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
+				Label:    "sessionStorage",
+				IconName: "resources:storage",
+			})
+
+			matches := getMatchesForTags(matchesByTag, sessionStorageTags)
+			for tag, matches := range groupMatchesByTagStartingWith(matches, "property-") {
+				propertyNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
+					Label:    tag,
+					IconName: "resources:storage",
+				})
+
+				addAllMatchesToNode(&propertyNode, matches)
+				sessionStorageNode.Children = append(sessionStorageNode.Children, propertyNode)
+			}
+
+			storageNode.Children = append(storageNode.Children, sessionStorageNode)
+		}
+
+		behaviorNode.Children = append(behaviorNode.Children, storageNode)
+	}
+
 	if hasAnyMatches(matchesByTag, evalTags) {
 		evalNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
 			Label:    "eval",
@@ -597,58 +764,6 @@ func buildClientBehaviorTree(matchesByTag map[string][]AnalyzerMatch) ASTAnalyze
 		behaviorNode.Children = append(behaviorNode.Children, urlSearchParamsNode)
 	}
 
-	if hasAnyMatches(matchesByTag, locationTags) {
-		locationNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-			Label:    "Location",
-			IconName: "resources:javascript",
-		})
-
-		if hasAnyMatches(matchesByTag, locationAssignmentTags) {
-			assignmentNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-				Label:    "Assignment",
-				IconName: "resources:javascript",
-			})
-
-			matches := getMatchesForTags(matchesByTag, locationAssignmentTags)
-
-			matchesByTag := groupMatchesByTagStartingWith(matches, "property-")
-			for tag, matches := range matchesByTag {
-				propertyNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-					Label:    tag,
-					IconName: "resources:javascript",
-				})
-				addAllMatchesToNode(&propertyNode, matches)
-				assignmentNode.Children = append(assignmentNode.Children, propertyNode)
-			}
-
-			locationNode.Children = append(locationNode.Children, assignmentNode)
-		}
-
-		if hasAnyMatches(matchesByTag, locationReadTags) {
-			readNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-				Label:    "Read",
-				IconName: "resources:javascript",
-			})
-
-			matches := getMatchesForTags(matchesByTag, locationReadTags)
-
-			matchesByTag := groupMatchesByTagStartingWith(matches, "property-")
-			for tag, matches := range matchesByTag {
-				propertyNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-					Label:    tag,
-					IconName: "resources:javascript",
-				})
-
-				addAllMatchesToNode(&propertyNode, matches)
-				readNode.Children = append(readNode.Children, propertyNode)
-			}
-
-			locationNode.Children = append(locationNode.Children, readNode)
-		}
-
-		behaviorNode.Children = append(behaviorNode.Children, locationNode)
-	}
-
 	if hasAnyMatches(matchesByTag, windowNameTags) {
 		windowNameNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
 			Label:    "window.name",
@@ -676,84 +791,6 @@ func buildClientBehaviorTree(matchesByTag map[string][]AnalyzerMatch) ASTAnalyze
 		}
 
 		behaviorNode.Children = append(behaviorNode.Children, windowNameNode)
-	}
-
-	if hasAnyMatches(matchesByTag, storageTags) {
-		storageNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-			Label:    "Storage",
-			IconName: "resources:storage",
-		})
-
-		if hasAnyMatches(matchesByTag, cookieTags) {
-			cookieNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-				Label:    "Cookie",
-				IconName: "resources:cookie",
-			})
-
-			if hasAnyMatches(matchesByTag, cookieAssignmentTags) {
-				assignmentNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-					Label:    "Assignment",
-					IconName: "resources:cookie",
-				})
-
-				addMatchesToNode(&assignmentNode, matchesByTag, cookieAssignmentTags)
-				cookieNode.Children = append(cookieNode.Children, assignmentNode)
-			}
-
-			if hasAnyMatches(matchesByTag, cookieReadTags) {
-				readNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-					Label:    "Read",
-					IconName: "resources:cookie",
-				})
-
-				addMatchesToNode(&readNode, matchesByTag, cookieReadTags)
-				cookieNode.Children = append(cookieNode.Children, readNode)
-			}
-
-			storageNode.Children = append(storageNode.Children, cookieNode)
-		}
-
-		if hasAnyMatches(matchesByTag, localStorageTags) {
-			localStorageNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-				Label:    "localStorage",
-				IconName: "resources:storage",
-			})
-
-			matches := getMatchesForTags(matchesByTag, localStorageTags)
-			for tag, matches := range groupMatchesByTagStartingWith(matches, "property-") {
-				propertyNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-					Label:    tag,
-					IconName: "resources:storage",
-				})
-
-				addAllMatchesToNode(&propertyNode, matches)
-				localStorageNode.Children = append(localStorageNode.Children, propertyNode)
-			}
-
-			storageNode.Children = append(storageNode.Children, localStorageNode)
-		}
-
-		if hasAnyMatches(matchesByTag, sessionStorageTags) {
-			sessionStorageNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-				Label:    "sessionStorage",
-				IconName: "resources:storage",
-			})
-
-			matches := getMatchesForTags(matchesByTag, sessionStorageTags)
-			for tag, matches := range groupMatchesByTagStartingWith(matches, "property-") {
-				propertyNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-					Label:    tag,
-					IconName: "resources:storage",
-				})
-
-				addAllMatchesToNode(&propertyNode, matches)
-				sessionStorageNode.Children = append(sessionStorageNode.Children, propertyNode)
-			}
-
-			storageNode.Children = append(storageNode.Children, sessionStorageNode)
-		}
-
-		behaviorNode.Children = append(behaviorNode.Children, storageNode)
 	}
 
 	return behaviorNode

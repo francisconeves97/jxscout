@@ -9,6 +9,7 @@ export interface AnalyzerMatch {
   start: Position;
   end: Position;
   tags: Record<string, true>;
+  extra?: Record<string, any>;
 }
 
 export interface AnalyzerParams {
