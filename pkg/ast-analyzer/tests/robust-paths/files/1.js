@@ -138,3 +138,5 @@ const falsePositive = "Node.js/"
 "/" + a(e.source) + "/" + a(s(e))
 "/" + a(e.source) + "/"
 "/" + a(e.source)
+
+"".concat(n).concat(f).concat(g, "/").concat(x, "?module=")

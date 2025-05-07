@@ -356,7 +356,8 @@ function isValidPath(value: string): boolean {
   if (
     parts.every(
       (part) =>
-        part === "EXPR" || (part.startsWith("EXPR") && part.endsWith("EXPR"))
+        part.startsWith("EXPR") ||
+        (part.startsWith("EXPR") && part.endsWith("EXPR"))
     )
   ) {
     return false;
