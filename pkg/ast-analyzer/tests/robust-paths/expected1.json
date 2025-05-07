@@ -903,25 +903,6 @@
   {
     "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/robust-paths/files/1.js",
     "analyzerName": "robust-paths",
-    "value": "${apiBaseUrl}${userEndpointPath}/${userId}",
-    "start": {
-      "line": 73,
-      "column": 15
-    },
-    "end": {
-      "line": 73,
-      "column": 59
-    },
-    "tags": {
-      "is-path-only": true
-    },
-    "extra": {
-      "pathname": "/EXPREXPR/EXPR"
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/robust-paths/files/1.js",
-    "analyzerName": "robust-paths",
     "value": "foo/${bar}",
     "start": {
       "line": 17,
