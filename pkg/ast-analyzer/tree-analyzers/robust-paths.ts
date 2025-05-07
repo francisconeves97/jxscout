@@ -508,7 +508,15 @@ function createPathMatch(
   const isUrl =
     processedValue.includes("://") || processedValue.startsWith("//");
   const extension = getFileExtension(processedValue);
-  const isMimeType = COMMON_MIME_TYPES.has(processedValue);
+  let isMimeType = false;
+
+  for (const mimeType of COMMON_MIME_TYPES) {
+    if (processedValue.includes(mimeType)) {
+      isMimeType = true;
+      break;
+    }
+  }
+
   const isPathOnly = !isUrl && !isMimeType && !extension;
 
   const extra: Record<string, any> = {};
