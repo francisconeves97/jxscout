@@ -24,6 +24,9 @@ import (
 //go:embed sourcemaps.js
 var sourcemapsBinary []byte
 
+//go:embed mappings.wasm
+var mappingsWasm []byte
+
 const (
 	sourceMapsFolder   = "sourcemaps"
 	sourceMapsReversed = "reversed"
@@ -61,6 +64,11 @@ func (m *sourceMapsModule) Initialize(sdk *jxscouttypes.ModuleSDK) error {
 	// Create the directory if it doesn't exist
 	if err := os.MkdirAll(saveDir, 0755); err != nil {
 		return errutil.Wrap(err, "failed to create binaries directory")
+	}
+
+	mappingsWasmPath := filepath.Join(saveDir, "mappings.wasm")
+	if err := os.WriteFile(mappingsWasmPath, mappingsWasm, 0755); err != nil {
+		return errutil.Wrap(err, "failed to write mappings wasm file")
 	}
 
 	// Define the path for the extracted binary

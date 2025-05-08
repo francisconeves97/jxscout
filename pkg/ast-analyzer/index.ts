@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { ParseResult, parseSync } from "oxc-parser";
+import init, { ParseResult, parseSync } from "oxc-parser";
 import { ancestors as traverse } from "./walker";
 import { AnalyzerParams, AnalyzerMatch } from "./types";
 import { regexAnalyzerBuilder } from "./tree-analyzers/regex-pattern";
@@ -307,6 +307,4 @@ function main() {
   }
 }
 
-if (require.main === module) {
-  main();
-}
+main();
