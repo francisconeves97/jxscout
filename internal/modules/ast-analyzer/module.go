@@ -26,6 +26,33 @@ const analyzerVersion = 3
 //go:embed ast-analyzer.js
 var astAnalyzerBinary []byte
 
+//go:embed parser.darwin-arm64.node
+var parserDarwinArm64 []byte
+
+//go:embed parser.darwin-x64.node
+var parserDarwinX64 []byte
+
+//go:embed parser.linux-arm-gnueabihf.node
+var parserLinuxArmGnueabihf []byte
+
+//go:embed parser.linux-arm64-gnu.node
+var parserLinuxArm64Gnu []byte
+
+//go:embed parser.linux-arm64-musl.node
+var parserLinuxArm64Musl []byte
+
+//go:embed parser.linux-x64-gnu.node
+var parserLinuxX64Gnu []byte
+
+//go:embed parser.linux-x64-musl.node
+var parserLinuxX64Musl []byte
+
+//go:embed parser.win32-arm64-msvc.node
+var parserWin32Arm64Msvc []byte
+
+//go:embed parser.win32-x64-msvc.node
+var parserWin32X64Msvc []byte
+
 type astAnalyzerModule struct {
 	sdk                   *jxscouttypes.ModuleSDK
 	repo                  *astAnalyzerRepository
@@ -63,6 +90,51 @@ func (m *astAnalyzerModule) Initialize(sdk *jxscouttypes.ModuleSDK) error {
 	binaryPath := filepath.Join(saveDir, "ast-analyzer.js")
 	if err := os.WriteFile(binaryPath, astAnalyzerBinary, 0755); err != nil {
 		return errutil.Wrap(err, "failed to write ast analyzer file")
+	}
+
+	parserDarwinArm64Path := filepath.Join(saveDir, "parser.darwin-arm64.node")
+	if err := os.WriteFile(parserDarwinArm64Path, parserDarwinArm64, 0755); err != nil {
+		return errutil.Wrap(err, "failed to write parser darwin arm64 file")
+	}
+
+	parserDarwinX64Path := filepath.Join(saveDir, "parser.darwin-x64.node")
+	if err := os.WriteFile(parserDarwinX64Path, parserDarwinX64, 0755); err != nil {
+		return errutil.Wrap(err, "failed to write parser darwin x64 file")
+	}
+
+	parserLinuxArmGnueabihfPath := filepath.Join(saveDir, "parser.linux-arm-gnueabihf.node")
+	if err := os.WriteFile(parserLinuxArmGnueabihfPath, parserLinuxArmGnueabihf, 0755); err != nil {
+		return errutil.Wrap(err, "failed to write parser linux arm gnueabihf file")
+	}
+
+	parserLinuxArm64GnuPath := filepath.Join(saveDir, "parser.linux-arm64-gnu.node")
+	if err := os.WriteFile(parserLinuxArm64GnuPath, parserLinuxArm64Gnu, 0755); err != nil {
+		return errutil.Wrap(err, "failed to write parser linux arm64 gnu file")
+	}
+
+	parserLinuxArm64MuslPath := filepath.Join(saveDir, "parser.linux-arm64-musl.node")
+	if err := os.WriteFile(parserLinuxArm64MuslPath, parserLinuxArm64Musl, 0755); err != nil {
+		return errutil.Wrap(err, "failed to write parser linux arm64 musl file")
+	}
+
+	parserLinuxX64GnuPath := filepath.Join(saveDir, "parser.linux-x64-gnu.node")
+	if err := os.WriteFile(parserLinuxX64GnuPath, parserLinuxX64Gnu, 0755); err != nil {
+		return errutil.Wrap(err, "failed to write parser linux x64 gnu file")
+	}
+
+	parserLinuxX64MuslPath := filepath.Join(saveDir, "parser.linux-x64-musl.node")
+	if err := os.WriteFile(parserLinuxX64MuslPath, parserLinuxX64Musl, 0755); err != nil {
+		return errutil.Wrap(err, "failed to write parser linux x64 musl file")
+	}
+
+	parserWin32Arm64MsvcPath := filepath.Join(saveDir, "parser.win32-arm64-msvc.node")
+	if err := os.WriteFile(parserWin32Arm64MsvcPath, parserWin32Arm64Msvc, 0755); err != nil {
+		return errutil.Wrap(err, "failed to write parser win32 arm64 msvc file")
+	}
+
+	parserWin32X64MsvcPath := filepath.Join(saveDir, "parser.win32-x64-msvc.node")
+	if err := os.WriteFile(parserWin32X64MsvcPath, parserWin32X64Msvc, 0755); err != nil {
+		return errutil.Wrap(err, "failed to write parser win32 x64 msvc file")
 	}
 
 	m.astAnalyzerBinaryPath = binaryPath

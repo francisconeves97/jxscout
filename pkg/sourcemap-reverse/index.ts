@@ -1,9 +1,6 @@
 import { SourceMapConsumer } from "source-map";
 import path from "path";
 import fs from "fs-extra";
-import { fileURLToPath } from "url";
-
-const __filename = fileURLToPath(import.meta.url);
 
 const cleanFileName = (fileName = "") => {
   fileName = fileName.replace("//", "/");
@@ -54,16 +51,15 @@ export async function reverseSourcemap(mapPath: string, outputDir: string) {
 }
 
 // CLI entry point
-if (process.argv[1] === __filename) {
-  const [, , mapPath, outputDir] = process.argv;
 
-  if (!mapPath || !outputDir) {
-    process.stderr.write("Usage: sourcemap-reverse <map-file> <output-dir>\n");
-    process.exit(1);
-  }
+const [, , mapPath, outputDir] = process.argv;
 
-  reverseSourcemap(mapPath, outputDir).catch((error) => {
-    process.stderr.write(`${error.message}\n`);
-    process.exit(1);
-  });
+if (!mapPath || !outputDir) {
+  process.stderr.write("Usage: sourcemap-reverse <map-file> <output-dir>\n");
+  process.exit(1);
 }
+
+reverseSourcemap(mapPath, outputDir).catch((error) => {
+  process.stderr.write(`${error.message}\n`);
+  process.exit(1);
+});
