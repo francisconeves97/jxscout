@@ -2,6 +2,22 @@
   {
     "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/regex-pattern/files/1.js",
     "analyzerName": "regex",
+    "value": "/([a-zA-Z0-9]+|\\s)+$/",
+    "start": {
+      "line": 13,
+      "column": 11
+    },
+    "end": {
+      "line": 13,
+      "column": 32
+    },
+    "tags": {
+      "regex-pattern": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/regex-pattern/files/1.js",
+    "analyzerName": "regex",
     "value": "/[a-z]+/g",
     "start": {
       "line": 3,

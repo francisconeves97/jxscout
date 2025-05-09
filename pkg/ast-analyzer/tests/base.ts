@@ -1,6 +1,6 @@
 import path from "path";
 import { expect, it } from "vitest";
-import { analyzeFile, AnalyzerType } from "../index";
+import { analyzeFile, AnalyzerType } from "../analyzer";
 import { AnalyzerMatch } from "../types";
 import fs from "fs";
 
