@@ -893,7 +893,7 @@ func (t *TUI) RegisterDefaultCommands() {
 	t.RegisterCommand(Command{
 		Name:        "caido-auth",
 		ShortName:   "ca",
-		Description: "Authenticate with Caido (token is stored in memory and will reset on server restart)",
+		Description: "Authenticate with Caido to use overrides (token is stored in memory and will reset on server restart)",
 		Usage:       "caido-auth",
 		Execute: func(args []string) (tea.Cmd, error) {
 			// Get the overrides module from jxscout
