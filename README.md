@@ -2,7 +2,7 @@
 
 **jxscout** is a tool designed to help security researchers analyze and find vulnerabilities in JavaScript code. It works with your favorite proxy (Burp or Caido), capturing requests and saving optimized versions locally for easy analysis in your preferred code editor.
 
-> Work in Progress 🏗️ jxscout is currently under active development. As it continues to be improved and features expanded there may be breaking changes in future updates.
+> Work in Progress 🏗️ jxscout is currently under active development. As it continues to be improved and features expanded, there may be breaking changes in future updates.
 
 ## Key Features
 
@@ -27,7 +27,7 @@ https://github.com/user-attachments/assets/64f161c3-46b0-41a9-8b34-706cc795a034
 
 ### Part 1. Installing the CLI
 
-The first step to get up and running with jxscout is to install the CLI. To that, just run the below command or download pre-compiled binary from [release page](https://github.com/francisconeves97/jxscout/releases).
+The first step to get up and running with jxscout is to install the CLI. To do that, just run the command below or download a pre-compiled binary from the [release page](https://github.com/francisconeves97/jxscout/releases).
 
 ```
 go install github.com/francisconeves97/jxscout/cmd/jxscout@latest
@@ -44,9 +44,9 @@ jxscout will only start capturing assets after you setup your proxy to forward r
 - For Caido users: Check out https://github.com/francisconeves97/jxscout-caido
 - For Burp users: Check out https://github.com/francisconeves97/jxscout-burp
 
-After you installed the proxy plugin, every asset that flows through your proxy should be automatically saved to your `~/jxscout` folder.
+After you install the proxy plugin, every asset that flows through your proxy should be automatically saved to your `~/jxscout` folder.
 
-One useful thing to do is to organize your assets in projects (like you would do on your proxy). To do that you can run `config project-name=my_project` on jxscout CLI and from that moment on assets will be saved in `~/jxscout/my_project`,
+One useful feature is the ability to organize your assets in projects (similar to how you would do in your proxy). To do this, you can run `config project-name=my_project` in the jxscout CLI, and from that moment on, assets will be saved in `~/jxscout/my_project`.
 
 If you don't see assets being saved at this point, you should check the [Troubleshooting](#troubleshooting) section.
 
@@ -62,23 +62,33 @@ To get started with the VSCode Extension head over to https://github.com/francis
 
 This section should help you troubleshoot problems with jxscout.
 
-1. View logs
+### Some files are not being downloaded
 
-jxscout provides a log view, which you can access by inputting `l` into the CLI prompt. However it can also be useful to access the log file directly by opening `~/.jxscout/jxscout.log`.
+jxscout will only save assets that go through your proxy. This means that if the browser is caching some of those assets, jxscout will have no visibility of them. Because of this, it's important to disable your browser's cache when using jxscout.
 
-You can turn on debug logging by using `config debug=true`, which should give you a more verbose output of jxscout.
+If you still don't see some assets, they could be out of scope and filtered, or it could be a bug.
 
-2. If you don't see any relevant logs
+### View logs
 
-Then probably your proxy plugin is not feeding in requests into jxscout. Check your jxscout proxy plugin settings and verify that it is enabled and working, the configured hostname/port corresponds to the ones where jxscout is running and that you are trying to access an in-scope website if "Filter requests in-scope" option is enabled on the proxy plugin.
+jxscout provides a log view, which you can access by typing `l` in the CLI prompt. However, you can also access the log file directly by opening `~/.jxscout/jxscout.log`.
 
-3. Understanding jxscout internals
+You can turn on debug logging by using `config debug=true`, which will give you more verbose output from jxscout.
 
-jxscout uses SQLite and also bundles some JS scripts that are run by bun. All of those files will be extracted to your `~/.jxscout/` directory.
+### If you don't see any relevant logs
 
-4. Opening up a github issue
+Your proxy plugin might not be feeding requests into jxscout. Check your jxscout proxy plugin settings and verify that:
 
-If you couldn't figure out the issue or if you found a bug, feel free to open up an issue as I am always happy to try and help!
+- It is enabled and working
+- The configured hostname/port matches where jxscout is running
+- You are trying to access an in-scope website if the "Filter requests in-scope" option is enabled on the proxy plugin
+
+### Understanding jxscout internals
+
+jxscout uses SQLite and bundles some JS scripts that are run by bun. All of these files will be extracted to your `~/.jxscout/` directory.
+
+### Opening up a github issue
+
+If you couldn't figure out the issue or if you found a bug, feel free to open an issue as I am always happy to help!
 
 ## Usage
 
