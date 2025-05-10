@@ -5,9 +5,11 @@ export default {
       chunkDiscoverer: "./pkg/chunk-discoverer/index.ts",
       astAnalyzer: "./pkg/ast-analyzer/index.ts",
     },
-    exclude: ["@oxc-parser/*"],
   },
   output: {
+    externals: {
+      "@oxc-parser/binding-darwin-arm64": "",
+    },
     target: "node",
   },
 };
