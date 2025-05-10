@@ -12,6 +12,12 @@
 - **Source Map Discovery**: Automatically reverses application source code if .map files are available.
 - **AST Analysis**: Automatically analyzes JavaScript files finding interesting functionality for vulnerability researchers. See [VSCode Extension](https://github.com/francisconeves97/jxscout-vscode) to learn how to install the extension.
 
+## Demo
+
+Watch the demo movie to see jxscout in action:
+
+https://github.com/user-attachments/assets/64f161c3-46b0-41a9-8b34-706cc795a034
+
 ## Installation & Instructions
 
 ### Requirements
@@ -42,7 +48,7 @@ After you installed the proxy plugin, every asset that flows through your proxy 
 
 One useful thing to do is to organize your assets in projects (like you would do on your proxy). To do that you can run `config project-name=my_project` on jxscout CLI and from that moment on assets will be saved in `~/jxscout/my_project`,
 
-If you don't see assets being saved at this point, you should check the Troubleshooting section.
+If you don't see assets being saved at this point, you should check the [Troubleshooting](#troubleshooting) section.
 
 ### Part 3. (Optional) VSCode Extension
 
@@ -51,6 +57,28 @@ The VSCode extension is a frontend for jxscout. It allows you to visualize the A
 ![jxscout](docs/vscode.png)
 
 To get started with the VSCode Extension head over to https://github.com/francisconeves97/jxscout-vscode for more instructions.
+
+## Troubleshooting
+
+This section should help you troubleshoot problems with jxscout.
+
+1. View logs
+
+jxscout provides a log view, which you can access by inputting `l` into the CLI prompt. However it can also be useful to access the log file directly by opening `~/.jxscout/jxscout.log`.
+
+You can turn on debug logging by using `config debug=true`, which should give you a more verbose output of jxscout.
+
+2. If you don't see any relevant logs
+
+Then probably your proxy plugin is not feeding in requests into jxscout. Check your jxscout proxy plugin settings and verify that it is enabled and working, the configured hostname/port corresponds to the ones where jxscout is running and that you are trying to access an in-scope website if "Filter requests in-scope" option is enabled on the proxy plugin.
+
+3. Understanding jxscout internals
+
+jxscout uses SQLite and also bundles some JS scripts that are run by bun. All of those files will be extracted to your `~/.jxscout/` directory.
+
+4. Opening up a github issue
+
+If you couldn't figure out the issue or if you found a bug, feel free to open up an issue as I am always happy to try and help!
 
 ## Usage
 
@@ -63,12 +91,6 @@ Once jxscout is running, you can:
 - Run the `guide` command for a quick walkthrough
 - Run the `help` command for an overview of the available commands
 - Watch the video tutorial for a visual guide on configuring and using jxscout
-
-### Demo
-
-Watch the demo movie to see jxscout in action:
-
-https://github.com/user-attachments/assets/64f161c3-46b0-41a9-8b34-706cc795a034
 
 ### Available Commands
 
