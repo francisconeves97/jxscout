@@ -10,6 +10,7 @@ import (
 	"regexp"
 	"strings"
 	"time"
+	"unicode"
 
 	"github.com/francisconeves97/jxscout/internal/core/errutil"
 )
@@ -165,4 +166,20 @@ func AppendAll[T any](slices ...[]T) []T {
 	}
 
 	return result
+}
+
+// stolen from https://github.com/BishopFox/jsluice/blob/main/analyzer.go#L70
+func IsProbablyHTML(source []byte) bool {
+	for _, b := range source {
+		if unicode.IsSpace(rune(b)) {
+			continue
+		}
+
+		if b == '<' {
+			return true
+		}
+		break
+	}
+
+	return false
 }

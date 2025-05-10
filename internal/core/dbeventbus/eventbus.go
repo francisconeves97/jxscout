@@ -198,7 +198,7 @@ func (b *EventBus) fetchAndDistributeEvents(ctx context.Context, topic, queueNam
              OR ep.status = ?
              OR (ep.status = ? AND ep.retry_count < ? AND ep.next_attempt < CURRENT_TIMESTAMP)
          )
-         ORDER BY e.id ASC LIMIT ?`,
+         ORDER BY ep.retry_count ASC, e.id ASC LIMIT ?`,
 		queueName, topic, statusPending, statusRetry, opts.MaxRetries, opts.Concurrency)
 	if err != nil {
 		return errutil.Wrap(err, "failed to fetch events")

@@ -145,6 +145,10 @@ func (m *jsIngestionModule) validateIngestionRequest(req *ingestion.IngestionReq
 		if contentType != common.ContentTypeJS {
 			return errors.New("content type is not JS")
 		}
+
+		if common.IsProbablyHTML([]byte(req.Response.Body)) {
+			return errors.New("content type is not JS")
+		}
 	}
 
 	req.Request.URL = common.NormalizeURL(req.Request.URL)

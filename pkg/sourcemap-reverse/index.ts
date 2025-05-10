@@ -13,18 +13,18 @@ const writeSources = (
   outdir: string
 ): string => {
   const AFTER_QUESTION = /(\?\S+)/gu;
-  filename = filename.replace(AFTER_QUESTION, "");
-  const outputFilepath = path.join(outdir, filename);
+  filename = filename
+    .replace(AFTER_QUESTION, "")
+    .replace(/^(\.\.[/\\])+/, "")
+    .replace(/[|\&#,+()?$~%'":*?<>{}]/g, "")
+    .replace(" ", ".");
+  const outputFilepath = path.normalize(path.join(outdir, filename));
 
   fs.ensureDirSync(path.dirname(outputFilepath));
 
   fs.writeFileSync(outputFilepath, content, "utf8");
 
-  return path
-    .normalize(outputFilepath)
-    .replace(/^(\.\.[/\\])+/, "")
-    .replace(/[|\&#,+()?$~%'":*?<>{}]/g, "")
-    .replace(" ", ".");
+  return outputFilepath;
 };
 
 export async function reverseSourcemap(mapPath: string, outputDir: string) {
