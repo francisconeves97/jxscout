@@ -38,7 +38,10 @@ const hostnameAnalyzerBuilder = (
           },
         };
 
-        if (node.value.includes("www.w3.org")) {
+        if (
+          node.value.includes("www.w3.org") ||
+          node.value.startsWith("react.")
+        ) {
           return;
         }
 

@@ -308,6 +308,8 @@ const FILE_EXTENSIONS = new Set([
   ".bundle",
 ]);
 
+const hostnamesToExclude = new Set(["www.w3.org", "reactjs.org"]);
+
 function containsAny(str: string, chars: string): boolean {
   return chars.split("").some((char) => str.includes(char));
 }
@@ -380,12 +382,7 @@ function isValidPath(value: string): boolean {
         return false;
       }
 
-      // Must have a path component
-      if (url.pathname.trim() === "" || url.pathname.trim() === "/") {
-        return false;
-      }
-
-      if (url.hostname === "www.w3.org") {
+      if (hostnamesToExclude.has(url.hostname)) {
         return false;
       }
 
@@ -410,9 +407,30 @@ function isValidPath(value: string): boolean {
     }
   }
 
-  if (value.includes("www.w3.org")) {
-    return false;
-  }
+  const isHostname =
+    value.includes(".") && value.indexOf(".") < value.indexOf("/");
+
+  try {
+    let url: URL | null = null;
+    if (isHostname) {
+      url = new URL(`https://${value}`);
+    } else {
+      url = new URL(value, "http://randombase.com");
+    }
+
+    if (hostnamesToExclude.has(url.hostname)) {
+      return false;
+    }
+
+    if (
+      isHostname &&
+      (url.pathname === "" || url.pathname === "/") &&
+      url.search === "" &&
+      url.hash === ""
+    ) {
+      return false;
+    }
+  } catch {}
 
   // For relative paths, check if they have a valid structure
   if (parts.length === 0) {
@@ -434,7 +452,7 @@ function isValidPath(value: string): boolean {
   }
 
   // If it has multiple segments, it's likely a path
-  return parts.length > 1;
+  return true;
 }
 
 function getFileExtension(url: URL | null): string | null {
@@ -514,8 +532,8 @@ function createPathMatch(
   isTemplate = false,
   processedValue: string
 ): AnalyzerMatch {
-  const isUrl =
-    processedValue.includes("://") || processedValue.startsWith("//");
+  let isUrl = processedValue.includes("://") || processedValue.startsWith("//");
+  let isUrlOnly = false;
 
   let parsedUrl: URL | null = null;
   try {
@@ -525,11 +543,26 @@ function createPathMatch(
         url = `http:${processedValue}`;
       }
 
-      parsedUrl = new URL(processedValue);
+      parsedUrl = new URL(url);
+    } else if (
+      processedValue.includes(".") &&
+      processedValue.indexOf(".") < processedValue.indexOf("/")
+    ) {
+      isUrl = true;
+      parsedUrl = new URL(`http://${processedValue}`);
     } else {
       parsedUrl = new URL(processedValue, "http://randombase.com");
     }
   } catch {}
+
+  if (
+    isUrl &&
+    (parsedUrl?.pathname === "" || parsedUrl?.pathname === "/") &&
+    parsedUrl?.search === "" &&
+    parsedUrl?.hash === ""
+  ) {
+    isUrlOnly = true;
+  }
 
   const extension = getFileExtension(parsedUrl);
   let isMimeType = false;
@@ -585,7 +618,8 @@ function createPathMatch(
       ...(isMimeType && { "mime-type": true }),
       ...(extension && { [`extension-${extension}`]: true }),
       ...(extension && { "is-extension": true }),
-      ...(isUrl && { "is-url": true }),
+      ...(isUrl && !isUrlOnly && { "is-url": true }),
+      ...(isUrlOnly && { "is-url-only": true }),
       ...(isPathOnly && { "is-path-only": true }),
       ...((processedValue.includes("/api") ||
         processedValue.includes("api/")) && { api: true }),

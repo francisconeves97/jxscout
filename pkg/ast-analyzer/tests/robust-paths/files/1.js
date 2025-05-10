@@ -14,14 +14,14 @@ var a = "./foo/bar.html";
 var a = "~[A-Z](?=[/|([{\u003c\\\"'])";
 var a = "./";
 var a = "foo/bar";
-var b = `foo/${bar}`
-var c = `https://example.com/foo/${bar}`
-var d = "api/" + abc + "/foo"
-var e = "api/".concat(abc, "/foo").concat(def, "/foo")
+var b = `foo/${bar}`;
+var c = `https://example.com/foo/${bar}`;
+var d = "api/" + abc + "/foo";
+var e = "api/".concat(abc, "/foo").concat(def, "/foo");
 
 import { apiBaseUrl } from "abc/def";
 
-import("asd/asd")
+import("asd/asd");
 
 // ===== API BASE URL EXAMPLES =====
 const apiBaseUrl = "https://api.example.com"; // should not detect
@@ -128,17 +128,43 @@ const shortSegmentPath3 = "x/y/z"; // should not detect
 const nonApiPath1 = "this-is-not-a-url-path"; // should not detect
 const nonApiPath2 = "neither-is-this-one"; // should not detect
 
-const w3 = "www.w3.org/asd"
-const w32 = "https://www.w3.org/asd"
+const w3 = "www.w3.org/asd";
+const w32 = "https://www.w3.org/asd";
 
-const asd = "/adn/api"
+const asd = "/adn/api";
 
-const falsePositive = "Node.js/"
+const falsePositive = "Node.js/";
 
-"/" + a(e.source) + "/" + a(s(e))
-"/" + a(e.source) + "/"
-"/" + a(e.source)
+"/" + a(e.source) + "/" + a(s(e));
+"/" + a(e.source) + "/";
+"/" + a(e.source);
 
-"".concat(n).concat(f).concat(g, "/").concat(x, "?module=")
+"".concat(n).concat(f).concat(g, "/").concat(x, "?module=");
 
-const afasfa = "https://www.w3asd.org/asd.png?v1=123"
+const afasfa = "https://www.w3asd.org/asd.png?v1=123";
+
+// Test URLs with different protocols
+const httpUrl = "http://example.com";
+const httpsUrl = "https://api.example.com/v1/users";
+const ftpUrl = "ftp://files.example.com/download";
+const wsUrl = "ws://chat.example.com";
+
+// Test URLs with query parameters
+const searchUrl = "https://example.com/search?q=test";
+
+// Test URLs with fragments
+const pageUrl = "https://example.com/page#section";
+
+// Test URLs with IP addresses and ports
+const ipUrl = "https://192.168.1.1:8080/api";
+
+// Test URLs with different protocols and ports
+const sftpUrl = "sftp://files.example.com:22/backup";
+
+const aisdiasjd = "https://www.fasfasf.org";
+
+const oasdpasdp = "www.mercadolibre.com";
+const oasdpasdp2 = "www.mercadolibre.com/my-path";
+const oasdpasdp2 = "www.mercadolibre.com/?test=123123";
+
+("http://qr.afip.gob.ar/?qr=eqSGL6HcpJM1lYHWSGfj-Q,,");

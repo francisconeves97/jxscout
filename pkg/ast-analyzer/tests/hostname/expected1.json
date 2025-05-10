@@ -130,22 +130,6 @@
   {
     "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/hostname/files/1.js",
     "analyzerName": "hostname",
-    "value": "'react.lazy'",
-    "start": {
-      "line": 36,
-      "column": 22
-    },
-    "end": {
-      "line": 36,
-      "column": 34
-    },
-    "tags": {
-      "hostname-string": true
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/hostname/files/1.js",
-    "analyzerName": "hostname",
     "value": "'sub-domain.example.com'",
     "start": {
       "line": 8,

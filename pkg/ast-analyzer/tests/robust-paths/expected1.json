@@ -2,6 +2,26 @@
   {
     "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/robust-paths/files/1.js",
     "analyzerName": "robust-paths",
+    "value": "\"//example.org\"",
+    "start": {
+      "line": 6,
+      "column": 8
+    },
+    "end": {
+      "line": 6,
+      "column": 23
+    },
+    "tags": {
+      "is-url-only": true
+    },
+    "extra": {
+      "hostname": "example.org",
+      "pathname": "/"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/robust-paths/files/1.js",
+    "analyzerName": "robust-paths",
     "value": "\"/adn/api\"",
     "start": {
       "line": 134,
@@ -694,6 +714,26 @@
   {
     "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/robust-paths/files/1.js",
     "analyzerName": "robust-paths",
+    "value": "\"http://example.com\"",
+    "start": {
+      "line": 147,
+      "column": 16
+    },
+    "end": {
+      "line": 147,
+      "column": 36
+    },
+    "tags": {
+      "is-url-only": true
+    },
+    "extra": {
+      "hostname": "example.com",
+      "pathname": "/"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/robust-paths/files/1.js",
+    "analyzerName": "robust-paths",
     "value": "\"HTTP://example.net/api/v1\"",
     "start": {
       "line": 3,
@@ -715,6 +755,132 @@
   {
     "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/robust-paths/files/1.js",
     "analyzerName": "robust-paths",
+    "value": "\"https://192.168.1.1:8080/api\"",
+    "start": {
+      "line": 159,
+      "column": 14
+    },
+    "end": {
+      "line": 159,
+      "column": 44
+    },
+    "tags": {
+      "is-url": true,
+      "api": true
+    },
+    "extra": {
+      "hostname": "192.168.1.1",
+      "port": "8080",
+      "pathname": "/api"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/robust-paths/files/1.js",
+    "analyzerName": "robust-paths",
+    "value": "\"https://api.example.com\"",
+    "start": {
+      "line": 27,
+      "column": 19
+    },
+    "end": {
+      "line": 27,
+      "column": 44
+    },
+    "tags": {
+      "is-url-only": true,
+      "api": true
+    },
+    "extra": {
+      "hostname": "api.example.com",
+      "pathname": "/"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/robust-paths/files/1.js",
+    "analyzerName": "robust-paths",
+    "value": "\"https://api.example.com/v1/users\"",
+    "start": {
+      "line": 148,
+      "column": 17
+    },
+    "end": {
+      "line": 148,
+      "column": 51
+    },
+    "tags": {
+      "is-url": true,
+      "api": true
+    },
+    "extra": {
+      "hostname": "api.example.com",
+      "pathname": "/v1/users"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/robust-paths/files/1.js",
+    "analyzerName": "robust-paths",
+    "value": "\"https://api1.example.com\"",
+    "start": {
+      "line": 64,
+      "column": 2
+    },
+    "end": {
+      "line": 64,
+      "column": 28
+    },
+    "tags": {
+      "is-url-only": true,
+      "api": true
+    },
+    "extra": {
+      "hostname": "api1.example.com",
+      "pathname": "/"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/robust-paths/files/1.js",
+    "analyzerName": "robust-paths",
+    "value": "\"https://api2.example.com\"",
+    "start": {
+      "line": 65,
+      "column": 2
+    },
+    "end": {
+      "line": 65,
+      "column": 28
+    },
+    "tags": {
+      "is-url-only": true,
+      "api": true
+    },
+    "extra": {
+      "hostname": "api2.example.com",
+      "pathname": "/"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/robust-paths/files/1.js",
+    "analyzerName": "robust-paths",
+    "value": "\"https://auth.example.com\"",
+    "start": {
+      "line": 59,
+      "column": 8
+    },
+    "end": {
+      "line": 59,
+      "column": 34
+    },
+    "tags": {
+      "is-url-only": true
+    },
+    "extra": {
+      "hostname": "auth.example.com",
+      "pathname": "/"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/robust-paths/files/1.js",
+    "analyzerName": "robust-paths",
     "value": "\"https://auth.example.com/login\"",
     "start": {
       "line": 51,
@@ -730,6 +896,26 @@
     "extra": {
       "hostname": "auth.example.com",
       "pathname": "/login"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/robust-paths/files/1.js",
+    "analyzerName": "robust-paths",
+    "value": "\"https://dashboard.example.com\"",
+    "start": {
+      "line": 50,
+      "column": 21
+    },
+    "end": {
+      "line": 50,
+      "column": 52
+    },
+    "tags": {
+      "is-url-only": true
+    },
+    "extra": {
+      "hostname": "dashboard.example.com",
+      "pathname": "/"
     }
   },
   {
@@ -756,6 +942,70 @@
   {
     "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/robust-paths/files/1.js",
     "analyzerName": "robust-paths",
+    "value": "\"https://example.com\"",
+    "start": {
+      "line": 1,
+      "column": 8
+    },
+    "end": {
+      "line": 1,
+      "column": 29
+    },
+    "tags": {
+      "is-url-only": true
+    },
+    "extra": {
+      "hostname": "example.com",
+      "pathname": "/"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/robust-paths/files/1.js",
+    "analyzerName": "robust-paths",
+    "value": "\"https://example.com/page#section\"",
+    "start": {
+      "line": 156,
+      "column": 16
+    },
+    "end": {
+      "line": 156,
+      "column": 50
+    },
+    "tags": {
+      "is-url": true,
+      "fragment": true
+    },
+    "extra": {
+      "hostname": "example.com",
+      "pathname": "/page",
+      "hash": "#section"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/robust-paths/files/1.js",
+    "analyzerName": "robust-paths",
+    "value": "\"https://example.com/search?q=test\"",
+    "start": {
+      "line": 153,
+      "column": 18
+    },
+    "end": {
+      "line": 153,
+      "column": 53
+    },
+    "tags": {
+      "is-url": true,
+      "query": true
+    },
+    "extra": {
+      "hostname": "example.com",
+      "pathname": "/search",
+      "query-params": "q=test"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/robust-paths/files/1.js",
+    "analyzerName": "robust-paths",
     "value": "\"https://example.net/api/v1\"",
     "start": {
       "line": 2,
@@ -772,6 +1022,26 @@
     "extra": {
       "hostname": "example.net",
       "pathname": "/api/v1"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/robust-paths/files/1.js",
+    "analyzerName": "robust-paths",
+    "value": "\"https://www.fasfasf.org\"",
+    "start": {
+      "line": 164,
+      "column": 18
+    },
+    "end": {
+      "line": 164,
+      "column": 43
+    },
+    "tags": {
+      "is-url-only": true
+    },
+    "extra": {
+      "hostname": "www.fasfasf.org",
+      "pathname": "/"
     }
   },
   {
@@ -884,6 +1154,48 @@
       "mime-type": true
     },
     "extra": {}
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/robust-paths/files/1.js",
+    "analyzerName": "robust-paths",
+    "value": "\"www.mercadolibre.com/?test=123123\"",
+    "start": {
+      "line": 168,
+      "column": 19
+    },
+    "end": {
+      "line": 168,
+      "column": 54
+    },
+    "tags": {
+      "is-url": true,
+      "query": true
+    },
+    "extra": {
+      "hostname": "www.mercadolibre.com",
+      "pathname": "/",
+      "query-params": "test=123123"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/robust-paths/files/1.js",
+    "analyzerName": "robust-paths",
+    "value": "\"www.mercadolibre.com/my-path\"",
+    "start": {
+      "line": 167,
+      "column": 19
+    },
+    "end": {
+      "line": 167,
+      "column": 49
+    },
+    "tags": {
+      "is-url": true
+    },
+    "extra": {
+      "hostname": "www.mercadolibre.com",
+      "pathname": "/my-path"
+    }
   },
   {
     "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/robust-paths/files/1.js",

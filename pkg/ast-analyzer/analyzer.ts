@@ -5,7 +5,6 @@ import { ancestors as traverse } from "./walker";
 import { AnalyzerParams, AnalyzerMatch } from "./types";
 import { regexAnalyzerBuilder } from "./tree-analyzers/regex-pattern";
 import { graphqlAnalyzerBuilder } from "./tree-analyzers/graphql";
-import { urlsAnalyzerBuilder } from "./tree-analyzers/urls";
 import { secretsAnalyzerBuilder } from "./tree-analyzers/secrets";
 import { addEventListenerAnalyzerBuilder } from "./tree-analyzers/add-event-listener";
 import { cookieAnalyzerBuilder } from "./tree-analyzers/cookie";
@@ -128,7 +127,6 @@ export function analyzeFile(
   );
   const regexAnalyzer = createAnalyzer("regex", regexAnalyzerBuilder);
   const graphqlAnalyzer = createAnalyzer("graphql", graphqlAnalyzerBuilder);
-  const urlsAnalyzer = createAnalyzer("urls", urlsAnalyzerBuilder);
   const secretsAnalyzer = createAnalyzer("secrets", secretsAnalyzerBuilder);
   const addEventListenerAnalyzer = createAnalyzer(
     "add-event-listener",
@@ -197,7 +195,6 @@ export function analyzeFile(
     Literal(node, ancestors) {
       regexAnalyzer?.Literal?.(node, ancestors);
       graphqlAnalyzer?.Literal?.(node, ancestors);
-      urlsAnalyzer?.Literal?.(node, ancestors);
       secretsAnalyzer?.Literal?.(node, ancestors);
       hostnameAnalyzer?.Literal?.(node, ancestors);
       robustPathsAnalyzer?.Literal?.(node, ancestors);
@@ -207,7 +204,6 @@ export function analyzeFile(
       urlSearchParamsAnalyzer?.NewExpression?.(node, ancestors);
     },
     TemplateLiteral(node, ancestors) {
-      urlsAnalyzer?.TemplateLiteral?.(node, ancestors);
       robustPathsAnalyzer?.TemplateLiteral?.(node, ancestors);
       graphqlAnalyzer?.TemplateLiteral?.(node, ancestors);
     },

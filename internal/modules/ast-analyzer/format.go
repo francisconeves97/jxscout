@@ -127,7 +127,7 @@ func formatMatchesV1(matches []AnalyzerMatch) []ASTAnalyzerTreeNode {
 
 // Data Tags
 // url Tags
-var urlTags = []string{"url"}
+var urlTags = []string{"is-url-only"}
 
 // path Tags
 var pathTags = []string{"is-url", "is-path-only", "api", "query", "fragment"}
@@ -243,6 +243,16 @@ func buildDataTree(matchesByTag map[string][]AnalyzerMatch) ASTAnalyzerTreeNode 
 		dataNode.Children = append(dataNode.Children, urlNode)
 	}
 
+	if hasAnyMatches(matchesByTag, hostnameTags) {
+		hostnameNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
+			Label:    "Hostname",
+			IconName: "resources:hostname",
+		})
+
+		addMatchesToNode(&hostnameNode, matchesByTag, hostnameTags)
+		dataNode.Children = append(dataNode.Children, hostnameNode)
+	}
+
 	if hasAnyMatches(matchesByTag, extensionTags) {
 		extensionNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
 			Label:    "Extensions",
@@ -261,16 +271,6 @@ func buildDataTree(matchesByTag map[string][]AnalyzerMatch) ASTAnalyzerTreeNode 
 		}
 
 		dataNode.Children = append(dataNode.Children, extensionNode)
-	}
-
-	if hasAnyMatches(matchesByTag, hostnameTags) {
-		hostnameNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-			Label:    "Hostname",
-			IconName: "resources:hostname",
-		})
-
-		addMatchesToNode(&hostnameNode, matchesByTag, hostnameTags)
-		dataNode.Children = append(dataNode.Children, hostnameNode)
 	}
 
 	if hasAnyMatches(matchesByTag, mimeTypeTags) {
