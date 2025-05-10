@@ -445,6 +445,9 @@ var innerHTMLTags = []string{"inner-html"}
 // fetch Tags
 var fetchTags = []string{"fetch-call"}
 
+// Rest Client
+var restClientTags = []string{"http-method"}
+
 // URLSearchParams Tags
 var urlSearchParamsTags = []string{"url-search-params"}
 
@@ -479,6 +482,7 @@ var clientBehaviorTags = common.AppendAll(
 	windowOpenTags,
 	innerHTMLTags,
 	fetchTags,
+	restClientTags,
 	urlSearchParamsTags,
 	locationTags,
 	storageTags,
@@ -713,6 +717,16 @@ func buildClientBehaviorTree(matchesByTag map[string][]AnalyzerMatch) ASTAnalyze
 		behaviorNode.Children = append(behaviorNode.Children, documentDomainNode)
 	}
 
+	if hasAnyMatches(matchesByTag, urlSearchParamsTags) {
+		urlSearchParamsNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
+			Label:    "URLSearchParams",
+			IconName: "resources:javascript",
+		})
+
+		addMatchesToNode(&urlSearchParamsNode, matchesByTag, urlSearchParamsTags)
+		behaviorNode.Children = append(behaviorNode.Children, urlSearchParamsNode)
+	}
+
 	if hasAnyMatches(matchesByTag, windowOpenTags) {
 		windowOpenNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
 			Label:    "window.open",
@@ -743,14 +757,24 @@ func buildClientBehaviorTree(matchesByTag map[string][]AnalyzerMatch) ASTAnalyze
 		behaviorNode.Children = append(behaviorNode.Children, fetchNode)
 	}
 
-	if hasAnyMatches(matchesByTag, urlSearchParamsTags) {
-		urlSearchParamsNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-			Label:    "URLSearchParams",
+	if hasAnyMatches(matchesByTag, restClientTags) {
+		restClientNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
+			Label:    "Possible Rest Client",
 			IconName: "resources:javascript",
 		})
 
-		addMatchesToNode(&urlSearchParamsNode, matchesByTag, urlSearchParamsTags)
-		behaviorNode.Children = append(behaviorNode.Children, urlSearchParamsNode)
+		matches := getMatchesForTags(matchesByTag, restClientTags)
+		for tag, matches := range groupMatchesByTagStartingWith(matches, "method-") {
+			methodNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
+				Label:    tag,
+				IconName: "resources:javascript",
+			})
+
+			addAllMatchesToNode(&methodNode, matches)
+			restClientNode.Children = append(restClientNode.Children, methodNode)
+		}
+
+		behaviorNode.Children = append(behaviorNode.Children, restClientNode)
 	}
 
 	if hasAnyMatches(matchesByTag, windowNameTags) {

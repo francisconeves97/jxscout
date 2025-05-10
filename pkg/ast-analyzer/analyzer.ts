@@ -26,6 +26,7 @@ import { robustPathsAnalyzerBuilder } from "./tree-analyzers/robust-paths";
 import { windowNameAnalyzerBuilder } from "./tree-analyzers/window-name";
 import { windowOpenAnalyzerBuilder } from "./tree-analyzers/window-open";
 import { dangerousHtmlAnalyzerBuilder } from "./tree-analyzers/react-dangerously-set-inner-html";
+import { httpMethodsAnalyzerBuilder } from "./tree-analyzers/http-methods";
 
 export function parseFile(filePath: string): AnalyzerParams {
   const fileContent = fs.readFileSync(filePath, "utf-8");
@@ -98,7 +99,8 @@ export type AnalyzerType =
   | "robust-paths"
   | "window-name"
   | "window-open"
-  | "dangerous-html";
+  | "dangerous-html"
+  | "http-methods";
 
 export function analyzeFile(
   filePath: string,
@@ -190,6 +192,10 @@ export function analyzeFile(
     "dangerous-html",
     dangerousHtmlAnalyzerBuilder
   );
+  const httpMethodsAnalyzer = createAnalyzer(
+    "http-methods",
+    httpMethodsAnalyzerBuilder
+  );
 
   traverse(args.source, args.ast, {
     Literal(node, ancestors) {
@@ -225,6 +231,7 @@ export function analyzeFile(
       regexMatchAnalyzer?.CallExpression?.(node, ancestors);
       windowOpenAnalyzer?.CallExpression?.(node, ancestors);
       robustPathsAnalyzer?.CallExpression?.(node, ancestors);
+      httpMethodsAnalyzer?.CallExpression?.(node, ancestors);
     },
     AssignmentExpression(node, ancestors) {
       postMessageAnalyzer?.AssignmentExpression?.(node, ancestors);
