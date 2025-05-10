@@ -7,9 +7,6 @@ export default {
     },
   },
   output: {
-    externals: {
-      "@oxc-parser/binding-darwin-arm64": "",
-    },
     target: "node",
   },
 };
