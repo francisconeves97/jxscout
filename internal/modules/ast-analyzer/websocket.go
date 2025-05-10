@@ -2,182 +2,93 @@ package astanalyzer
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
-	"net/http"
-	"sync"
 
-	assetservice "github.com/francisconeves97/jxscout/internal/core/asset-service"
+	"github.com/francisconeves97/jxscout/internal/core/errutil"
+	jxwebsocket "github.com/francisconeves97/jxscout/internal/core/websocket"
+	jxscouttypes "github.com/francisconeves97/jxscout/pkg/types"
 	"github.com/gorilla/websocket"
 )
 
-// WebSocket message types
 const (
-	MsgTypeGetAnalysis = "getAnalysis"
-	MsgTypeAnalysis    = "analysis"
-	MsgTypeError       = "error"
+	MsgTypeGetAnalysisRequest  = "getAnalysisRequest"
+	MsgTypeGetAnalysisResponse = "getAnalysisResponse"
 )
 
-// WebSocket message structures
-type wsMessage struct {
-	Type    string          `json:"type"`
-	ID      string          `json:"id"`
-	Payload json.RawMessage `json:"payload"`
+type wsServer struct {
+	sdk    *jxscouttypes.ModuleSDK
+	module *astAnalyzerModule
+}
+
+func newWsServer(sdk *jxscouttypes.ModuleSDK, module *astAnalyzerModule) *wsServer {
+	s := &wsServer{
+		sdk:    sdk,
+		module: module,
+	}
+
+	s.initialize()
+
+	return s
+}
+
+func (s *wsServer) initialize() {
+	s.sdk.WebsocketServer.RegisterHandler(MsgTypeGetAnalysisRequest, s.getAnalysisHandler)
 }
 
 type getAnalysisRequest struct {
 	FilePath string `json:"filePath"`
 }
 
-type analysisResponse struct {
-	FilePath string                 `json:"filePath"`
-	Results  map[string]interface{} `json:"results"`
+type getAnalysisResponse struct {
+	Results []ASTAnalyzerTreeNode `json:"results"`
 }
 
-type errorResponse struct {
-	Message string `json:"message"`
-}
-
-type wsServer struct {
-	module       *astAnalyzerModule
-	upgrader     websocket.Upgrader
-	clients      map[*websocket.Conn]bool
-	clientsMutex sync.RWMutex
-}
-
-func newWSServer(module *astAnalyzerModule) *wsServer {
-	return &wsServer{
-		module: module,
-		upgrader: websocket.Upgrader{
-			CheckOrigin: func(r *http.Request) bool {
-				return true // In production, implement proper origin checking
-			},
-		},
-		clients: make(map[*websocket.Conn]bool),
-	}
-}
-
-func (s *wsServer) handleWebSocket(w http.ResponseWriter, r *http.Request) {
-	conn, err := s.upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		s.module.sdk.Logger.Error("failed to upgrade connection to websocket", "err", err)
+func (s *wsServer) getAnalysisHandler(msg jxwebsocket.WebsocketMessage, conn *websocket.Conn) {
+	var req getAnalysisRequest
+	if err := json.Unmarshal(msg.Payload, &req); err != nil {
+		s.sdk.WebsocketServer.SendErrorResponse(conn, msg.ID, MsgTypeGetAnalysisResponse, fmt.Sprintf("invalid request payload: %s", err.Error()))
 		return
 	}
-	defer conn.Close()
 
-	// Register client
-	s.clientsMutex.Lock()
-	s.clients[conn] = true
-	s.clientsMutex.Unlock()
-
-	// Cleanup on disconnect
-	defer func() {
-		s.clientsMutex.Lock()
-		delete(s.clients, conn)
-		s.clientsMutex.Unlock()
-	}()
-
-	for {
-		var msg wsMessage
-		err := conn.ReadJSON(&msg)
-		if err != nil {
-			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-				s.module.sdk.Logger.Error("websocket read error", "err", err)
-			}
-			break
-		}
-
-		switch msg.Type {
-		case MsgTypeGetAnalysis:
-			var req getAnalysisRequest
-			if err := json.Unmarshal(msg.Payload, &req); err != nil {
-				s.sendError(conn, msg.ID, "invalid request payload")
-				continue
-			}
-			s.handleGetAnalysis(conn, msg.ID, req)
-		default:
-			s.sendError(conn, msg.ID, "unknown message type")
-		}
+	tree, err := s.getAnalysis(req)
+	if err != nil {
+		s.sdk.WebsocketServer.SendErrorResponse(conn, msg.ID, MsgTypeGetAnalysisResponse, fmt.Sprintf("failed to get analysis: %s", err.Error()))
+		return
 	}
+
+	s.sdk.WebsocketServer.SendResponse(conn, msg.ID, MsgTypeGetAnalysisResponse, tree)
 }
 
-func (s *wsServer) handleGetAnalysis(conn *websocket.Conn, msgID string, req getAnalysisRequest) {
+func (s *wsServer) getAnalysis(req getAnalysisRequest) (getAnalysisResponse, error) {
 	// Find asset by file path
-	asset, err := s.module.repo.getAssetByPath(s.module.sdk.Ctx, req.FilePath)
+	asset, err := s.module.repo.getAssetByPath(s.sdk.Ctx, req.FilePath)
 	if err != nil {
-		s.sendError(conn, msgID, fmt.Sprintf("failed to find asset: %v", err))
-		return
+		return getAnalysisResponse{}, errutil.Wrap(err, "failed to find asset")
 	}
 	if asset == nil {
-		s.sendError(conn, msgID, "asset not found")
-		return
+		return getAnalysisResponse{}, errors.New("asset not found")
 	}
 
-	assetObj := assetservice.Asset{
-		ID:   asset.ID,
-		Path: asset.Path,
+	if !asset.IsBeautified {
+		return getAnalysisResponse{}, errors.New("asset is not yet beautified. please wait for the beautifier to finish")
 	}
 
 	// Trigger analysis
-	if err := s.module.analyzeAsset(assetObj); err != nil {
-		s.sendError(conn, msgID, fmt.Sprintf("failed to analyze asset: %v", err))
-		return
-	}
-
-	// Get the analyses again after running the analysis
-	analyses, err := s.module.repo.getAnalysesByAssetID(s.module.sdk.Ctx, asset.ID)
+	analysis, err := s.module.analyzeAsset(*asset)
 	if err != nil {
-		s.sendError(conn, msgID, fmt.Sprintf("failed to get analyses after running analysis: %v", err))
-		return
+		return getAnalysisResponse{}, errutil.Wrap(err, "failed to analyze asset")
 	}
 
-	// Create a map of results keyed by analyzer name
-	results := make(map[string]interface{})
-	for _, analysis := range analyses {
-		var analyzerResults interface{}
-		if err := json.Unmarshal([]byte(analysis.Results), &analyzerResults); err != nil {
-			s.module.sdk.Logger.Error("failed to parse analysis results", "err", err, "analyzer", analysis.Analyzer)
-			continue
-		}
-		results[analysis.Analyzer] = analyzerResults
+	matches, err := analysis.GetMatches()
+	if err != nil {
+		return getAnalysisResponse{}, errutil.Wrap(err, "failed to get matches")
 	}
 
 	// Send response
-	response := analysisResponse{
-		FilePath: req.FilePath,
-		Results:  results,
+	response := getAnalysisResponse{
+		Results: formatMatchesV1(matches),
 	}
 
-	s.sendResponse(conn, msgID, response)
-}
-
-func (s *wsServer) sendError(conn *websocket.Conn, msgID string, errorMsg string) {
-	response := wsMessage{
-		Type:    MsgTypeError,
-		ID:      msgID,
-		Payload: mustMarshalJSON(errorResponse{Message: errorMsg}),
-	}
-
-	if err := conn.WriteJSON(response); err != nil {
-		s.module.sdk.Logger.Error("failed to send error response", "err", err)
-	}
-}
-
-func (s *wsServer) sendResponse(conn *websocket.Conn, msgID string, payload interface{}) {
-	response := wsMessage{
-		Type:    MsgTypeAnalysis,
-		ID:      msgID,
-		Payload: mustMarshalJSON(payload),
-	}
-
-	if err := conn.WriteJSON(response); err != nil {
-		s.module.sdk.Logger.Error("failed to send response", "err", err)
-	}
-}
-
-func mustMarshalJSON(v interface{}) json.RawMessage {
-	data, err := json.Marshal(v)
-	if err != nil {
-		panic(err)
-	}
-	return data
+	return response, nil
 }

@@ -1,0 +1,82 @@
+[
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/fetch/files/1.js",
+    "analyzerName": "fetch",
+    "value": "fetch('https://api.example.com/data', {\n  method: 'POST',\n  headers: {\n    'Content-Type': 'application/json'\n  },\n  body: JSON.stringify({ key: 'value' })\n})",
+    "start": {
+      "line": 5,
+      "column": 0
+    },
+    "end": {
+      "line": 11,
+      "column": 2
+    },
+    "tags": {
+      "fetch-call": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/fetch/files/1.js",
+    "analyzerName": "fetch",
+    "value": "fetch('https://api.example.com/data')",
+    "start": {
+      "line": 2,
+      "column": 0
+    },
+    "end": {
+      "line": 2,
+      "column": 37
+    },
+    "tags": {
+      "fetch-call": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/fetch/files/1.js",
+    "analyzerName": "fetch",
+    "value": "fetch('https://api.example.com/data')",
+    "start": {
+      "line": 23,
+      "column": 25
+    },
+    "end": {
+      "line": 23,
+      "column": 62
+    },
+    "tags": {
+      "fetch-call": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/fetch/files/1.js",
+    "analyzerName": "fetch",
+    "value": "fetch(`https://api.example.com/${endpoint}`)",
+    "start": {
+      "line": 19,
+      "column": 0
+    },
+    "end": {
+      "line": 19,
+      "column": 44
+    },
+    "tags": {
+      "fetch-call": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/fetch/files/1.js",
+    "analyzerName": "fetch",
+    "value": "fetch(url)",
+    "start": {
+      "line": 15,
+      "column": 0
+    },
+    "end": {
+      "line": 15,
+      "column": 10
+    },
+    "tags": {
+      "fetch-call": true
+    }
+  }
+]

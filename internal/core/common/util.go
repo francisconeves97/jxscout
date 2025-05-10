@@ -6,9 +6,11 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"path"
+	"path/filepath"
 	"regexp"
 	"strings"
+	"time"
+	"unicode"
 
 	"github.com/francisconeves97/jxscout/internal/core/errutil"
 )
@@ -112,13 +114,13 @@ func Hash(content string) string {
 func GetWorkingDirectory() string {
 	home := os.Getenv("HOME")
 
-	return path.Join(home, "jxscout")
+	return filepath.Join(home, "jxscout")
 }
 
 func GetPrivateDirectory() string {
 	home := os.Getenv("HOME")
 
-	return path.Join(home, ".jxscout")
+	return filepath.Join(home, ".jxscout")
 }
 
 func FileExists(filePath string) (bool, error) {
@@ -130,4 +132,54 @@ func FileExists(filePath string) (bool, error) {
 		return false, errutil.Wrap(err, "failed to check if file exists")
 	}
 	return !info.IsDir(), nil
+}
+
+func ExponentialBackoff(retry int) time.Duration {
+	// Base delay of 1 second
+	baseDelay := time.Second
+
+	// Calculate exponential delay: base * 2^retry
+	// Cap at 1 hour to prevent excessive delays
+	maxDelay := time.Hour
+
+	delay := baseDelay * time.Duration(1<<uint(retry))
+	if delay > maxDelay {
+		return maxDelay
+	}
+
+	return delay
+}
+
+func AppendAll[T any](slices ...[]T) []T {
+	// Calculate total length
+	totalLen := 0
+	for _, s := range slices {
+		totalLen += len(s)
+	}
+
+	// Pre-allocate the result slice
+	result := make([]T, 0, totalLen)
+
+	// Append all slices
+	for _, s := range slices {
+		result = append(result, s...)
+	}
+
+	return result
+}
+
+// stolen from https://github.com/BishopFox/jsluice/blob/main/analyzer.go#L70
+func IsProbablyHTML(source []byte) bool {
+	for _, b := range source {
+		if unicode.IsSpace(rune(b)) {
+			continue
+		}
+
+		if b == '<' {
+			return true
+		}
+		break
+	}
+
+	return false
 }

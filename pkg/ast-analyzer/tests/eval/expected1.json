@@ -1,0 +1,98 @@
+[
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/eval/files/1.js",
+    "analyzerName": "eval",
+    "value": "eval('console.log(\"Hello\")')",
+    "start": {
+      "line": 4,
+      "column": 0
+    },
+    "end": {
+      "line": 4,
+      "column": 28
+    },
+    "tags": {
+      "eval": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/eval/files/1.js",
+    "analyzerName": "eval",
+    "value": "eval('console.log(\"One\")', 'console.log(\"Two\")')",
+    "start": {
+      "line": 21,
+      "column": 0
+    },
+    "end": {
+      "line": 21,
+      "column": 48
+    },
+    "tags": {
+      "eval": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/eval/files/1.js",
+    "analyzerName": "eval",
+    "value": "eval(`console.log(\"Hello ${name}\")`)",
+    "start": {
+      "line": 12,
+      "column": 0
+    },
+    "end": {
+      "line": 12,
+      "column": 36
+    },
+    "tags": {
+      "eval": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/eval/files/1.js",
+    "analyzerName": "eval",
+    "value": "eval(code)",
+    "start": {
+      "line": 8,
+      "column": 0
+    },
+    "end": {
+      "line": 8,
+      "column": 10
+    },
+    "tags": {
+      "eval": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/eval/files/1.js",
+    "analyzerName": "eval",
+    "value": "eval(getCode())",
+    "start": {
+      "line": 18,
+      "column": 0
+    },
+    "end": {
+      "line": 18,
+      "column": 15
+    },
+    "tags": {
+      "eval": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/eval/files/1.js",
+    "analyzerName": "eval",
+    "value": "eval(obj.code)",
+    "start": {
+      "line": 30,
+      "column": 0
+    },
+    "end": {
+      "line": 30,
+      "column": 14
+    },
+    "tags": {
+      "eval": true
+    }
+  }
+]

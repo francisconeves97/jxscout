@@ -2,7 +2,7 @@ package main
 
 import (
 	"log"
-	"path"
+	"path/filepath"
 
 	"github.com/francisconeves97/jxscout/internal/core/common"
 	"github.com/francisconeves97/jxscout/pkg/constants"
@@ -44,15 +44,6 @@ func main() {
 		flagSet.IntVar(&options.ChunkDiscovererBruteForceLimit, constants.FlagChunkDiscovererBruteForceLimit, constants.DefaultChunkDiscovererBruteForceLimit, constants.DescriptionChunkDiscovererBruteForceLimit),
 	)
 
-	flagSet.CreateGroup("cache", "cache configuration",
-		flagSet.DurationVar(&options.JavascriptRequestsCacheTTL, constants.FlagJavascriptRequestsCacheTTL, constants.DefaultJavascriptRequestsCacheTTL, constants.DescriptionJavascriptRequestsCacheTTL),
-		flagSet.DurationVar(&options.HTMLRequestsCacheTTL, constants.FlagHTMLRequestsCacheTTL, constants.DefaultHTMLRequestsCacheTTL, constants.DescriptionHTMLRequestsCacheTTL),
-	)
-
-	flagSet.CreateGroup("git commiter", "git commiter configuration",
-		flagSet.DurationVar(&options.GitCommitInterval, constants.FlagGitCommitInterval, constants.DefaultGitCommitInterval, constants.DescriptionGitCommitInterval),
-	)
-
 	flagSet.CreateGroup("rate limiting", "rate limiting configuration",
 		flagSet.IntVar(&options.RateLimitingMaxRequestsPerSecond, constants.FlagRateLimitingMaxRequestsPerSecond, constants.DefaultRateLimitingMaxRequestsPerSecond, constants.DescriptionRateLimitingMaxRequestsPerSecond),
 		flagSet.IntVar(&options.RateLimitingMaxRequestsPerMinute, constants.FlagRateLimitingMaxRequestsPerMinute, constants.DefaultRateLimitingMaxRequestsPerMinute, constants.DescriptionRateLimitingMaxRequestsPerMinute),
@@ -73,7 +64,7 @@ func main() {
 		flagSet.DurationVar(&options.OverrideContentCheckInterval, constants.FlagOverrideContentCheckInterval, constants.DefaultOverrideContentCheckInterval, constants.DescriptionOverrideContentCheckInterval),
 	)
 
-	configFileLocation := path.Join(common.GetPrivateDirectory(), constants.ConfigFileName)
+	configFileLocation := filepath.Join(common.GetPrivateDirectory(), constants.ConfigFileName)
 	flagSet.SetConfigFilePath(configFileLocation)
 
 	if err := flagSet.Parse(); err != nil {

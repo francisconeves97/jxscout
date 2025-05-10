@@ -1,0 +1,82 @@
+[
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/onhashchange/files/1.js",
+    "analyzerName": "onhashchange",
+    "value": "window.addEventListener(\"hashchange\", function() {\n  console.log(\"Hash changed via addEventListener!\");\n})",
+    "start": {
+      "line": 7,
+      "column": 0
+    },
+    "end": {
+      "line": 9,
+      "column": 2
+    },
+    "tags": {
+      "onhashchange": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/onhashchange/files/1.js",
+    "analyzerName": "onhashchange",
+    "value": "window.onhashchange = function() {\n  console.log(\"First handler\");\n}",
+    "start": {
+      "line": 18,
+      "column": 0
+    },
+    "end": {
+      "line": 20,
+      "column": 1
+    },
+    "tags": {
+      "onhashchange": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/onhashchange/files/1.js",
+    "analyzerName": "onhashchange",
+    "value": "window.onhashchange = function() {\n  console.log(\"Hash changed!\");\n}",
+    "start": {
+      "line": 2,
+      "column": 0
+    },
+    "end": {
+      "line": 4,
+      "column": 1
+    },
+    "tags": {
+      "onhashchange": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/onhashchange/files/1.js",
+    "analyzerName": "onhashchange",
+    "value": "window.onhashchange = function() {\n  console.log(\"Second handler\");\n}",
+    "start": {
+      "line": 21,
+      "column": 0
+    },
+    "end": {
+      "line": 23,
+      "column": 1
+    },
+    "tags": {
+      "onhashchange": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/onhashchange/files/1.js",
+    "analyzerName": "onhashchange",
+    "value": "window.onhashchange = handler",
+    "start": {
+      "line": 15,
+      "column": 0
+    },
+    "end": {
+      "line": 15,
+      "column": 29
+    },
+    "tags": {
+      "onhashchange": true
+    }
+  }
+]

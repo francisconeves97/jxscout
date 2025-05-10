@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
-	"time"
 
 	assetservice "github.com/francisconeves97/jxscout/internal/core/asset-service"
 	"github.com/francisconeves97/jxscout/internal/core/common"
@@ -16,14 +15,11 @@ import (
 )
 
 type htmlIngestionModule struct {
-	sdk      *jxscouttypes.ModuleSDK
-	cacheTTL time.Duration
+	sdk *jxscouttypes.ModuleSDK
 }
 
-func NewHTMLIngestionModule(cacheTTL time.Duration) jxscouttypes.Module {
-	return &htmlIngestionModule{
-		cacheTTL: cacheTTL,
-	}
+func NewHTMLIngestionModule() jxscouttypes.Module {
+	return &htmlIngestionModule{}
 }
 
 func (m *htmlIngestionModule) Initialize(sdk *jxscouttypes.ModuleSDK) error {
@@ -41,7 +37,7 @@ func (m *htmlIngestionModule) Initialize(sdk *jxscouttypes.ModuleSDK) error {
 }
 
 func (m *htmlIngestionModule) subscribeIngestionRequestTopic() error {
-	messages, err := m.sdk.EventBus.Subscribe(ingestion.TopicIngestionRequestReceived)
+	messages, err := m.sdk.InMemoryEventBus.Subscribe(ingestion.TopicIngestionRequestReceived)
 	if err != nil {
 		return errutil.Wrap(err, "failed to subscribe to ingestion request topic")
 	}
@@ -70,10 +66,14 @@ func (m *htmlIngestionModule) handleIngestionRequest(req ingestion.IngestionRequ
 		return nil // request is not valid, skip
 	}
 
+	m.sdk.Logger.Debug("htmlingestion - handling ingestion request", "req_url", req.Request.URL)
+
 	htmlPath, err := common.NormalizeHTMLURL(req.Request.URL)
 	if err != nil {
 		return errutil.Wrap(err, "failed to join html path with (index).html")
 	}
+
+	m.sdk.Logger.Debug("htmlingestion - saving html asset", "html_path", htmlPath)
 
 	m.sdk.AssetService.AsyncSaveAsset(m.sdk.Ctx, assetservice.Asset{
 		URL:            htmlPath,

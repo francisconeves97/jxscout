@@ -1,0 +1,18 @@
+[
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/regex-pattern/files/2.js",
+    "analyzerName": "regex",
+    "value": "/([a-zA-Z0-9]+|\\s)+$/",
+    "start": {
+      "line": 22,
+      "column": 25
+    },
+    "end": {
+      "line": 22,
+      "column": 46
+    },
+    "tags": {
+      "regex-pattern": true
+    }
+  }
+]

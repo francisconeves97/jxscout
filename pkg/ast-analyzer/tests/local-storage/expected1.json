@@ -1,0 +1,206 @@
+[
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/local-storage/files/1.js",
+    "analyzerName": "local-storage",
+    "value": "localStorage.getItem('key')",
+    "start": {
+      "line": 8,
+      "column": 0
+    },
+    "end": {
+      "line": 8,
+      "column": 27
+    },
+    "tags": {
+      "local-storage": true,
+      "property-getItem": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/local-storage/files/1.js",
+    "analyzerName": "local-storage",
+    "value": "localStorage.setItem('key', 'value')",
+    "start": {
+      "line": 7,
+      "column": 0
+    },
+    "end": {
+      "line": 7,
+      "column": 36
+    },
+    "tags": {
+      "local-storage": true,
+      "property-setItem": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/local-storage/files/1.js",
+    "analyzerName": "local-storage",
+    "value": "window.localStorage.getItem('data')",
+    "start": {
+      "line": 29,
+      "column": 13
+    },
+    "end": {
+      "line": 29,
+      "column": 48
+    },
+    "tags": {
+      "local-storage": true,
+      "property-getItem": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/local-storage/files/1.js",
+    "analyzerName": "local-storage",
+    "value": "window.localStorage.getItem('key')",
+    "start": {
+      "line": 3,
+      "column": 0
+    },
+    "end": {
+      "line": 3,
+      "column": 34
+    },
+    "tags": {
+      "local-storage": true,
+      "property-getItem": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/local-storage/files/1.js",
+    "analyzerName": "local-storage",
+    "value": "window.localStorage.getItem('user')",
+    "start": {
+      "line": 26,
+      "column": 0
+    },
+    "end": {
+      "line": 26,
+      "column": 35
+    },
+    "tags": {
+      "local-storage": true,
+      "property-getItem": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/local-storage/files/1.js",
+    "analyzerName": "local-storage",
+    "value": "window.localStorage.getItem(`${prefix}name`)",
+    "start": {
+      "line": 21,
+      "column": 0
+    },
+    "end": {
+      "line": 21,
+      "column": 44
+    },
+    "tags": {
+      "local-storage": true,
+      "property-getItem": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/local-storage/files/1.js",
+    "analyzerName": "local-storage",
+    "value": "window.localStorage.getItem(key)",
+    "start": {
+      "line": 16,
+      "column": 0
+    },
+    "end": {
+      "line": 16,
+      "column": 32
+    },
+    "tags": {
+      "local-storage": true,
+      "property-getItem": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/local-storage/files/1.js",
+    "analyzerName": "local-storage",
+    "value": "window.localStorage.setItem('backup', data)",
+    "start": {
+      "line": 31,
+      "column": 2
+    },
+    "end": {
+      "line": 31,
+      "column": 45
+    },
+    "tags": {
+      "local-storage": true,
+      "property-setItem": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/local-storage/files/1.js",
+    "analyzerName": "local-storage",
+    "value": "window.localStorage.setItem('key', 'value')",
+    "start": {
+      "line": 2,
+      "column": 0
+    },
+    "end": {
+      "line": 2,
+      "column": 43
+    },
+    "tags": {
+      "local-storage": true,
+      "property-setItem": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/local-storage/files/1.js",
+    "analyzerName": "local-storage",
+    "value": "window.localStorage.setItem('user', JSON.stringify(user))",
+    "start": {
+      "line": 25,
+      "column": 0
+    },
+    "end": {
+      "line": 25,
+      "column": 57
+    },
+    "tags": {
+      "local-storage": true,
+      "property-setItem": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/local-storage/files/1.js",
+    "analyzerName": "local-storage",
+    "value": "window.localStorage.setItem(`${prefix}name`, 'John')",
+    "start": {
+      "line": 20,
+      "column": 0
+    },
+    "end": {
+      "line": 20,
+      "column": 52
+    },
+    "tags": {
+      "local-storage": true,
+      "property-setItem": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/local-storage/files/1.js",
+    "analyzerName": "local-storage",
+    "value": "window.localStorage.setItem(key, value)",
+    "start": {
+      "line": 15,
+      "column": 0
+    },
+    "end": {
+      "line": 15,
+      "column": 39
+    },
+    "tags": {
+      "local-storage": true,
+      "property-setItem": true
+    }
+  }
+]

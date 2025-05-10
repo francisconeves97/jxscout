@@ -5,5 +5,5 @@ const (
 )
 
 type EventAssetSaved struct {
-	Asset Asset
+	AssetID int64 `json:"asset_id"`
 }

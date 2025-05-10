@@ -1,26 +1,28 @@
 package beautifier
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"os/exec"
+	"time"
 
 	assetservice "github.com/francisconeves97/jxscout/internal/core/asset-service"
 	"github.com/francisconeves97/jxscout/internal/core/common"
+	"github.com/francisconeves97/jxscout/internal/core/dbeventbus"
 	"github.com/francisconeves97/jxscout/internal/core/errutil"
-	"github.com/francisconeves97/jxscout/internal/core/eventbus"
-	concurrentqueue "github.com/francisconeves97/jxscout/pkg/concurrent-queue"
 	jxscouttypes "github.com/francisconeves97/jxscout/pkg/types"
 )
 
 type beautifierModule struct {
-	sdk   *jxscouttypes.ModuleSDK
-	queue concurrentqueue.Queue[assetservice.Asset]
+	sdk         *jxscouttypes.ModuleSDK
+	concurrency int
 }
 
 func NewBeautifier(concurrency int) *beautifierModule {
 	return &beautifierModule{
-		queue: concurrentqueue.NewQueue[assetservice.Asset](concurrency),
+		concurrency: concurrency,
 	}
 }
 
@@ -34,8 +36,6 @@ func (m *beautifierModule) Initialize(sdk *jxscouttypes.ModuleSDK) error {
 		}
 	}()
 
-	m.initializeQueueHandler()
-
 	return nil
 }
 
@@ -44,50 +44,65 @@ var validBeautifierContentTypes = map[common.ContentType]bool{
 	common.ContentTypeJS:   true,
 }
 
-func (m *beautifierModule) initializeQueueHandler() {
-	m.queue.StartConsumers(func(ctx context.Context, asset assetservice.Asset) {
-		err := m.beautify(asset.Path, asset.ContentType)
-		if err != nil {
-			m.sdk.Logger.ErrorContext(ctx, "failed to save asset", "err", err)
-			return
-		}
-
-		err = m.sdk.EventBus.Publish(TopicBeautifierAssetSaved, eventbus.Message{
-			Data: EventBeautifierAssetSaved{
-				Asset: asset,
-			},
-		})
-		if err != nil {
-			m.sdk.Logger.ErrorContext(ctx, "failed to publish asset saved event", "err", err)
-			return
-		}
-	})
-}
-
 func (m *beautifierModule) subscribeAssetSavedEvent() error {
-	messages, err := m.sdk.EventBus.Subscribe(assetservice.TopicAssetSaved)
+	err := m.sdk.DBEventBus.Subscribe(m.sdk.Ctx, assetservice.TopicAssetSaved, "beautifier", func(ctx context.Context, payload []byte) error {
+		var event assetservice.EventAssetSaved
+		err := json.Unmarshal(payload, &event)
+		if err != nil {
+			return errutil.Wrap(err, "failed to unmarshal payload")
+		}
+
+		asset, err := m.sdk.AssetService.GetAssetByID(ctx, event.AssetID)
+		if err != nil {
+			return dbeventbus.NewRetriableError(errutil.Wrap(err, "failed to get asset"))
+		}
+
+		err = m.handleAssetSavedEvent(ctx, asset)
+		if err != nil {
+			return errutil.Wrapf(err, "failed to handle asset saved event for asset (%s)", asset.URL)
+		}
+
+		return nil
+	}, dbeventbus.Options{
+		Concurrency:       m.concurrency,
+		MaxRetries:        3,
+		Backoff:           common.ExponentialBackoff,
+		PollInterval:      1 * time.Second,
+		HeartbeatInterval: 10 * time.Second,
+	})
 	if err != nil {
-		return errutil.Wrap(err, "failed to subscribe to ingestion request topic")
-	}
-
-	for msg := range messages {
-		event, ok := msg.Data.(assetservice.EventAssetSaved)
-		if !ok {
-			m.sdk.Logger.Error("expected event EventAssetSaved but event is other type")
-			continue
-		}
-
-		if isValid, ok := validBeautifierContentTypes[event.Asset.ContentType]; !ok || !isValid {
-			continue
-		}
-
-		m.queue.Produce(m.sdk.Ctx, event.Asset)
+		return errutil.Wrap(err, "failed to subscribe to asset saved topic")
 	}
 
 	return nil
 }
 
-func (s *beautifierModule) beautify(filePath string, contentType common.ContentType) error {
+func (m *beautifierModule) handleAssetSavedEvent(ctx context.Context, asset assetservice.Asset) error {
+	if isValid, ok := validBeautifierContentTypes[asset.ContentType]; !ok || !isValid {
+		return nil
+	}
+
+	err := m.beautify(asset.Path, asset.ContentType)
+	if err != nil {
+		return errutil.Wrap(err, "failed to beautify asset")
+	}
+
+	err = m.sdk.DBEventBus.Publish(ctx, m.sdk.Database, TopicBeautifierAssetSaved, EventBeautifierAssetSaved{
+		AssetID: asset.ID,
+	})
+	if err != nil {
+		return errutil.Wrap(err, "failed to publish asset saved event")
+	}
+
+	err = assetservice.UpdateAssetIsBeautified(ctx, m.sdk.Database, asset.ID, true)
+	if err != nil {
+		return errutil.Wrap(err, "failed to update asset is beautified")
+	}
+
+	return nil
+}
+
+func (m *beautifierModule) beautify(filePath string, contentType common.ContentType) error {
 	parser := "babel"
 	if contentType == common.ContentTypeHTML {
 		parser = "html"
@@ -95,8 +110,16 @@ func (s *beautifierModule) beautify(filePath string, contentType common.ContentT
 
 	cmd := exec.Command("prettier", filePath, "--write", fmt.Sprintf("--parser=%s", parser))
 
+	var stderr bytes.Buffer
+	cmd.Stderr = &stderr
+
 	if err := cmd.Start(); err != nil {
 		return errutil.Wrap(err, "error starting command")
+	}
+
+	err := cmd.Wait()
+	if err != nil {
+		return errutil.Wrapf(err, "error waiting for command: %s", stderr.String())
 	}
 
 	return nil

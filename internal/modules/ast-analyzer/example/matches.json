@@ -1,0 +1,274 @@
+[
+  {
+    "filePath": "internal/modules/ast-analyzer/example/test.js",
+    "analyzerName": "paths",
+    "value": "/api/users",
+    "start": { "line": 2, "column": 16 },
+    "end": { "line": 2, "column": 28 },
+    "tags": { "api": true }
+  },
+  {
+    "filePath": "internal/modules/ast-analyzer/example/test.js",
+    "analyzerName": "pii",
+    "value": "user@example.com",
+    "start": { "line": 6, "column": 14 },
+    "end": { "line": 6, "column": 32 },
+    "tags": { "pii": true, "emails": true }
+  },
+  {
+    "filePath": "internal/modules/ast-analyzer/example/test.js",
+    "analyzerName": "post-message",
+    "value": "window.postMessage('data', '*')",
+    "start": { "line": 9, "column": 0 },
+    "end": { "line": 9, "column": 31 },
+    "tags": { "post-message": true }
+  },
+  {
+    "filePath": "internal/modules/ast-analyzer/example/test.js",
+    "analyzerName": "message-listener",
+    "value": "window.addEventListener('message', (event) => {\n  console.log(event.data);\n})",
+    "start": { "line": 12, "column": 0 },
+    "end": { "line": 14, "column": 2 },
+    "tags": { "message-listener": true }
+  },
+  {
+    "filePath": "internal/modules/ast-analyzer/example/test.js",
+    "analyzerName": "regex",
+    "value": "/test/",
+    "start": { "line": 17, "column": 14 },
+    "end": { "line": 17, "column": 20 },
+    "tags": { "regex": true, "regex-literal": true }
+  },
+  {
+    "filePath": "internal/modules/ast-analyzer/example/test.js",
+    "analyzerName": "regex-match",
+    "value": "regex.test('test string')",
+    "start": { "line": 18, "column": 0 },
+    "end": { "line": 18, "column": 25 },
+    "tags": { "regex-match": true }
+  },
+  {
+    "filePath": "internal/modules/ast-analyzer/example/test.js",
+    "analyzerName": "regex",
+    "value": "new RegExp('test')",
+    "start": { "line": 24, "column": 16 },
+    "end": { "line": 24, "column": 34 },
+    "tags": { "regex": true, "regex-constructor": true }
+  },
+  {
+    "filePath": "internal/modules/ast-analyzer/example/test.js",
+    "analyzerName": "dom-xss",
+    "value": "document.write('<script>alert(\"xss\")</script>')",
+    "start": { "line": 27, "column": 0 },
+    "end": { "line": 27, "column": 47 },
+    "tags": { "dom-xss": true }
+  },
+  {
+    "filePath": "internal/modules/ast-analyzer/example/test.js",
+    "analyzerName": "graphql",
+    "value": "\n  query {\n    user(id: \"123\") {\n      name\n      email\n    }\n  }\n",
+    "start": { "line": 30, "column": 14 },
+    "end": { "line": 37, "column": 1 },
+    "tags": { "graphql": true }
+  },
+  {
+    "filePath": "internal/modules/ast-analyzer/example/test.js",
+    "analyzerName": "urls",
+    "value": "https://example.com",
+    "start": { "line": 40, "column": 12 },
+    "end": { "line": 40, "column": 33 },
+    "tags": { "https": true }
+  },
+  {
+    "filePath": "internal/modules/ast-analyzer/example/test.js",
+    "analyzerName": "jquery-dom-xss",
+    "value": "$('#element').html('<script>alert(\"xss\")</script>')",
+    "start": { "line": 43, "column": 0 },
+    "end": { "line": 43, "column": 51 },
+    "tags": { "jquery-dom-xss": true }
+  },
+  {
+    "filePath": "internal/modules/ast-analyzer/example/test.js",
+    "analyzerName": "link-manipulation",
+    "value": "window.location.href",
+    "start": { "line": 46, "column": 0 },
+    "end": { "line": 46, "column": 20 },
+    "tags": { "link-manipulation": true }
+  },
+  {
+    "filePath": "internal/modules/ast-analyzer/example/test.js",
+    "analyzerName": "urls",
+    "value": "https://malicious.com",
+    "start": { "line": 46, "column": 23 },
+    "end": { "line": 46, "column": 46 },
+    "tags": { "https": true }
+  },
+  {
+    "filePath": "internal/modules/ast-analyzer/example/test.js",
+    "analyzerName": "link-manipulation",
+    "value": "window.location.href = 'https://malicious.com'",
+    "start": { "line": 46, "column": 0 },
+    "end": { "line": 46, "column": 46 },
+    "tags": { "link-manipulation": true }
+  },
+  {
+    "filePath": "internal/modules/ast-analyzer/example/test.js",
+    "analyzerName": "common-sources",
+    "value": "document.cookie",
+    "start": { "line": 49, "column": 0 },
+    "end": { "line": 49, "column": 15 },
+    "tags": { "common-sources": true }
+  },
+  {
+    "filePath": "internal/modules/ast-analyzer/example/test.js",
+    "analyzerName": "cookie-manipulation",
+    "value": "document.cookie = 'session=123'",
+    "start": { "line": 49, "column": 0 },
+    "end": { "line": 49, "column": 31 },
+    "tags": { "cookie-manipulation": true }
+  },
+  {
+    "filePath": "internal/modules/ast-analyzer/example/test.js",
+    "analyzerName": "javascript-injection",
+    "value": "eval('console.log(\"injected\")')",
+    "start": { "line": 52, "column": 0 },
+    "end": { "line": 52, "column": 31 },
+    "tags": { "javascript-injection": true }
+  },
+  {
+    "filePath": "internal/modules/ast-analyzer/example/test.js",
+    "analyzerName": "document-domain-manipulation",
+    "value": "document.domain",
+    "start": { "line": 55, "column": 0 },
+    "end": { "line": 55, "column": 15 },
+    "tags": { "document-domain-manipulation": true }
+  },
+  {
+    "filePath": "internal/modules/ast-analyzer/example/test.js",
+    "analyzerName": "dom-xss",
+    "value": "document.domain = 'example.com'",
+    "start": { "line": 55, "column": 0 },
+    "end": { "line": 55, "column": 31 },
+    "tags": { "dom-xss": true }
+  },
+  {
+    "filePath": "internal/modules/ast-analyzer/example/test.js",
+    "analyzerName": "urls",
+    "value": "ws://example.com",
+    "start": { "line": 58, "column": 25 },
+    "end": { "line": 58, "column": 43 },
+    "tags": { "ws": true }
+  },
+  {
+    "filePath": "internal/modules/ast-analyzer/example/test.js",
+    "analyzerName": "websocket-url-poisoning",
+    "value": "new WebSocket('ws://example.com')",
+    "start": { "line": 58, "column": 11 },
+    "end": { "line": 58, "column": 44 },
+    "tags": { "websocket-url-poisoning": true }
+  },
+  {
+    "filePath": "internal/modules/ast-analyzer/example/test.js",
+    "analyzerName": "link-manipulation",
+    "value": "link.href",
+    "start": { "line": 62, "column": 0 },
+    "end": { "line": 62, "column": 9 },
+    "tags": { "link-manipulation": true }
+  },
+  {
+    "filePath": "internal/modules/ast-analyzer/example/test.js",
+    "analyzerName": "link-manipulation",
+    "value": "link.href = 'javascript:alert(1)'",
+    "start": { "line": 62, "column": 0 },
+    "end": { "line": 62, "column": 33 },
+    "tags": { "link-manipulation": true }
+  },
+  {
+    "filePath": "internal/modules/ast-analyzer/example/test.js",
+    "analyzerName": "ajax-request-header-manipulation",
+    "value": "xhr.setRequestHeader('X-Custom-Header', 'value')",
+    "start": { "line": 66, "column": 0 },
+    "end": { "line": 66, "column": 48 },
+    "tags": { "ajax-request-header-manipulation": true }
+  },
+  {
+    "filePath": "internal/modules/ast-analyzer/example/test.js",
+    "analyzerName": "common-sources",
+    "value": "localStorage.setItem",
+    "start": { "line": 72, "column": 0 },
+    "end": { "line": 72, "column": 20 },
+    "tags": { "common-sources": true }
+  },
+  {
+    "filePath": "internal/modules/ast-analyzer/example/test.js",
+    "analyzerName": "html5-storage-manipulation",
+    "value": "localStorage.setItem('key', 'value')",
+    "start": { "line": 72, "column": 0 },
+    "end": { "line": 72, "column": 36 },
+    "tags": { "local-storage": true }
+  },
+  {
+    "filePath": "internal/modules/ast-analyzer/example/test.js",
+    "analyzerName": "common-sources",
+    "value": "localStorage.setItem('key', 'value')",
+    "start": { "line": 72, "column": 0 },
+    "end": { "line": 72, "column": 36 },
+    "tags": { "common-sources": true }
+  },
+  {
+    "filePath": "internal/modules/ast-analyzer/example/test.js",
+    "analyzerName": "common-sources",
+    "value": "sessionStorage.setItem",
+    "start": { "line": 73, "column": 0 },
+    "end": { "line": 73, "column": 22 },
+    "tags": { "common-sources": true }
+  },
+  {
+    "filePath": "internal/modules/ast-analyzer/example/test.js",
+    "analyzerName": "html5-storage-manipulation",
+    "value": "sessionStorage.setItem('key', 'value')",
+    "start": { "line": 73, "column": 0 },
+    "end": { "line": 73, "column": 38 },
+    "tags": { "session-storage": true }
+  },
+  {
+    "filePath": "internal/modules/ast-analyzer/example/test.js",
+    "analyzerName": "common-sources",
+    "value": "sessionStorage.setItem('key', 'value')",
+    "start": { "line": 73, "column": 0 },
+    "end": { "line": 73, "column": 38 },
+    "tags": { "common-sources": true }
+  },
+  {
+    "filePath": "internal/modules/ast-analyzer/example/test.js",
+    "analyzerName": "dom-data-manipulation",
+    "value": "document.getElementById('input').value",
+    "start": { "line": 83, "column": 18 },
+    "end": { "line": 83, "column": 56 },
+    "tags": { "dom-data-manipulation": true }
+  },
+  {
+    "filePath": "internal/modules/ast-analyzer/example/test.js",
+    "analyzerName": "pii",
+    "value": "sk_live_1234567890abcdef",
+    "start": { "line": 86, "column": 15 },
+    "end": { "line": 86, "column": 41 },
+    "tags": { "pii": true, "phones": true }
+  },
+  {
+    "filePath": "internal/modules/ast-analyzer/example/test.js",
+    "analyzerName": "pii",
+    "value": "123-45-6789",
+    "start": { "line": 90, "column": 12 },
+    "end": { "line": 90, "column": 25 },
+    "tags": { "pii": true, "ssn_number": true }
+  },
+  {
+    "filePath": "internal/modules/ast-analyzer/example/test.js",
+    "analyzerName": "pii",
+    "value": "4111-1111-1111-1111",
+    "start": { "line": 91, "column": 19 },
+    "end": { "line": 91, "column": 40 },
+    "tags": { "pii": true, "credit-card---3": true }
+  }
+]

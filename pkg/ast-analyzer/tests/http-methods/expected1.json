@@ -1,0 +1,1442 @@
+[
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/http-methods/files/1.js",
+    "analyzerName": "http-methods",
+    "value": "api.delete(\n  \"/api/users/123\",\n  { headers: { Authorization: \"Bearer token\" } },\n  { timeout: 5000 }\n)",
+    "start": {
+      "line": 52,
+      "column": 0
+    },
+    "end": {
+      "line": 56,
+      "column": 1
+    },
+    "tags": {
+      "method-delete": true,
+      "http-method": true
+    },
+    "extra": {
+      "method": "delete"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/http-methods/files/1.js",
+    "analyzerName": "http-methods",
+    "value": "api.delete(\"/api/users/\" + userId)",
+    "start": {
+      "line": 13,
+      "column": 0
+    },
+    "end": {
+      "line": 13,
+      "column": 34
+    },
+    "tags": {
+      "method-delete": true,
+      "http-method": true
+    },
+    "extra": {
+      "method": "delete"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/http-methods/files/1.js",
+    "analyzerName": "http-methods",
+    "value": "api.delete(\"/api/users/123\", { headers: { Authorization: \"Bearer token\" } })",
+    "start": {
+      "line": 21,
+      "column": 0
+    },
+    "end": {
+      "line": 21,
+      "column": 76
+    },
+    "tags": {
+      "method-delete": true,
+      "http-method": true
+    },
+    "extra": {
+      "method": "delete"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/http-methods/files/1.js",
+    "analyzerName": "http-methods",
+    "value": "api.delete(\"/api/users/123\")",
+    "start": {
+      "line": 4,
+      "column": 0
+    },
+    "end": {
+      "line": 4,
+      "column": 28
+    },
+    "tags": {
+      "method-delete": true,
+      "http-method": true
+    },
+    "extra": {
+      "method": "delete"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/http-methods/files/1.js",
+    "analyzerName": "http-methods",
+    "value": "api.get(\"/users\")",
+    "start": {
+      "line": 34,
+      "column": 0
+    },
+    "end": {
+      "line": 34,
+      "column": 17
+    },
+    "tags": {
+      "method-get": true,
+      "http-method": true
+    },
+    "extra": {
+      "method": "get"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/http-methods/files/1.js",
+    "analyzerName": "http-methods",
+    "value": "api.post(\"/users\", userData)",
+    "start": {
+      "line": 35,
+      "column": 0
+    },
+    "end": {
+      "line": 35,
+      "column": 28
+    },
+    "tags": {
+      "method-post": true,
+      "http-method": true
+    },
+    "extra": {
+      "method": "post"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/http-methods/files/1.js",
+    "analyzerName": "http-methods",
+    "value": "apiClient?.get(\"/api/users\")",
+    "start": {
+      "line": 124,
+      "column": 0
+    },
+    "end": {
+      "line": 124,
+      "column": 28
+    },
+    "tags": {
+      "method-get": true,
+      "http-method": true
+    },
+    "extra": {
+      "method": "get"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/http-methods/files/1.js",
+    "analyzerName": "http-methods",
+    "value": "apiClient?.post(\"/api/users\", userData)",
+    "start": {
+      "line": 125,
+      "column": 0
+    },
+    "end": {
+      "line": 125,
+      "column": 39
+    },
+    "tags": {
+      "method-post": true,
+      "http-method": true
+    },
+    "extra": {
+      "method": "post"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/http-methods/files/1.js",
+    "analyzerName": "http-methods",
+    "value": "axios\n  .get(\"/api/users\")",
+    "start": {
+      "line": 185,
+      "column": 0
+    },
+    "end": {
+      "line": 186,
+      "column": 20
+    },
+    "tags": {
+      "method-get": true,
+      "http-method": true
+    },
+    "extra": {
+      "method": "get"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/http-methods/files/1.js",
+    "analyzerName": "http-methods",
+    "value": "axios\n  .get(\"/api/users\")",
+    "start": {
+      "line": 192,
+      "column": 0
+    },
+    "end": {
+      "line": 193,
+      "column": 20
+    },
+    "tags": {
+      "method-get": true,
+      "http-method": true
+    },
+    "extra": {
+      "method": "get"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/http-methods/files/1.js",
+    "analyzerName": "http-methods",
+    "value": "axios.get(\"/api/users?page=1&limit=10\")",
+    "start": {
+      "line": 17,
+      "column": 0
+    },
+    "end": {
+      "line": 17,
+      "column": 39
+    },
+    "tags": {
+      "method-get": true,
+      "http-method": true
+    },
+    "extra": {
+      "method": "get"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/http-methods/files/1.js",
+    "analyzerName": "http-methods",
+    "value": "axios.get(\"/api/users\", {\n  cache: \"force-cache\",\n})",
+    "start": {
+      "line": 239,
+      "column": 0
+    },
+    "end": {
+      "line": 241,
+      "column": 2
+    },
+    "tags": {
+      "method-get": true,
+      "http-method": true
+    },
+    "extra": {
+      "method": "get"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/http-methods/files/1.js",
+    "analyzerName": "http-methods",
+    "value": "axios.get(\"/api/users\", {\n  onDownloadProgress: (progressEvent) => {\n    console.log(progressEvent.loaded);\n  },\n})",
+    "start": {
+      "line": 225,
+      "column": 0
+    },
+    "end": {
+      "line": 229,
+      "column": 2
+    },
+    "tags": {
+      "method-get": true,
+      "http-method": true
+    },
+    "extra": {
+      "method": "get"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/http-methods/files/1.js",
+    "analyzerName": "http-methods",
+    "value": "axios.get(\"/api/users\", {\n  transformResponse: [(data) => JSON.parse(data)],\n})",
+    "start": {
+      "line": 220,
+      "column": 0
+    },
+    "end": {
+      "line": 222,
+      "column": 2
+    },
+    "tags": {
+      "method-get": true,
+      "http-method": true
+    },
+    "extra": {
+      "method": "get"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/http-methods/files/1.js",
+    "analyzerName": "http-methods",
+    "value": "axios.get(\"/api/users\", {\n  validateStatus: (status) => status >= 200 && status < 300,\n})",
+    "start": {
+      "line": 215,
+      "column": 0
+    },
+    "end": {
+      "line": 217,
+      "column": 2
+    },
+    "tags": {
+      "method-get": true,
+      "http-method": true
+    },
+    "extra": {
+      "method": "get"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/http-methods/files/1.js",
+    "analyzerName": "http-methods",
+    "value": "axios.get(\"/api/users\", {\n  withCredentials: true,\n})",
+    "start": {
+      "line": 244,
+      "column": 0
+    },
+    "end": {
+      "line": 246,
+      "column": 2
+    },
+    "tags": {
+      "method-get": true,
+      "http-method": true
+    },
+    "extra": {
+      "method": "get"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/http-methods/files/1.js",
+    "analyzerName": "http-methods",
+    "value": "axios.get(\"/api/users\", { ...options })",
+    "start": {
+      "line": 109,
+      "column": 0
+    },
+    "end": {
+      "line": 109,
+      "column": 39
+    },
+    "tags": {
+      "method-get": true,
+      "http-method": true
+    },
+    "extra": {
+      "method": "get"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/http-methods/files/1.js",
+    "analyzerName": "http-methods",
+    "value": "axios.get(\"/api/users\", { params: { page: 1, limit: 10 } })",
+    "start": {
+      "line": 27,
+      "column": 0
+    },
+    "end": {
+      "line": 27,
+      "column": 59
+    },
+    "tags": {
+      "method-get": true,
+      "http-method": true
+    },
+    "extra": {
+      "method": "get"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/http-methods/files/1.js",
+    "analyzerName": "http-methods",
+    "value": "axios.get(\"/api/users\", { retry: 3 })",
+    "start": {
+      "line": 212,
+      "column": 0
+    },
+    "end": {
+      "line": 212,
+      "column": 37
+    },
+    "tags": {
+      "method-get": true,
+      "http-method": true
+    },
+    "extra": {
+      "method": "get"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/http-methods/files/1.js",
+    "analyzerName": "http-methods",
+    "value": "axios.get(\"/api/users\", { signal: controller.signal })",
+    "start": {
+      "line": 205,
+      "column": 0
+    },
+    "end": {
+      "line": 205,
+      "column": 54
+    },
+    "tags": {
+      "method-get": true,
+      "http-method": true
+    },
+    "extra": {
+      "method": "get"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/http-methods/files/1.js",
+    "analyzerName": "http-methods",
+    "value": "axios.get(\"/api/users\", { timeout: 5000 })",
+    "start": {
+      "line": 209,
+      "column": 0
+    },
+    "end": {
+      "line": 209,
+      "column": 42
+    },
+    "tags": {
+      "method-get": true,
+      "http-method": true
+    },
+    "extra": {
+      "method": "get"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/http-methods/files/1.js",
+    "analyzerName": "http-methods",
+    "value": "axios.get(\"/api/users\")",
+    "start": {
+      "line": 2,
+      "column": 0
+    },
+    "end": {
+      "line": 2,
+      "column": 23
+    },
+    "tags": {
+      "method-get": true,
+      "http-method": true
+    },
+    "extra": {
+      "method": "get"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/http-methods/files/1.js",
+    "analyzerName": "http-methods",
+    "value": "axios.get(\"/api/users\")",
+    "start": {
+      "line": 38,
+      "column": 0
+    },
+    "end": {
+      "line": 38,
+      "column": 23
+    },
+    "tags": {
+      "method-get": true,
+      "http-method": true
+    },
+    "extra": {
+      "method": "get"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/http-methods/files/1.js",
+    "analyzerName": "http-methods",
+    "value": "axios.get(\"/api/users\")",
+    "start": {
+      "line": 48,
+      "column": 0
+    },
+    "end": {
+      "line": 48,
+      "column": 23
+    },
+    "tags": {
+      "method-get": true,
+      "http-method": true
+    },
+    "extra": {
+      "method": "get"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/http-methods/files/1.js",
+    "analyzerName": "http-methods",
+    "value": "axios.get(\"/api/users\")",
+    "start": {
+      "line": 94,
+      "column": 23
+    },
+    "end": {
+      "line": 94,
+      "column": 46
+    },
+    "tags": {
+      "method-get": true,
+      "http-method": true
+    },
+    "extra": {
+      "method": "get"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/http-methods/files/1.js",
+    "analyzerName": "http-methods",
+    "value": "axios.get(\"/api/users\")",
+    "start": {
+      "line": 158,
+      "column": 8
+    },
+    "end": {
+      "line": 158,
+      "column": 31
+    },
+    "tags": {
+      "method-get": true,
+      "http-method": true
+    },
+    "extra": {
+      "method": "get"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/http-methods/files/1.js",
+    "analyzerName": "http-methods",
+    "value": "axios.get(\"/api/users\")",
+    "start": {
+      "line": 163,
+      "column": 13
+    },
+    "end": {
+      "line": 163,
+      "column": 36
+    },
+    "tags": {
+      "method-get": true,
+      "http-method": true
+    },
+    "extra": {
+      "method": "get"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/http-methods/files/1.js",
+    "analyzerName": "http-methods",
+    "value": "axios.get(\"/api/users\")",
+    "start": {
+      "line": 166,
+      "column": 14
+    },
+    "end": {
+      "line": 166,
+      "column": 37
+    },
+    "tags": {
+      "method-get": true,
+      "http-method": true
+    },
+    "extra": {
+      "method": "get"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/http-methods/files/1.js",
+    "analyzerName": "http-methods",
+    "value": "axios.get(\"/api/users\")",
+    "start": {
+      "line": 170,
+      "column": 2
+    },
+    "end": {
+      "line": 170,
+      "column": 25
+    },
+    "tags": {
+      "method-get": true,
+      "http-method": true
+    },
+    "extra": {
+      "method": "get"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/http-methods/files/1.js",
+    "analyzerName": "http-methods",
+    "value": "axios.get(\"/api/users\")",
+    "start": {
+      "line": 175,
+      "column": 13
+    },
+    "end": {
+      "line": 175,
+      "column": 36
+    },
+    "tags": {
+      "method-get": true,
+      "http-method": true
+    },
+    "extra": {
+      "method": "get"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/http-methods/files/1.js",
+    "analyzerName": "http-methods",
+    "value": "axios.get(\"/api/users\")",
+    "start": {
+      "line": 179,
+      "column": 8
+    },
+    "end": {
+      "line": 179,
+      "column": 31
+    },
+    "tags": {
+      "method-get": true,
+      "http-method": true
+    },
+    "extra": {
+      "method": "get"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/http-methods/files/1.js",
+    "analyzerName": "http-methods",
+    "value": "axios.get(\"/api/users/123\")",
+    "start": {
+      "line": 43,
+      "column": 25
+    },
+    "end": {
+      "line": 43,
+      "column": 52
+    },
+    "tags": {
+      "method-get": true,
+      "http-method": true
+    },
+    "extra": {
+      "method": "get"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/http-methods/files/1.js",
+    "analyzerName": "http-methods",
+    "value": "axios.get(`/api/users/${userId}`)",
+    "start": {
+      "line": 9,
+      "column": 0
+    },
+    "end": {
+      "line": 9,
+      "column": 33
+    },
+    "tags": {
+      "method-get": true,
+      "http-method": true
+    },
+    "extra": {
+      "method": "get"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/http-methods/files/1.js",
+    "analyzerName": "http-methods",
+    "value": "axios.get(url)",
+    "start": {
+      "line": 83,
+      "column": 11
+    },
+    "end": {
+      "line": 83,
+      "column": 25
+    },
+    "tags": {
+      "method-get": true,
+      "http-method": true
+    },
+    "extra": {
+      "method": "get"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/http-methods/files/1.js",
+    "analyzerName": "http-methods",
+    "value": "axios.get(url)",
+    "start": {
+      "line": 113,
+      "column": 20
+    },
+    "end": {
+      "line": 113,
+      "column": 34
+    },
+    "tags": {
+      "method-get": true,
+      "http-method": true
+    },
+    "extra": {
+      "method": "get"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/http-methods/files/1.js",
+    "analyzerName": "http-methods",
+    "value": "axios.get(url)",
+    "start": {
+      "line": 121,
+      "column": 16
+    },
+    "end": {
+      "line": 121,
+      "column": 30
+    },
+    "tags": {
+      "method-get": true,
+      "http-method": true
+    },
+    "extra": {
+      "method": "get"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/http-methods/files/1.js",
+    "analyzerName": "http-methods",
+    "value": "axios.post(\"/api/users\", data)",
+    "start": {
+      "line": 95,
+      "column": 29
+    },
+    "end": {
+      "line": 95,
+      "column": 59
+    },
+    "tags": {
+      "method-post": true,
+      "http-method": true
+    },
+    "extra": {
+      "method": "post"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/http-methods/files/1.js",
+    "analyzerName": "http-methods",
+    "value": "axios.post(\"/api/users\", userData, {\n  onUploadProgress: (progressEvent) => {\n    console.log(progressEvent.loaded);\n  },\n})",
+    "start": {
+      "line": 232,
+      "column": 0
+    },
+    "end": {
+      "line": 236,
+      "column": 2
+    },
+    "tags": {
+      "method-post": true,
+      "http-method": true
+    },
+    "extra": {
+      "method": "post"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/http-methods/files/1.js",
+    "analyzerName": "http-methods",
+    "value": "axios.post(\"/api/users\", userData)",
+    "start": {
+      "line": 159,
+      "column": 8
+    },
+    "end": {
+      "line": 159,
+      "column": 42
+    },
+    "tags": {
+      "method-post": true,
+      "http-method": true
+    },
+    "extra": {
+      "method": "post"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/http-methods/files/1.js",
+    "analyzerName": "http-methods",
+    "value": "axios.post(\"/api/users\", userData)",
+    "start": {
+      "line": 163,
+      "column": 38
+    },
+    "end": {
+      "line": 163,
+      "column": 72
+    },
+    "tags": {
+      "method-post": true,
+      "http-method": true
+    },
+    "extra": {
+      "method": "post"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/http-methods/files/1.js",
+    "analyzerName": "http-methods",
+    "value": "axios.post(\"/api/users\", userData)",
+    "start": {
+      "line": 166,
+      "column": 39
+    },
+    "end": {
+      "line": 166,
+      "column": 73
+    },
+    "tags": {
+      "method-post": true,
+      "http-method": true
+    },
+    "extra": {
+      "method": "post"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/http-methods/files/1.js",
+    "analyzerName": "http-methods",
+    "value": "axios.post(\"/api/users\", userData)",
+    "start": {
+      "line": 171,
+      "column": 2
+    },
+    "end": {
+      "line": 171,
+      "column": 36
+    },
+    "tags": {
+      "method-post": true,
+      "http-method": true
+    },
+    "extra": {
+      "method": "post"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/http-methods/files/1.js",
+    "analyzerName": "http-methods",
+    "value": "axios.post(\"/api/users\", userData)",
+    "start": {
+      "line": 175,
+      "column": 38
+    },
+    "end": {
+      "line": 175,
+      "column": 72
+    },
+    "tags": {
+      "method-post": true,
+      "http-method": true
+    },
+    "extra": {
+      "method": "post"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/http-methods/files/1.js",
+    "analyzerName": "http-methods",
+    "value": "axios.post(url, data)",
+    "start": {
+      "line": 86,
+      "column": 11
+    },
+    "end": {
+      "line": 86,
+      "column": 32
+    },
+    "tags": {
+      "method-post": true,
+      "http-method": true
+    },
+    "extra": {
+      "method": "post"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/http-methods/files/1.js",
+    "analyzerName": "http-methods",
+    "value": "axios.post(url, data)",
+    "start": {
+      "line": 114,
+      "column": 27
+    },
+    "end": {
+      "line": 114,
+      "column": 48
+    },
+    "tags": {
+      "method-post": true,
+      "http-method": true
+    },
+    "extra": {
+      "method": "post"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/http-methods/files/1.js",
+    "analyzerName": "http-methods",
+    "value": "axios.post(url, data)",
+    "start": {
+      "line": 122,
+      "column": 23
+    },
+    "end": {
+      "line": 122,
+      "column": 44
+    },
+    "tags": {
+      "method-post": true,
+      "http-method": true
+    },
+    "extra": {
+      "method": "post"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/http-methods/files/1.js",
+    "analyzerName": "http-methods",
+    "value": "client.get(\"/api/users\")",
+    "start": {
+      "line": 90,
+      "column": 0
+    },
+    "end": {
+      "line": 90,
+      "column": 24
+    },
+    "tags": {
+      "method-get": true,
+      "http-method": true
+    },
+    "extra": {
+      "method": "get"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/http-methods/files/1.js",
+    "analyzerName": "http-methods",
+    "value": "client.post(\"/api/users\", userData)",
+    "start": {
+      "line": 91,
+      "column": 0
+    },
+    "end": {
+      "line": 91,
+      "column": 35
+    },
+    "tags": {
+      "method-post": true,
+      "http-method": true
+    },
+    "extra": {
+      "method": "post"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/http-methods/files/1.js",
+    "analyzerName": "http-methods",
+    "value": "fetch.get(\"/api/users\", {\n  integrity: \"sha256-1234567890\",\n})",
+    "start": {
+      "line": 269,
+      "column": 0
+    },
+    "end": {
+      "line": 271,
+      "column": 2
+    },
+    "tags": {
+      "method-get": true,
+      "http-method": true
+    },
+    "extra": {
+      "method": "get"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/http-methods/files/1.js",
+    "analyzerName": "http-methods",
+    "value": "fetch.get(\"/api/users\", {\n  keepalive: true,\n})",
+    "start": {
+      "line": 274,
+      "column": 0
+    },
+    "end": {
+      "line": 276,
+      "column": 2
+    },
+    "tags": {
+      "method-get": true,
+      "http-method": true
+    },
+    "extra": {
+      "method": "get"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/http-methods/files/1.js",
+    "analyzerName": "http-methods",
+    "value": "fetch.get(\"/api/users\", {\n  mode: \"cors\",\n})",
+    "start": {
+      "line": 249,
+      "column": 0
+    },
+    "end": {
+      "line": 251,
+      "column": 2
+    },
+    "tags": {
+      "method-get": true,
+      "http-method": true
+    },
+    "extra": {
+      "method": "get"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/http-methods/files/1.js",
+    "analyzerName": "http-methods",
+    "value": "fetch.get(\"/api/users\", {\n  priority: \"high\",\n})",
+    "start": {
+      "line": 285,
+      "column": 0
+    },
+    "end": {
+      "line": 287,
+      "column": 2
+    },
+    "tags": {
+      "method-get": true,
+      "http-method": true
+    },
+    "extra": {
+      "method": "get"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/http-methods/files/1.js",
+    "analyzerName": "http-methods",
+    "value": "fetch.get(\"/api/users\", {\n  redirect: \"follow\",\n})",
+    "start": {
+      "line": 254,
+      "column": 0
+    },
+    "end": {
+      "line": 256,
+      "column": 2
+    },
+    "tags": {
+      "method-get": true,
+      "http-method": true
+    },
+    "extra": {
+      "method": "get"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/http-methods/files/1.js",
+    "analyzerName": "http-methods",
+    "value": "fetch.get(\"/api/users\", {\n  referrer: \"https://example.com\",\n})",
+    "start": {
+      "line": 259,
+      "column": 0
+    },
+    "end": {
+      "line": 261,
+      "column": 2
+    },
+    "tags": {
+      "method-get": true,
+      "http-method": true
+    },
+    "extra": {
+      "method": "get"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/http-methods/files/1.js",
+    "analyzerName": "http-methods",
+    "value": "fetch.get(\"/api/users\", {\n  referrerPolicy: \"strict-origin-when-cross-origin\",\n})",
+    "start": {
+      "line": 264,
+      "column": 0
+    },
+    "end": {
+      "line": 266,
+      "column": 2
+    },
+    "tags": {
+      "method-get": true,
+      "http-method": true
+    },
+    "extra": {
+      "method": "get"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/http-methods/files/1.js",
+    "analyzerName": "http-methods",
+    "value": "fetch.get(\"/api/users\", {\n  signal,\n})",
+    "start": {
+      "line": 280,
+      "column": 0
+    },
+    "end": {
+      "line": 282,
+      "column": 2
+    },
+    "tags": {
+      "method-get": true,
+      "http-method": true
+    },
+    "extra": {
+      "method": "get"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/http-methods/files/1.js",
+    "analyzerName": "http-methods",
+    "value": "fetch.get(\"/api/users\", {\n  window: null,\n})",
+    "start": {
+      "line": 290,
+      "column": 0
+    },
+    "end": {
+      "line": 292,
+      "column": 2
+    },
+    "tags": {
+      "method-get": true,
+      "http-method": true
+    },
+    "extra": {
+      "method": "get"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/http-methods/files/1.js",
+    "analyzerName": "http-methods",
+    "value": "fetch.get(\"/api/users\", {\n  window: window,\n  headers: {\n    Authorization: \"Bearer token\",\n    \"Content-Type\": \"application/json\",\n  },\n})",
+    "start": {
+      "line": 307,
+      "column": 0
+    },
+    "end": {
+      "line": 313,
+      "column": 2
+    },
+    "tags": {
+      "method-get": true,
+      "http-method": true
+    },
+    "extra": {
+      "method": "get"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/http-methods/files/1.js",
+    "analyzerName": "http-methods",
+    "value": "fetch.get(\"/api/users\", {\n  window: window,\n  mode: \"cors\",\n  credentials: \"include\",\n})",
+    "start": {
+      "line": 300,
+      "column": 0
+    },
+    "end": {
+      "line": 304,
+      "column": 2
+    },
+    "tags": {
+      "method-get": true,
+      "http-method": true
+    },
+    "extra": {
+      "method": "get"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/http-methods/files/1.js",
+    "analyzerName": "http-methods",
+    "value": "fetch.get(\"/api/users\", {\n  window: window,\n})",
+    "start": {
+      "line": 295,
+      "column": 0
+    },
+    "end": {
+      "line": 297,
+      "column": 2
+    },
+    "tags": {
+      "method-get": true,
+      "http-method": true
+    },
+    "extra": {
+      "method": "get"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/http-methods/files/1.js",
+    "analyzerName": "http-methods",
+    "value": "fetch.post(\"/api/users?admin=true\", userData)",
+    "start": {
+      "line": 18,
+      "column": 0
+    },
+    "end": {
+      "line": 18,
+      "column": 45
+    },
+    "tags": {
+      "method-post": true,
+      "http-method": true
+    },
+    "extra": {
+      "method": "post"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/http-methods/files/1.js",
+    "analyzerName": "http-methods",
+    "value": "fetch.post(\"/api/users\", {\n  window: window,\n  body: JSON.stringify(userData),\n})",
+    "start": {
+      "line": 316,
+      "column": 0
+    },
+    "end": {
+      "line": 319,
+      "column": 2
+    },
+    "tags": {
+      "method-post": true,
+      "http-method": true
+    },
+    "extra": {
+      "method": "post"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/http-methods/files/1.js",
+    "analyzerName": "http-methods",
+    "value": "fetch.post(\"/api/users\", { name: \"John\" })",
+    "start": {
+      "line": 3,
+      "column": 0
+    },
+    "end": {
+      "line": 3,
+      "column": 42
+    },
+    "tags": {
+      "method-post": true,
+      "http-method": true
+    },
+    "extra": {
+      "method": "post"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/http-methods/files/1.js",
+    "analyzerName": "http-methods",
+    "value": "fetch.post(\"/api/users\", userData, {\n  headers: { \"Content-Type\": \"application/json\" },\n})",
+    "start": {
+      "line": 28,
+      "column": 0
+    },
+    "end": {
+      "line": 30,
+      "column": 2
+    },
+    "tags": {
+      "method-post": true,
+      "http-method": true
+    },
+    "extra": {
+      "method": "post"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/http-methods/files/1.js",
+    "analyzerName": "http-methods",
+    "value": "fetch.post(\"/api/users\", userData)",
+    "start": {
+      "line": 39,
+      "column": 0
+    },
+    "end": {
+      "line": 39,
+      "column": 34
+    },
+    "tags": {
+      "method-post": true,
+      "http-method": true
+    },
+    "extra": {
+      "method": "post"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/http-methods/files/1.js",
+    "analyzerName": "http-methods",
+    "value": "fetch.post(\"/api/users\", userData)",
+    "start": {
+      "line": 49,
+      "column": 0
+    },
+    "end": {
+      "line": 49,
+      "column": 34
+    },
+    "tags": {
+      "method-post": true,
+      "http-method": true
+    },
+    "extra": {
+      "method": "post"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/http-methods/files/1.js",
+    "analyzerName": "http-methods",
+    "value": "fetch.post(`/api/users/${userId}/posts`, postData)",
+    "start": {
+      "line": 10,
+      "column": 0
+    },
+    "end": {
+      "line": 10,
+      "column": 50
+    },
+    "tags": {
+      "method-post": true,
+      "http-method": true
+    },
+    "extra": {
+      "method": "post"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/http-methods/files/1.js",
+    "analyzerName": "http-methods",
+    "value": "http.patch(\"/api/users/123\", { name: \"John\" })",
+    "start": {
+      "line": 6,
+      "column": 0
+    },
+    "end": {
+      "line": 6,
+      "column": 46
+    },
+    "tags": {
+      "method-patch": true,
+      "http-method": true
+    },
+    "extra": {
+      "method": "patch"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/http-methods/files/1.js",
+    "analyzerName": "http-methods",
+    "value": "request.put(\n  \"/api/users/123\",\n  userData,\n  { headers: { \"Content-Type\": \"application/json\" } },\n  { timeout: 5000 }\n)",
+    "start": {
+      "line": 57,
+      "column": 0
+    },
+    "end": {
+      "line": 62,
+      "column": 1
+    },
+    "tags": {
+      "method-put": true,
+      "http-method": true
+    },
+    "extra": {
+      "method": "put"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/http-methods/files/1.js",
+    "analyzerName": "http-methods",
+    "value": "request.put(\"/api/users/\" + userId + \"/profile\", profileData)",
+    "start": {
+      "line": 14,
+      "column": 0
+    },
+    "end": {
+      "line": 14,
+      "column": 61
+    },
+    "tags": {
+      "method-put": true,
+      "http-method": true
+    },
+    "extra": {
+      "method": "put"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/http-methods/files/1.js",
+    "analyzerName": "http-methods",
+    "value": "request.put(\"/api/users/123\", { name: \"John\" })",
+    "start": {
+      "line": 5,
+      "column": 0
+    },
+    "end": {
+      "line": 5,
+      "column": 47
+    },
+    "tags": {
+      "method-put": true,
+      "http-method": true
+    },
+    "extra": {
+      "method": "put"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/http-methods/files/1.js",
+    "analyzerName": "http-methods",
+    "value": "request.put(\"/api/users/123\", userData, {\n  headers: { \"Content-Type\": \"application/json\" },\n})",
+    "start": {
+      "line": 22,
+      "column": 0
+    },
+    "end": {
+      "line": 24,
+      "column": 2
+    },
+    "tags": {
+      "method-put": true,
+      "http-method": true
+    },
+    "extra": {
+      "method": "put"
+    }
+  }
+]

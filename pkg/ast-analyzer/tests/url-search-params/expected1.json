@@ -1,0 +1,50 @@
+[
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/url-search-params/files/1.js",
+    "analyzerName": "url-search-params",
+    "value": "new URLSearchParams('?query=value')",
+    "start": {
+      "line": 4,
+      "column": 16
+    },
+    "end": {
+      "line": 4,
+      "column": 51
+    },
+    "tags": {
+      "url-search-params": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/url-search-params/files/1.js",
+    "analyzerName": "url-search-params",
+    "value": "new URLSearchParams([['key', 'value']])",
+    "start": {
+      "line": 6,
+      "column": 16
+    },
+    "end": {
+      "line": 6,
+      "column": 55
+    },
+    "tags": {
+      "url-search-params": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/url-search-params/files/1.js",
+    "analyzerName": "url-search-params",
+    "value": "new URLSearchParams({ key: 'value' })",
+    "start": {
+      "line": 5,
+      "column": 16
+    },
+    "end": {
+      "line": 5,
+      "column": 53
+    },
+    "tags": {
+      "url-search-params": true
+    }
+  }
+]

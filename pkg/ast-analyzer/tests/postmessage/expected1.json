@@ -1,0 +1,130 @@
+[
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/postmessage/files/1.js",
+    "analyzerName": "postmessage",
+    "value": "iframe.contentWindow.postMessage(\"iframe message\", \"*\")",
+    "start": {
+      "line": 13,
+      "column": 0
+    },
+    "end": {
+      "line": 13,
+      "column": 55
+    },
+    "tags": {
+      "postMessage": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/postmessage/files/1.js",
+    "analyzerName": "postmessage",
+    "value": "window.parent.postMessage(\"parent message\", \"*\")",
+    "start": {
+      "line": 15,
+      "column": 0
+    },
+    "end": {
+      "line": 15,
+      "column": 48
+    },
+    "tags": {
+      "postMessage": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/postmessage/files/1.js",
+    "analyzerName": "postmessage",
+    "value": "window.postMessage(\"Hello\", \"*\")",
+    "start": {
+      "line": 2,
+      "column": 0
+    },
+    "end": {
+      "line": 2,
+      "column": 32
+    },
+    "tags": {
+      "postMessage": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/postmessage/files/1.js",
+    "analyzerName": "postmessage",
+    "value": "window.postMessage({\n  type: \"update\",\n  payload: {\n    user: \"test\",\n    data: [1, 2, 3]\n  }\n}, \"*\")",
+    "start": {
+      "line": 24,
+      "column": 0
+    },
+    "end": {
+      "line": 30,
+      "column": 7
+    },
+    "tags": {
+      "postMessage": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/postmessage/files/1.js",
+    "analyzerName": "postmessage",
+    "value": "window.postMessage({ data: \"secure\" }, \"https://example.com\")",
+    "start": {
+      "line": 5,
+      "column": 0
+    },
+    "end": {
+      "line": 5,
+      "column": 61
+    },
+    "tags": {
+      "postMessage": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/postmessage/files/1.js",
+    "analyzerName": "postmessage",
+    "value": "window.postMessage(buffer, \"*\", [buffer])",
+    "start": {
+      "line": 9,
+      "column": 0
+    },
+    "end": {
+      "line": 9,
+      "column": 41
+    },
+    "tags": {
+      "postMessage": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/postmessage/files/1.js",
+    "analyzerName": "postmessage",
+    "value": "window.referer.postMessage(\"referer message\", \"*\")",
+    "start": {
+      "line": 17,
+      "column": 0
+    },
+    "end": {
+      "line": 17,
+      "column": 50
+    },
+    "tags": {
+      "postMessage": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/postmessage/files/1.js",
+    "analyzerName": "postmessage",
+    "value": "worker.postMessage(\"worker message\")",
+    "start": {
+      "line": 21,
+      "column": 0
+    },
+    "end": {
+      "line": 21,
+      "column": 36
+    },
+    "tags": {
+      "postMessage": true
+    }
+  }
+]
