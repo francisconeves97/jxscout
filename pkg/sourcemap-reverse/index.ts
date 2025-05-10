@@ -20,7 +20,11 @@ const writeSources = (
 
   fs.writeFileSync(outputFilepath, content, "utf8");
 
-  return outputFilepath;
+  return path
+    .normalize(outputFilepath)
+    .replace(/^(\.\.[/\\])+/, "")
+    .replace(/[|\&#,+()?$~%'":*?<>{}]/g, "")
+    .replace(" ", ".");
 };
 
 export async function reverseSourcemap(mapPath: string, outputDir: string) {
