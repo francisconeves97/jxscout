@@ -50,13 +50,15 @@ One useful feature is the ability to organize your assets in projects (similar t
 
 If you don't see assets being saved at this point, you should check the [Troubleshooting](#troubleshooting) section.
 
-### Part 3. (Optional) VSCode Extension
+### Part 3. VSCode Extension
 
 The VSCode extension is a frontend for jxscout. It allows you to visualize the AST Analysis results of jxscout in a useful tree. It also allows you to copy values from there, including paths and query params for bruteforcing.
 
 ![jxscout](docs/vscode.png)
 
 To get started with the VSCode Extension head over to https://github.com/francisconeves97/jxscout-vscode for more instructions.
+
+You can check the structure of the analysis tree on [docs/tree.md](./docs/tree.md) to get a picture of what descriptors you will get.
 
 ## Troubleshooting
 
