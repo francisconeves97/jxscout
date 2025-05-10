@@ -13,6 +13,9 @@
     },
     "tags": {
       "hostname-string": true
+    },
+    "extra": {
+      "hostname": "123domain.com"
     }
   },
   {
@@ -29,6 +32,9 @@
     },
     "tags": {
       "hostname-string": true
+    },
+    "extra": {
+      "hostname": "a1-b2-c3.example.com"
     }
   },
   {
@@ -45,6 +51,9 @@
     },
     "tags": {
       "hostname-string": true
+    },
+    "extra": {
+      "hostname": "domain123.com"
     }
   },
   {
@@ -61,6 +70,9 @@
     },
     "tags": {
       "hostname-string": true
+    },
+    "extra": {
+      "hostname": "example.com"
     }
   },
   {
@@ -77,6 +89,9 @@
     },
     "tags": {
       "hostname-string": true
+    },
+    "extra": {
+      "hostname": "example.io"
     }
   },
   {
@@ -93,6 +108,9 @@
     },
     "tags": {
       "hostname-string": true
+    },
+    "extra": {
+      "hostname": "example.net"
     }
   },
   {
@@ -109,6 +127,9 @@
     },
     "tags": {
       "hostname-string": true
+    },
+    "extra": {
+      "hostname": "example.org"
     }
   },
   {
@@ -125,6 +146,9 @@
     },
     "tags": {
       "hostname-string": true
+    },
+    "extra": {
+      "hostname": "my-domain.com"
     }
   },
   {
@@ -141,6 +165,9 @@
     },
     "tags": {
       "hostname-string": true
+    },
+    "extra": {
+      "hostname": "sub-domain.example.com"
     }
   },
   {
@@ -157,6 +184,9 @@
     },
     "tags": {
       "hostname-string": true
+    },
+    "extra": {
+      "hostname": "sub.example.com"
     }
   },
   {
@@ -173,6 +203,9 @@
     },
     "tags": {
       "hostname-string": true
+    },
+    "extra": {
+      "hostname": "sub.sub.example.com"
     }
   },
   {
@@ -189,6 +222,9 @@
     },
     "tags": {
       "hostname-string": true
+    },
+    "extra": {
+      "hostname": "sub123.example.com"
     }
   },
   {
@@ -205,6 +241,9 @@
     },
     "tags": {
       "hostname-string": true
+    },
+    "extra": {
+      "hostname": "test-123.example.com"
     }
   }
 ]

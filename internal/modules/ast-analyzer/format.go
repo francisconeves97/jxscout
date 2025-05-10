@@ -126,8 +126,6 @@ func formatMatchesV1(matches []AnalyzerMatch) []ASTAnalyzerTreeNode {
 }
 
 // Data Tags
-// url Tags
-var urlTags = []string{"is-url-only"}
 
 // path Tags
 var pathTags = []string{"is-url", "is-path-only", "api", "query", "fragment"}
@@ -144,7 +142,7 @@ var extensionTags = []string{"is-extension"}
 var mimeTypeTags = []string{"mime-type"}
 
 // hostname Tags
-var hostnameTags = []string{"hostname-string"}
+var hostnameTags = []string{"hostname-string", "is-url-only"}
 
 // regex Tags
 var regexTags = []string{"regex-match", "regex-pattern"}
@@ -161,7 +159,6 @@ var graphqlMutationTags = []string{"graphql-mutation"}
 var graphqlOtherTags = []string{"graphql-other"}
 
 var dataTags = common.AppendAll(
-	urlTags,
 	pathTags,
 	hostnameTags,
 	regexTags,
@@ -231,16 +228,6 @@ func buildDataTree(matchesByTag map[string][]AnalyzerMatch) ASTAnalyzerTreeNode 
 		}
 
 		dataNode.Children = append(dataNode.Children, pathNode)
-	}
-
-	if hasAnyMatches(matchesByTag, urlTags) {
-		urlNode := createNavigationTreeNode(ASTAnalyzerTreeNode{
-			Label:    "URLs",
-			IconName: "resources:http",
-		})
-
-		addMatchesToNode(&urlNode, matchesByTag, urlTags)
-		dataNode.Children = append(dataNode.Children, urlNode)
 	}
 
 	if hasAnyMatches(matchesByTag, hostnameTags) {

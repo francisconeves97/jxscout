@@ -27,6 +27,14 @@ const hostnameAnalyzerBuilder = (
 
       // Check if the string literal matches the hostname pattern
       if (HOSTNAME_REGEX.test(node.value)) {
+        let parsedUrl: URL | null = null;
+
+        try {
+          parsedUrl = new URL(`https://${node.value}`);
+        } catch {
+          return;
+        }
+
         const match: AnalyzerMatch = {
           filePath: args.filePath,
           analyzerName: HOSTNAME_ANALYZER_NAME,
@@ -35,6 +43,9 @@ const hostnameAnalyzerBuilder = (
           end: node.loc.end,
           tags: {
             "hostname-string": true,
+          },
+          extra: {
+            hostname: parsedUrl.hostname,
           },
         };
 
