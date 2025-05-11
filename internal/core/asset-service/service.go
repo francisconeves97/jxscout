@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"log/slog"
+	"time"
 
 	"github.com/jmoiron/sqlx"
 
@@ -71,6 +72,8 @@ type assetService struct {
 	log            *slog.Logger
 	fileService    FileService
 	projectName    string
+	htmlCacheTTL   time.Duration
+	jsCacheTTL     time.Duration
 }
 
 type AssetServiceConfig struct {
@@ -81,6 +84,8 @@ type AssetServiceConfig struct {
 	FileService      FileService
 	Database         *sqlx.DB
 	ProjectName      string
+	HTMLCacheTTL     time.Duration
+	JSAssetCacheTTL  time.Duration
 }
 
 func NewAssetService(cfg AssetServiceConfig) (AssetService, error) {
@@ -96,6 +101,8 @@ func NewAssetService(cfg AssetServiceConfig) (AssetService, error) {
 		log:            cfg.Logger,
 		fileService:    cfg.FileService,
 		projectName:    cfg.ProjectName,
+		htmlCacheTTL:   cfg.HTMLCacheTTL,
+		jsCacheTTL:     cfg.JSAssetCacheTTL,
 	}
 
 	s.initializeQueueHandlers()
@@ -151,6 +158,16 @@ func (s *assetService) handleSaveAssetRequest(ctx context.Context, asset Asset) 
 		if dbAsset.ContentHash == common.Hash(asset.Content) && dbAsset.Project == s.projectName {
 			s.log.DebugContext(ctx, "asset content has not changed within the same project, skipping", "asset_url", asset.URL)
 
+			return nil
+		}
+
+		if asset.ContentType == common.ContentTypeHTML && dbAsset.UpdatedAt.After(time.Now().Add(-s.htmlCacheTTL)) {
+			s.log.DebugContext(ctx, "HTML file is still fresh, skipping", "asset_url", asset.URL)
+			return nil
+		}
+
+		if asset.ContentType == common.ContentTypeJS && dbAsset.UpdatedAt.After(time.Now().Add(-s.jsCacheTTL)) {
+			s.log.DebugContext(ctx, "JS file is still fresh, skipping", "asset_url", asset.URL)
 			return nil
 		}
 	}

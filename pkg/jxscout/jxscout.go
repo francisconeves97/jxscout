@@ -107,6 +107,8 @@ func initJxscout(options jxscouttypes.Options) (*jxscout, error) {
 		FileService:      fileService,
 		Database:         db,
 		ProjectName:      options.ProjectName,
+		HTMLCacheTTL:     options.HTMLRequestsCacheTTL,
+		JSAssetCacheTTL:  options.JavascriptRequestsCacheTTL,
 	})
 	if err != nil {
 		return nil, errutil.Wrap(err, "failed to initialize asset service")

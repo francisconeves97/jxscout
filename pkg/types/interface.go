@@ -51,6 +51,8 @@ type Options struct {
 	ChunkDiscovererConcurrency       int                 `yaml:"chunk-discoverer-concurrency"`
 	ASTAnalyzerConcurrency           int                 `yaml:"ast-analyzer-concurrency"`
 	ChunkDiscovererBruteForceLimit   int                 `yaml:"chunk-discoverer-bruteforce-limit"`
+	JavascriptRequestsCacheTTL       time.Duration       `yaml:"js-requests-cache-ttl"`
+	HTMLRequestsCacheTTL             time.Duration       `yaml:"html-requests-cache-ttl"`
 	RateLimitingMaxRequestsPerSecond int                 `yaml:"rate-limiter-max-requests-per-second"`
 	RateLimitingMaxRequestsPerMinute int                 `yaml:"rate-limiter-max-requests-per-minute"`
 	DownloadReferedJS                bool                `yaml:"download-refered-js"`

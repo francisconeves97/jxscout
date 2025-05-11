@@ -162,6 +162,10 @@ func (t *TUI) RegisterDefaultCommands() {
 						currentOptions.ChunkDiscovererConcurrency = constants.DefaultChunkDiscovererConcurrency
 					case constants.FlagChunkDiscovererBruteForceLimit:
 						currentOptions.ChunkDiscovererBruteForceLimit = constants.DefaultChunkDiscovererBruteForceLimit
+					case constants.FlagJavascriptRequestsCacheTTL:
+						currentOptions.JavascriptRequestsCacheTTL = constants.DefaultJavascriptRequestsCacheTTL
+					case constants.FlagHTMLRequestsCacheTTL:
+						currentOptions.HTMLRequestsCacheTTL = constants.DefaultHTMLRequestsCacheTTL
 					case constants.FlagRateLimitingMaxRequestsPerMinute:
 						currentOptions.RateLimitingMaxRequestsPerMinute = constants.DefaultRateLimitingMaxRequestsPerMinute
 					case constants.FlagRateLimitingMaxRequestsPerSecond:
@@ -270,6 +274,18 @@ func (t *TUI) RegisterDefaultCommands() {
 						return nil, fmt.Errorf("invalid chunk-discoverer-concurrency value: %s", value)
 					}
 					currentOptions.ChunkDiscovererConcurrency = concurrency
+				case constants.FlagJavascriptRequestsCacheTTL:
+					duration, err := time.ParseDuration(value)
+					if err != nil {
+						return nil, fmt.Errorf("invalid js-requests-cache-ttl value: %s", value)
+					}
+					currentOptions.JavascriptRequestsCacheTTL = duration
+				case constants.FlagHTMLRequestsCacheTTL:
+					duration, err := time.ParseDuration(value)
+					if err != nil {
+						return nil, fmt.Errorf("invalid html-requests-cache-ttl value: %s", value)
+					}
+					currentOptions.HTMLRequestsCacheTTL = duration
 				case constants.FlagASTAnalyzerConcurrency:
 					concurrency, err := strconv.Atoi(value)
 					if err != nil {
@@ -376,6 +392,8 @@ func (t *TUI) RegisterDefaultCommands() {
 				AssetSaveConcurrency:             constants.DefaultAssetSaveConcurrency,
 				AssetFetchConcurrency:            constants.DefaultAssetFetchConcurrency,
 				BeautifierConcurrency:            constants.DefaultBeautifierConcurrency,
+				JavascriptRequestsCacheTTL:       constants.DefaultJavascriptRequestsCacheTTL,
+				HTMLRequestsCacheTTL:             constants.DefaultHTMLRequestsCacheTTL,
 				ChunkDiscovererConcurrency:       constants.DefaultChunkDiscovererConcurrency,
 				ASTAnalyzerConcurrency:           constants.DefaultASTAnalyzerConcurrency,
 				ChunkDiscovererBruteForceLimit:   constants.DefaultChunkDiscovererBruteForceLimit,
@@ -1195,6 +1213,16 @@ func (t *TUI) printCurrentConfig() {
 		constants.FlagChunkDiscovererBruteForceLimit,
 		fmt.Sprintf("%d", currentOptions.ChunkDiscovererBruteForceLimit),
 		descStyle.Render(constants.DescriptionChunkDiscovererBruteForceLimit)))
+
+	t.writeLineToOutput(formatLine(
+		constants.FlagJavascriptRequestsCacheTTL,
+		fmt.Sprintf("%v", currentOptions.JavascriptRequestsCacheTTL),
+		descStyle.Render(constants.DescriptionJavascriptRequestsCacheTTL)))
+
+	t.writeLineToOutput(formatLine(
+		constants.FlagHTMLRequestsCacheTTL,
+		fmt.Sprintf("%v", currentOptions.HTMLRequestsCacheTTL),
+		descStyle.Render(constants.DescriptionHTMLRequestsCacheTTL)))
 
 	// Rate limiting configuration
 	t.writeLineToOutput(formatLine(
