@@ -200,13 +200,13 @@ func (s *assetService) handleSaveAssetRequest(ctx context.Context, asset Asset) 
 		}
 	}
 
-	tx, err := s.db.BeginTxx(ctx, nil)
-	if err != nil {
-		return errutil.Wrap(err, "failed to begin transaction")
-	}
-	defer tx.Rollback()
+	// tx, err := s.db.BeginTxx(ctx, nil)
+	// if err != nil {
+	// 	return errutil.Wrap(err, "failed to begin transaction")
+	// }
+	// defer tx.Rollback()
 
-	assetID, err := SaveAsset(ctx, tx, repoAsset)
+	assetID, err := SaveAsset(ctx, s.db, repoAsset)
 	if err != nil {
 		return errutil.Wrap(err, "failed to save asset to db")
 	}
@@ -216,7 +216,7 @@ func (s *assetService) handleSaveAssetRequest(ctx context.Context, asset Asset) 
 		return errutil.Wrap(errors.New("asset id is 0"), "failed to save asset to db")
 	}
 
-	err = s.eventBus.Publish(ctx, tx, TopicAssetSaved, EventAssetSaved{
+	err = s.eventBus.Publish(ctx, s.db, TopicAssetSaved, EventAssetSaved{
 		AssetID: assetID,
 	})
 	if err != nil {
@@ -225,7 +225,8 @@ func (s *assetService) handleSaveAssetRequest(ctx context.Context, asset Asset) 
 
 	s.log.InfoContext(ctx, "saved file successfully", "path", path, "asset_url", asset.URL)
 
-	return tx.Commit()
+	// return tx.Commit()
+	return nil
 }
 
 // this method is asynchronous so no error will be returned

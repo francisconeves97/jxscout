@@ -135,6 +135,10 @@ func (m *jsIngestionModule) validateIngestionRequest(req *ingestion.IngestionReq
 		return errors.New("response status should be ok")
 	}
 
+	if common.IsProbablyHTML([]byte(req.Response.Body)) {
+		return errors.New("content type is not JS")
+	}
+
 	contentTypeHeader := m.getContentType(*req)
 	if !strings.Contains(contentTypeHeader, "javascript") {
 		// try to detect from the response body
@@ -143,10 +147,6 @@ func (m *jsIngestionModule) validateIngestionRequest(req *ingestion.IngestionReq
 		m.sdk.Logger.Debug("jsingestion - detected content type from response body", "url", req.Request.URL, "content-type", contentType, "content-type-header", contentTypeHeader)
 
 		if contentType != common.ContentTypeJS {
-			return errors.New("content type is not JS")
-		}
-
-		if common.IsProbablyHTML([]byte(req.Response.Body)) {
 			return errors.New("content type is not JS")
 		}
 	}

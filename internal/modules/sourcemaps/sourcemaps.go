@@ -191,10 +191,10 @@ func (s *sourceMapsModule) sourceMapDiscover(ctx context.Context, asset assetser
 		return errutil.Wrap(err, "failed to execute sourcemaps reverse")
 	}
 
-	tx, err := s.sdk.Database.BeginTxx(ctx, nil)
-	if err != nil {
-		return errutil.Wrap(err, "failed to begin transaction")
-	}
+	// tx, err := s.sdk.Database.BeginTxx(ctx, nil)
+	// if err != nil {
+	// 	return errutil.Wrap(err, "failed to begin transaction")
+	// }
 
 	for _, sourcemap := range sourcemaps {
 		reversedSourceMap := &ReversedSourcemap{
@@ -202,12 +202,12 @@ func (s *sourceMapsModule) sourceMapDiscover(ctx context.Context, asset assetser
 			Path:        sourcemap,
 		}
 
-		reversedSourceMapID, err := SaveReversedSourcemap(ctx, tx, reversedSourceMap)
+		reversedSourceMapID, err := SaveReversedSourcemap(ctx, s.sdk.Database, reversedSourceMap)
 		if err != nil {
 			return dbeventbus.NewRetriableError(errutil.Wrap(err, "failed to save reversed source map"))
 		}
 
-		err = s.sdk.DBEventBus.Publish(ctx, tx, TopicSourcemapsReversedSourcemapSaved, EventSourcemapsReversedSourcemapSaved{
+		err = s.sdk.DBEventBus.Publish(ctx, s.sdk.Database, TopicSourcemapsReversedSourcemapSaved, EventSourcemapsReversedSourcemapSaved{
 			ReversedSourcemapID: reversedSourceMapID,
 		})
 		if err != nil {
@@ -215,10 +215,10 @@ func (s *sourceMapsModule) sourceMapDiscover(ctx context.Context, asset assetser
 		}
 	}
 
-	err = tx.Commit()
-	if err != nil {
-		return errutil.Wrap(err, "failed to commit transaction")
-	}
+	// err = tx.Commit()
+	// if err != nil {
+	// 	return errutil.Wrap(err, "failed to commit transaction")
+	// }
 	return nil
 }
 
