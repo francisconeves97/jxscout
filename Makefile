@@ -12,4 +12,3 @@ build:
 	mv dist/astAnalyzer.js internal/modules/ast-analyzer/ast-analyzer.js
 	mv dist/chunkDiscoverer.js internal/modules/chunk-discoverer/chunk-discoverer.js
 	cp node_modules/source-map/lib/mappings.wasm internal/modules/sourcemaps/mappings.wasm
-	bun run scripts/patch-native-loader.ts

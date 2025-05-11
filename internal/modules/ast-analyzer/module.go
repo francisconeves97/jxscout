@@ -1,14 +1,17 @@
 package astanalyzer
 
 import (
+	"bytes"
 	"context"
 	_ "embed"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"time"
 
@@ -59,6 +62,7 @@ type astAnalyzerModule struct {
 	astAnalyzerBinaryPath string
 	concurrency           int
 	wsServer              *wsServer
+	nativeLibraryPath     string
 }
 
 func NewAstAnalyzerModule(concurrency int) *astAnalyzerModule {
@@ -281,6 +285,76 @@ func (m *astAnalyzerModule) analyzeAsset(asset asset) (astAnalysis, error) {
 	return analysis, nil
 }
 
+func getLibcVariant() (string, error) {
+	// Try `ldd --version`, which outputs different text for musl vs glibc
+	cmd := exec.Command("ldd", "--version")
+	var out bytes.Buffer
+	cmd.Stdout = &out
+	cmd.Stderr = &out
+
+	if err := cmd.Run(); err != nil {
+		return "", errutil.Wrap(err, "failed to detect libc")
+	}
+
+	output := out.String()
+	if strings.Contains(output, "musl") {
+		return "musl", nil
+	} else if strings.Contains(output, "glibc") || strings.Contains(output, "GNU libc") {
+		return "gnu", nil
+	}
+
+	return "", errors.New("unknown libc variant")
+}
+
+func (m *astAnalyzerModule) getNativeLibraryPath() (result string, err error) {
+	if m.nativeLibraryPath != "" {
+		return m.nativeLibraryPath, nil
+	}
+
+	basePath := filepath.Join(common.GetPrivateDirectory(), "extracted")
+
+	switch runtime.GOOS {
+	case "darwin":
+		switch runtime.GOARCH {
+		case "arm64":
+			result = filepath.Join(basePath, "parser.darwin-arm64.node")
+		case "amd64":
+			result = filepath.Join(basePath, "parser.darwin-x64.node")
+		}
+
+	case "linux":
+		libc, err := getLibcVariant()
+		if err != nil {
+			return "", err
+		}
+
+		switch runtime.GOARCH {
+		case "arm":
+			result = filepath.Join(basePath, "parser.linux-arm-gnueabihf.node")
+		case "arm64":
+			result = filepath.Join(basePath, fmt.Sprintf("parser.linux-arm64-%s.node", libc))
+		case "amd64":
+			result = filepath.Join(basePath, fmt.Sprintf("parser.linux-x64-%s.node", libc))
+		}
+
+	case "windows":
+		switch runtime.GOARCH {
+		case "arm64":
+			result = filepath.Join(basePath, "parser.win32-arm64-msvc.node")
+		case "amd64":
+			result = filepath.Join(basePath, "parser.win32-x64-msvc.node")
+		}
+	}
+
+	if result == "" {
+		return "", fmt.Errorf("unsupported platform: %s-%s", runtime.GOOS, runtime.GOARCH)
+	}
+
+	m.nativeLibraryPath = result
+
+	return result, nil
+}
+
 func (m *astAnalyzerModule) execASTAnalyzer(asset asset) (string, error) {
 	// Get the absolute path of the asset
 	absPath, err := filepath.Abs(asset.Path)
@@ -290,6 +364,13 @@ func (m *astAnalyzerModule) execASTAnalyzer(asset asset) (string, error) {
 
 	// Run the AST analyzer script with Node.js
 	cmd := exec.Command("bun", "run", m.astAnalyzerBinaryPath, absPath)
+
+	nativeLibraryPath, err := m.getNativeLibraryPath()
+	if err != nil {
+		return "", errutil.Wrap(err, "failed to get native library path")
+	}
+
+	cmd.Env = append(os.Environ(), "NAPI_RS_NATIVE_LIBRARY_PATH="+nativeLibraryPath)
 
 	m.sdk.Logger.Debug("executing ast analyzer", "asset_id", asset.ID, "path", absPath, "cmd", cmd.String())
 
