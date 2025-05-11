@@ -9,7 +9,7 @@
     "yaml": "^2.7.1"
   },
   "dependencies": {
-    "@oxc-project/types": "^0.69.0",
+    "@oxc-project/types": "^0.68.0",
     "@types/bun": "^1.2.12",
     "acorn": "^8.12.1",
     "acorn-loose": "^8.5.0",
@@ -17,7 +17,7 @@
     "astring": "^1.9.0",
     "estree-toolkit": "^1.7.8",
     "fs-extra": "^11.2.0",
-    "oxc-parser": "^0.69.0",
+    "oxc-parser": "^0.68.0",
     "oxc-walker": "^0.2.5",
     "source-map": "^0.7.4",
     "sval": "^0.5.2",
