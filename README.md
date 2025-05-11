@@ -23,7 +23,7 @@ https://github.com/user-attachments/assets/64f161c3-46b0-41a9-8b34-706cc795a034
 ### Requirements
 
 - **golang**: https://go.dev/doc/install - jxscout is written in golang
-- **bun**: https://bun.sh/docs/installation - used for the chunk discovery script
+- **bun** (>=1.2.12 recommended): https://bun.sh/docs/installation - used for the chunk discovery script
 
 ### Part 1. Installing the CLI
 

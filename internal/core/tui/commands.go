@@ -448,6 +448,14 @@ func (t *TUI) RegisterDefaultCommands() {
 				}
 				t.writeLineToOutput("✅ bun installed successfully")
 
+				t.writeLineToOutput("\nEnsuring bun is up to date...")
+				cmd = exec.Command("bun", "upgrade")
+				output, err = cmd.CombinedOutput()
+				if err != nil {
+					t.writeLineToOutput(fmt.Sprintf("❌ Failed to upgrade bun: %v\nOutput: %s", err, string(output)))
+					return
+				}
+
 				// Install prettier using bun
 				t.writeLineToOutput("\nInstalling prettier...")
 				cmd = exec.Command("bun", "install", "-g", "prettier")
