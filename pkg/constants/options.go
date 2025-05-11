@@ -34,13 +34,16 @@ const (
 	DefaultDownloadReferedJS = false
 
 	// Logging configuration
-	DefaultLogBufferSize    = 10000
+	DefaultLogBufferSize    = 1_000_000
 	DefaultLogFileMaxSizeMB = 10
 
 	// Overrides configuration
 	DefaultCaidoHostname                = "localhost"
 	DefaultCaidoPort                    = 8080
 	DefaultOverrideContentCheckInterval = time.Second * 5
+
+	// Profiling configuration
+	DefaultProfiling = false
 )
 
 // Flag names for jxscout options
@@ -79,6 +82,9 @@ const (
 	FlagCaidoHostname                = "caido-hostname"
 	FlagCaidoPort                    = "caido-port"
 	FlagOverrideContentCheckInterval = "override-content-check-interval"
+
+	// Profiling configuration
+	FlagProfiling = "profiling"
 )
 
 // Descriptions for jxscout options
@@ -117,4 +123,7 @@ const (
 	DescriptionCaidoHostname                = "hostname where Caido is running"
 	DescriptionCaidoPort                    = "port where Caido is running"
 	DescriptionOverrideContentCheckInterval = "interval at which to check for changes in override content and update match/replace rules"
+
+	// Profiling configuration
+	DescriptionProfiling = "enable pprof for performance profiling"
 )

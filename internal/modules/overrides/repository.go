@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"time"
 
+	"github.com/francisconeves97/jxscout/internal/core/database"
 	"github.com/francisconeves97/jxscout/internal/core/errutil"
 	"github.com/jmoiron/sqlx"
 )
@@ -23,10 +24,10 @@ type override struct {
 }
 
 type overridesRepository struct {
-	db *sqlx.DB
+	db *database.Database
 }
 
-func newOverridesRepository(db *sqlx.DB) (*overridesRepository, error) {
+func newOverridesRepository(db *database.Database) (*overridesRepository, error) {
 	repo := &overridesRepository{
 		db: db,
 	}
@@ -39,7 +40,7 @@ func newOverridesRepository(db *sqlx.DB) (*overridesRepository, error) {
 }
 
 func (r *overridesRepository) initializeTable() error {
-	_, err := r.db.Exec(
+	_, err := r.db.RW.ExecContext(context.Background(),
 		`
 		CREATE TABLE IF NOT EXISTS overrides (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -69,7 +70,7 @@ func (r *overridesRepository) getOverrideByAssetID(ctx context.Context, assetID 
 	var o override
 	var deletedAt sql.NullTime
 
-	err := r.db.QueryRowContext(ctx, query, assetID).Scan(
+	err := r.db.RO.QueryRowxContext(ctx, query, assetID).Scan(
 		&o.ID,
 		&o.AssetID,
 		&o.CaidoCollectionID,
@@ -99,7 +100,7 @@ func (r *overridesRepository) createOverride(ctx context.Context, o *override) e
 		VALUES (?, ?, ?, ?)
 	`
 
-	_, err := r.db.ExecContext(ctx, query,
+	_, err := r.db.RW.ExecContext(ctx, query,
 		o.AssetID,
 		o.CaidoCollectionID,
 		o.CaidoTamperRuleID,
@@ -119,7 +120,7 @@ func (r *overridesRepository) deleteOverride(ctx context.Context, assetID int64)
 		WHERE asset_id = ? AND deleted_at IS NULL
 	`
 
-	_, err := r.db.ExecContext(ctx, query, assetID)
+	_, err := r.db.RW.ExecContext(ctx, query, assetID)
 	if err != nil {
 		return errutil.Wrap(err, "failed to delete override")
 	}
@@ -144,7 +145,7 @@ func (r *overridesRepository) getAllOverrides(ctx context.Context) ([]*override,
 		WHERE overrides.deleted_at IS NULL
 	`
 
-	rows, err := r.db.QueryContext(ctx, query)
+	rows, err := r.db.RO.QueryxContext(ctx, query)
 	if err != nil {
 		return nil, errutil.Wrap(err, "failed to get all overrides")
 	}
@@ -192,7 +193,7 @@ func (r *overridesRepository) updateOverride(ctx context.Context, o *override) e
 		WHERE id = ? AND deleted_at IS NULL
 	`
 
-	_, err := r.db.ExecContext(ctx, query, o.ContentHash, o.ID)
+	_, err := r.db.RW.ExecContext(ctx, query, o.ContentHash, o.ID)
 	if err != nil {
 		return errutil.Wrap(err, "failed to update override")
 	}
@@ -202,7 +203,7 @@ func (r *overridesRepository) updateOverride(ctx context.Context, o *override) e
 
 func (r *overridesRepository) getOverrides(ctx context.Context, page, pageSize int) ([]*override, int, error) {
 	var total int
-	err := r.db.GetContext(ctx, &total, `
+	err := sqlx.GetContext(ctx, r.db.RO, &total, `
 		SELECT COUNT(*) FROM overrides WHERE deleted_at IS NULL
 	`)
 	if err != nil {
@@ -210,7 +211,7 @@ func (r *overridesRepository) getOverrides(ctx context.Context, page, pageSize i
 	}
 
 	overrides := []*override{}
-	err = r.db.SelectContext(ctx, &overrides, `
+	err = sqlx.SelectContext(ctx, r.db.RO, &overrides, `
 		SELECT o.*, a.url as asset_url, a.fs_path as fs_path
 		FROM overrides o
 		LEFT JOIN assets a ON o.asset_id = a.id

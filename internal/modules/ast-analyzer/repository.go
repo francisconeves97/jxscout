@@ -7,6 +7,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/francisconeves97/jxscout/internal/core/database"
 	"github.com/francisconeves97/jxscout/internal/core/errutil"
 	"github.com/jmoiron/sqlx"
 )
@@ -45,10 +46,10 @@ type asset struct {
 }
 
 type astAnalyzerRepository struct {
-	db *sqlx.DB
+	db *database.Database
 }
 
-func newAstAnalyzerRepository(db *sqlx.DB) (*astAnalyzerRepository, error) {
+func newAstAnalyzerRepository(db *database.Database) (*astAnalyzerRepository, error) {
 	repo := &astAnalyzerRepository{
 		db: db,
 	}
@@ -61,7 +62,7 @@ func newAstAnalyzerRepository(db *sqlx.DB) (*astAnalyzerRepository, error) {
 }
 
 func (r *astAnalyzerRepository) initializeTable() error {
-	_, err := r.db.Exec(
+	_, err := r.db.RW.ExecContext(context.Background(),
 		`
 		CREATE TABLE IF NOT EXISTS ast_analysis_results (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -93,7 +94,7 @@ func (r *astAnalyzerRepository) createAnalysis(ctx context.Context, analysis ast
 			results = excluded.results,
 			updated_at = CURRENT_TIMESTAMP	
 	`
-	_, err := r.db.ExecContext(ctx, query, analysis.AssetID, analysis.AssetType, analysis.AssetPath, analysis.AnalyzerVersion, analysis.Results)
+	_, err := r.db.RW.ExecContext(ctx, query, analysis.AssetID, analysis.AssetType, analysis.AssetPath, analysis.AnalyzerVersion, analysis.Results)
 	if err != nil {
 		return errutil.Wrap(err, "failed to create ast analysis")
 	}
@@ -116,7 +117,7 @@ func (r *astAnalyzerRepository) getAssetByPath(ctx context.Context, filePath str
 	`
 
 	var a asset
-	err := r.db.GetContext(ctx, &a, query, filePath, filePath)
+	err := sqlx.GetContext(ctx, r.db.RO, &a, query, filePath, filePath)
 	if err == sql.ErrNoRows {
 		return nil, nil
 	}
@@ -135,7 +136,7 @@ func (r *astAnalyzerRepository) getASTAnalysisByAssetID(ctx context.Context, ass
 	`
 
 	var analysis astAnalysis
-	if err := r.db.GetContext(ctx, &analysis, query, assetID, assetType); err != nil {
+	if err := sqlx.GetContext(ctx, r.db.RO, &analysis, query, assetID, assetType); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return astAnalysis{}, false, nil
 		}

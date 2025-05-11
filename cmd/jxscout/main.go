@@ -64,6 +64,10 @@ func main() {
 		flagSet.DurationVar(&options.OverrideContentCheckInterval, constants.FlagOverrideContentCheckInterval, constants.DefaultOverrideContentCheckInterval, constants.DescriptionOverrideContentCheckInterval),
 	)
 
+	flagSet.CreateGroup("profiling", "profiling configuration",
+		flagSet.BoolVar(&options.Profiling, constants.FlagProfiling, constants.DefaultProfiling, constants.DescriptionProfiling),
+	)
+
 	configFileLocation := filepath.Join(common.GetPrivateDirectory(), constants.ConfigFileName)
 	flagSet.SetConfigFilePath(configFileLocation)
 

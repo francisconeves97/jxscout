@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"time"
 
+	"github.com/francisconeves97/jxscout/internal/core/database"
 	"github.com/francisconeves97/jxscout/internal/core/errutil"
 	"github.com/jmoiron/sqlx"
 )
@@ -52,7 +53,7 @@ type Options struct {
 }
 
 type EventBus struct {
-	db  *sqlx.DB
+	db  *database.Database
 	log *slog.Logger
 }
 
@@ -77,7 +78,7 @@ type EventProcessing struct {
 	NextAttempt  *time.Time `db:"next_attempt"`
 }
 
-func NewEventBus(db *sqlx.DB, log *slog.Logger) (*EventBus, error) {
+func NewEventBus(db *database.Database, log *slog.Logger) (*EventBus, error) {
 	bus := &EventBus{db: db, log: log}
 	if err := bus.initTables(); err != nil {
 		return nil, errutil.Wrap(err, "failed to initialize tables")
@@ -114,7 +115,7 @@ func (b *EventBus) initTables() error {
 	}
 
 	for _, query := range queries {
-		if _, err := b.db.Exec(query); err != nil {
+		if _, err := b.db.RW.ExecContext(context.Background(), query); err != nil {
 			return err
 		}
 	}
@@ -178,7 +179,7 @@ func (b *EventBus) pollEvents(ctx context.Context, topic, queueName string, jobs
 }
 
 func (b *EventBus) fetchAndDistributeEvents(ctx context.Context, topic, queueName string, jobs chan<- Event, opts Options) error {
-	tx, err := b.db.BeginTxx(ctx, nil)
+	tx, err := b.db.RW.BeginTxx(ctx, nil)
 	if err != nil {
 		return errutil.Wrap(err, "failed to begin transaction")
 	}
@@ -188,7 +189,7 @@ func (b *EventBus) fetchAndDistributeEvents(ctx context.Context, topic, queueNam
 
 	// Get multiple events that are ready to be processed and lock them
 	var eventsToProcess []Event
-	err = tx.SelectContext(ctx, &eventsToProcess,
+	err = sqlx.SelectContext(ctx, b.db.RO, &eventsToProcess,
 		`SELECT e.id, e.name, e.payload, e.created_at 
          FROM events e
          LEFT JOIN event_processing ep ON e.id = ep.event_id AND ep.subscriber = ?
@@ -215,7 +216,7 @@ func (b *EventBus) fetchAndDistributeEvents(ctx context.Context, topic, queueNam
 			return ctx.Err()
 		case jobs <- event:
 			b.log.DebugContext(ctx, "Distributing event to worker", "event_id", event.ID, "topic", event.Name)
-			_, err = tx.ExecContext(ctx,
+			_, err = b.db.RW.ExecContext(ctx,
 				`INSERT INTO event_processing (event_id, subscriber, status, last_attempt, heartbeat, finished_at) 
 				 VALUES (?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL)
 				 ON CONFLICT(event_id, subscriber) DO UPDATE SET status = ?, last_attempt = CURRENT_TIMESTAMP, heartbeat = CURRENT_TIMESTAMP, finished_at = NULL`,
@@ -290,7 +291,7 @@ func (b *EventBus) startHeartbeat(ctx context.Context, eventID int64, queueName 
 			case <-ctx.Done():
 				return
 			case <-ticker.C:
-				_, err := b.db.ExecContext(ctx,
+				_, err := b.db.RW.ExecContext(ctx,
 					`UPDATE event_processing SET heartbeat = CURRENT_TIMESTAMP 
 					 WHERE event_id = ? AND subscriber = ?`,
 					eventID, queueName)
@@ -303,14 +304,14 @@ func (b *EventBus) startHeartbeat(ctx context.Context, eventID int64, queueName 
 }
 
 func (b *EventBus) updateEventStatus(ctx context.Context, event Event, queueName string, handlerErr error, opts Options) error {
-	tx, err := b.db.BeginTxx(ctx, nil)
-	if err != nil {
-		return errutil.Wrap(err, "failed to begin final status transaction")
-	}
-	defer tx.Rollback()
+	// tx, err := b.db.BeginTxx(ctx, nil)
+	// if err != nil {
+	// 	return errutil.Wrap(err, "failed to begin final status transaction")
+	// }
+	// defer tx.Rollback()
 
 	var processing EventProcessing
-	err = tx.GetContext(ctx, &processing,
+	err := sqlx.GetContext(ctx, b.db.RO, &processing,
 		`SELECT * FROM event_processing WHERE event_id = ? AND subscriber = ?`,
 		event.ID, queueName)
 	if err != nil {
@@ -318,19 +319,19 @@ func (b *EventBus) updateEventStatus(ctx context.Context, event Event, queueName
 	}
 
 	if handlerErr != nil {
-		if err := b.updateFailedStatus(ctx, tx, handlerErr, processing, opts); err != nil {
+		if err := b.updateFailedStatus(ctx, b.db.RW, handlerErr, processing, opts); err != nil {
 			return errutil.Wrap(err, "failed to update failed status")
 		}
 		return nil
 	}
 
-	if err := b.updateCompletedStatus(ctx, tx, event, queueName); err != nil {
+	if err := b.updateCompletedStatus(ctx, b.db.RW, event, queueName); err != nil {
 		return errutil.Wrap(err, "failed to update completed status")
 	}
 	return nil
 }
 
-func (b *EventBus) updateFailedStatus(ctx context.Context, tx *sqlx.Tx, handlerErr error, processing EventProcessing, opts Options) error {
+func (b *EventBus) updateFailedStatus(ctx context.Context, db sqlx.ExecerContext, handlerErr error, processing EventProcessing, opts Options) error {
 	retryCount := processing.RetryCount + 1
 	nextAttempt := time.Now().UTC().Add(opts.Backoff(retryCount))
 	status := statusFailed
@@ -349,7 +350,7 @@ func (b *EventBus) updateFailedStatus(ctx context.Context, tx *sqlx.Tx, handlerE
 			"error", handlerErr)
 	}
 
-	_, err := tx.ExecContext(ctx,
+	_, err := db.ExecContext(ctx,
 		`UPDATE event_processing 
          SET status = ?, retry_count = ?, error_message = ?, next_attempt = ?, finished_at = CURRENT_TIMESTAMP
          WHERE event_id = ? AND subscriber = ?`,
@@ -358,23 +359,23 @@ func (b *EventBus) updateFailedStatus(ctx context.Context, tx *sqlx.Tx, handlerE
 		return errutil.Wrap(err, "failed to update event processing")
 	}
 
-	if err := tx.Commit(); err != nil {
-		return errutil.Wrap(err, "failed to commit failed status transaction")
-	}
+	// if err := tx.Commit(); err != nil {
+	// 	return errutil.Wrap(err, "failed to commit failed status transaction")
+	// }
 	return nil
 }
 
-func (b *EventBus) updateCompletedStatus(ctx context.Context, tx *sqlx.Tx, event Event, queueName string) error {
-	_, err := tx.ExecContext(ctx,
+func (b *EventBus) updateCompletedStatus(ctx context.Context, db sqlx.ExecerContext, event Event, queueName string) error {
+	_, err := db.ExecContext(ctx,
 		`UPDATE event_processing SET status = ?, finished_at = CURRENT_TIMESTAMP WHERE event_id = ? AND subscriber = ?`,
 		statusCompleted, event.ID, queueName)
 	if err != nil {
 		return errutil.Wrap(err, "failed to update event processing status")
 	}
 
-	if err := tx.Commit(); err != nil {
-		return errutil.Wrap(err, "failed to commit completed status transaction")
-	}
+	// if err := tx.Commit(); err != nil {
+	// 	return errutil.Wrap(err, "failed to commit completed status transaction")
+	// }
 	return nil
 }
 
@@ -398,11 +399,11 @@ func (b *EventBus) cleanupStaleEvents(ctx context.Context, queueName string, hea
 
 // resetStaleEvents finds and resets events that have missed too many heartbeats
 func (b *EventBus) resetStaleEvents(ctx context.Context, queueName string, heartbeatInterval time.Duration) error {
-	tx, err := b.db.BeginTxx(ctx, nil)
-	if err != nil {
-		return errutil.Wrap(err, "failed to begin transaction")
-	}
-	defer tx.Rollback()
+	// tx, err := b.db..BeginTxx(ctx, nil)
+	// if err != nil {
+	// 	return errutil.Wrap(err, "failed to begin transaction")
+	// }
+	// defer tx.Rollback()
 
 	// Calculate the cutoff time for stale events (10 missed heartbeats)
 	staleCutoff := time.Now().UTC().Add(-10 * heartbeatInterval)
@@ -412,7 +413,7 @@ func (b *EventBus) resetStaleEvents(ctx context.Context, queueName string, heart
 		"stale_cutoff", staleCutoff,
 		"heartbeat_interval", heartbeatInterval)
 
-	_, err = tx.ExecContext(ctx,
+	_, err := b.db.RW.ExecContext(ctx,
 		`UPDATE event_processing 
          SET status = ?, heartbeat = CURRENT_TIMESTAMP, finished_at = NULL, next_attempt = NULL
          WHERE subscriber = ? 
@@ -423,9 +424,9 @@ func (b *EventBus) resetStaleEvents(ctx context.Context, queueName string, heart
 		return errutil.Wrap(err, "failed to reset stale events")
 	}
 
-	if err := tx.Commit(); err != nil {
-		return errutil.Wrap(err, "failed to commit transaction")
-	}
+	// if err := tx.Commit(); err != nil {
+	// 	return errutil.Wrap(err, "failed to commit transaction")
+	// }
 
 	return nil
 }
@@ -449,11 +450,11 @@ func (b *EventBus) cleanupCompletedEvents(ctx context.Context) {
 
 // deleteOldCompletedEvents deletes events that were completed more than 1 day ago
 func (b *EventBus) deleteOldCompletedEvents(ctx context.Context) error {
-	tx, err := b.db.BeginTxx(ctx, nil)
-	if err != nil {
-		return errutil.Wrap(err, "failed to begin transaction")
-	}
-	defer tx.Rollback()
+	// tx, err := b.db.BeginTxx(ctx, nil)
+	// if err != nil {
+	// 	return errutil.Wrap(err, "failed to begin transaction")
+	// }
+	// defer tx.Rollback()
 
 	// Calculate the cutoff time (1 day ago)
 	cutoff := time.Now().UTC().Add(-24 * time.Hour)
@@ -461,7 +462,7 @@ func (b *EventBus) deleteOldCompletedEvents(ctx context.Context) error {
 	b.log.DebugContext(ctx, "Cleaning up completed events", "cutoff", cutoff)
 
 	// First delete from event_processing table
-	_, err = tx.ExecContext(ctx,
+	_, err := b.db.RW.ExecContext(ctx,
 		`DELETE FROM event_processing 
          WHERE status = ? 
          AND finished_at < ?`,
@@ -471,7 +472,7 @@ func (b *EventBus) deleteOldCompletedEvents(ctx context.Context) error {
 	}
 
 	// Then delete from events table where there are no remaining event_processing records
-	_, err = tx.ExecContext(ctx,
+	_, err = b.db.RW.ExecContext(ctx,
 		`DELETE FROM events 
          WHERE id NOT IN (SELECT event_id FROM event_processing) 
          AND created_at < ?`,
@@ -480,9 +481,9 @@ func (b *EventBus) deleteOldCompletedEvents(ctx context.Context) error {
 		return errutil.Wrap(err, "failed to delete old completed events")
 	}
 
-	if err := tx.Commit(); err != nil {
-		return errutil.Wrap(err, "failed to commit transaction")
-	}
+	// if err := tx.Commit(); err != nil {
+	// 	return errutil.Wrap(err, "failed to commit transaction")
+	// }
 
 	return nil
 }

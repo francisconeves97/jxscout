@@ -8,12 +8,12 @@ import (
 
 	assetfetcher "github.com/francisconeves97/jxscout/internal/core/asset-fetcher"
 	assetservice "github.com/francisconeves97/jxscout/internal/core/asset-service"
+	"github.com/francisconeves97/jxscout/internal/core/database"
 	dbeventbus "github.com/francisconeves97/jxscout/internal/core/dbeventbus"
 	"github.com/francisconeves97/jxscout/internal/core/eventbus"
 	"github.com/francisconeves97/jxscout/internal/core/websocket"
 
 	"github.com/go-chi/chi"
-	"github.com/jmoiron/sqlx"
 	"github.com/projectdiscovery/goflags"
 )
 
@@ -59,6 +59,7 @@ type Options struct {
 	CaidoHostname                    string              `yaml:"caido-hostname"`
 	CaidoPort                        int                 `yaml:"caido-port"`
 	OverrideContentCheckInterval     time.Duration       `yaml:"override-content-check-interval"`
+	Profiling                        bool                `yaml:"profiling"`
 }
 
 // AssetService interface
@@ -84,7 +85,7 @@ type ModuleSDK struct {
 	Logger           *slog.Logger
 	Scope            Scope
 	FileService      FileService
-	Database         *sqlx.DB
+	Database         *database.Database
 }
 
 type Module interface {

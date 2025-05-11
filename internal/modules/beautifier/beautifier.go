@@ -87,14 +87,14 @@ func (m *beautifierModule) handleAssetSavedEvent(ctx context.Context, asset asse
 		return errutil.Wrap(err, "failed to beautify asset")
 	}
 
-	err = m.sdk.DBEventBus.Publish(ctx, m.sdk.Database, TopicBeautifierAssetSaved, EventBeautifierAssetSaved{
+	err = m.sdk.DBEventBus.Publish(ctx, m.sdk.Database.RW, TopicBeautifierAssetSaved, EventBeautifierAssetSaved{
 		AssetID: asset.ID,
 	})
 	if err != nil {
 		return errutil.Wrap(err, "failed to publish asset saved event")
 	}
 
-	err = assetservice.UpdateAssetIsBeautified(ctx, m.sdk.Database, asset.ID, true)
+	err = assetservice.UpdateAssetIsBeautified(ctx, m.sdk.Database.RW, asset.ID, true)
 	if err != nil {
 		return errutil.Wrap(err, "failed to update asset is beautified")
 	}

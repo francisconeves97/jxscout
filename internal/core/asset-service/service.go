@@ -6,9 +6,8 @@ import (
 	"errors"
 	"log/slog"
 
-	"github.com/jmoiron/sqlx"
-
 	"github.com/francisconeves97/jxscout/internal/core/common"
+	"github.com/francisconeves97/jxscout/internal/core/database"
 	"github.com/francisconeves97/jxscout/internal/core/dbeventbus"
 	"github.com/francisconeves97/jxscout/internal/core/errutil"
 	concurrentqueue "github.com/francisconeves97/jxscout/pkg/concurrent-queue"
@@ -65,7 +64,7 @@ func (a Asset) GetParentURL() *string {
 }
 
 type assetService struct {
-	db             *sqlx.DB
+	db             *database.Database
 	eventBus       *dbeventbus.EventBus
 	assetSaveQueue concurrentqueue.Queue[Asset]
 	log            *slog.Logger
@@ -79,7 +78,7 @@ type AssetServiceConfig struct {
 	FetchConcurrency int
 	Logger           *slog.Logger
 	FileService      FileService
-	Database         *sqlx.DB
+	Database         *database.Database
 	ProjectName      string
 }
 
@@ -116,7 +115,7 @@ func (s *assetService) initializeQueueHandlers() {
 func (s *assetService) handleSaveAssetRequest(ctx context.Context, asset Asset) error {
 	s.log.DebugContext(ctx, "processing request to save asset", "asset_url", asset.URL)
 
-	dbAsset, exists, err := GetAssetByURLAndProjectName(ctx, s.db, asset.URL, s.projectName)
+	dbAsset, exists, err := GetAssetByURLAndProjectName(ctx, s.db.RO, asset.URL, s.projectName)
 	if err != nil {
 		return errutil.Wrap(err, "failed to get asset from repo")
 	}
@@ -128,14 +127,14 @@ func (s *assetService) handleSaveAssetRequest(ctx context.Context, asset Asset) 
 				URL: asset.Parent.URL,
 			}
 
-			err = SaveAssetRelationship(ctx, s.db, dbAsset)
+			err = SaveAssetRelationship(ctx, s.db.RW, dbAsset)
 			if err != nil {
 				return errutil.Wrap(err, "failed to save asset relationship")
 			}
 		}
 
 		if asset.ContentType == common.ContentTypeJS && dbAsset.ContentHash != common.Hash(asset.Content) {
-			overrideExists, err := OverrideExists(ctx, s.db, dbAsset.ID)
+			overrideExists, err := OverrideExists(ctx, s.db.RO, dbAsset.ID)
 			if err != nil {
 				return errutil.Wrap(err, "failed to check if override exists")
 			}
@@ -200,13 +199,15 @@ func (s *assetService) handleSaveAssetRequest(ctx context.Context, asset Asset) 
 		}
 	}
 
-	tx, err := s.db.BeginTxx(ctx, nil)
-	if err != nil {
-		return errutil.Wrap(err, "failed to begin transaction")
-	}
-	defer tx.Rollback()
+	// tx, err := s.db.BeginTxx(ctx, nil)
+	// if err != nil {
+	// 	return errutil.Wrap(err, "failed to begin transaction")
+	// }
+	// defer tx.Rollback()
 
-	assetID, err := SaveAsset(ctx, tx, repoAsset)
+	// This is not transactional but at least it should be quicker
+
+	assetID, err := SaveAsset(ctx, s.db.RW, repoAsset)
 	if err != nil {
 		return errutil.Wrap(err, "failed to save asset to db")
 	}
@@ -216,7 +217,7 @@ func (s *assetService) handleSaveAssetRequest(ctx context.Context, asset Asset) 
 		return errutil.Wrap(errors.New("asset id is 0"), "failed to save asset to db")
 	}
 
-	err = s.eventBus.Publish(ctx, tx, TopicAssetSaved, EventAssetSaved{
+	err = s.eventBus.Publish(ctx, s.db.RW, TopicAssetSaved, EventAssetSaved{
 		AssetID: assetID,
 	})
 	if err != nil {
@@ -225,7 +226,7 @@ func (s *assetService) handleSaveAssetRequest(ctx context.Context, asset Asset) 
 
 	s.log.InfoContext(ctx, "saved file successfully", "path", path, "asset_url", asset.URL)
 
-	return tx.Commit()
+	return nil
 }
 
 // this method is asynchronous so no error will be returned
@@ -259,7 +260,7 @@ func (s *assetService) mapRepoAssetToAsset(repoAsset DBAsset) Asset {
 func (s *assetService) GetAssetByURL(ctx context.Context, url string) (Asset, bool, error) {
 	cleanURL := common.NormalizeURL(url)
 
-	repoAsset, exists, err := GetAssetByURLAndProjectName(ctx, s.db, cleanURL, s.projectName)
+	repoAsset, exists, err := GetAssetByURLAndProjectName(ctx, s.db.RO, cleanURL, s.projectName)
 	if err != nil {
 		return Asset{}, false, errutil.Wrap(err, "failed to get asset from repo")
 	}
@@ -272,7 +273,7 @@ func (s *assetService) GetAssetByURL(ctx context.Context, url string) (Asset, bo
 }
 
 func (s *assetService) GetAssets(ctx context.Context, params GetAssetsParams) ([]Asset, int, error) {
-	repoAssets, total, err := GetAssets(ctx, s.db, params)
+	repoAssets, total, err := GetAssets(ctx, s.db.RO, params)
 	if err != nil {
 		return nil, 0, errutil.Wrap(err, "failed to get assets from repo")
 	}
@@ -288,7 +289,7 @@ func (s *assetService) GetAssets(ctx context.Context, params GetAssetsParams) ([
 func (s *assetService) GetAssetsThatLoad(ctx context.Context, url string, params GetAssetsParams) ([]Asset, int, error) {
 	cleanURL := common.NormalizeURL(url)
 
-	repoAssets, total, err := GetAssetsThatLoad(ctx, s.db, cleanURL, s.projectName, params)
+	repoAssets, total, err := GetAssetsThatLoad(ctx, s.db.RO, cleanURL, s.projectName, params)
 	if err != nil {
 		return nil, 0, errutil.Wrap(err, "failed to get assets that load from repo")
 	}
@@ -304,7 +305,7 @@ func (s *assetService) GetAssetsThatLoad(ctx context.Context, url string, params
 func (s *assetService) GetAssetsLoadedBy(ctx context.Context, url string, params GetAssetsParams) ([]Asset, int, error) {
 	cleanURL := common.NormalizeURL(url)
 
-	repoAssets, total, err := GetAssetsLoadedBy(ctx, s.db, cleanURL, s.projectName, params)
+	repoAssets, total, err := GetAssetsLoadedBy(ctx, s.db.RO, cleanURL, s.projectName, params)
 	if err != nil {
 		return nil, 0, errutil.Wrap(err, "failed to get assets loaded by from repo")
 	}
@@ -318,7 +319,7 @@ func (s *assetService) GetAssetsLoadedBy(ctx context.Context, url string, params
 }
 
 func (s *assetService) GetAssetByID(ctx context.Context, id int64) (Asset, error) {
-	repoAsset, err := GetAssetByID(ctx, s.db, id)
+	repoAsset, err := GetAssetByID(ctx, s.db.RO, id)
 	if err != nil {
 		return Asset{}, errutil.Wrap(err, "failed to get asset from repo")
 	}

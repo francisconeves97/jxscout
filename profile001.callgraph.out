@@ -1,0 +1,404 @@
+positions: instr line
+events: inuse_space(kB)
+
+ob=(1) /Users/francisconeves/Library/Caches/go-build/e7/e7f31109b858b67582c7bf51d28ae06fb153df8c566c80ff52dc984069940b7c-d/main
+fl=(1) /usr/local/go/src/runtime/proc.go
+fn=(1) runtime.allocm
+0x1045b9dab 2233 2052
+
+ob=(1)
+fl=(2) /usr/local/go/src/runtime/map_swiss.go
+fn=(2) reflect.mapassign_faststr0
++193836 269 536
+
+ob=(1)
+fl=(1)
+fn=(3) runtime.procresize
+-158344 5785 516
+
+ob=(1)
+fl=(3) /usr/local/go/src/regexp/backtrack.go
+fn=(4) regexp.(*bitState).reset
++2707008 84 514
+
+ob=(1)
+fl=(4) /usr/local/go/src/regexp/syntax/parse.go
+fn=(5) regexp/syntax.(*parser).newRegexp
+-44064 146 512
+
+ob=(1)
+fl=(5) /usr/local/go/src/runtime/mgcscavenge.go
+fn=(6) runtime.(*scavengerState).init
+-2819016 363 512
+
+ob=(1)
+fl=(6) /usr/local/go/src/regexp/onepass.go
+fn=(7) regexp.makeOnePass.func1
++2883820 384 512
+
+ob=(1)
+fl=(5)
+fn=(8) runtime.bgscavenge
+-2882044 650 0
+cfl=(5)
+cfn=(6)
+calls=0 -2883820 363
+* * 512
+
+ob=(1)
+fl=(1)
+fn=(9) runtime.doInit
++102616 7317 0
+cfl=(1)
+cfn=(10) runtime.doInit1
+calls=0 +167308 7350
+* * 2074
+
+ob=(1)
+fl=(1)
+fn=(11) runtime.main
+* 254 0
+cfl=(1)
+cfn=(9)
+calls=0 * 7317
+* * 2074
+
+ob=(1)
+fl=(1)
+fn=(12) runtime.schedinit
++4892 880 0
+cfl=(1)
+cfn=(3)
+calls=0 +51680 5785
+* * 516
+
+ob=(1)
+fl=(1)
+fn=(13) runtime.mstart0
++8200 1808 0
+cfl=(1)
+cfn=(14) runtime.mstart1
+calls=0 +8444 1862
+* * 1026
+
+ob=(1)
+fl=(1)
+fn=(14)
++244 1862 0
+cfl=(1)
+cfn=(15) runtime.schedule
+calls=0 +20740 4035
+* * 1026
+
+ob=(1)
+fl=(1)
+fn=(16) runtime.newm
++6108 2769 0
+cfl=(1)
+cfn=(1)
+calls=0 +2852 2233
+* * 2052
+
+ob=(1)
+fl=(1)
+fn=(17) runtime.startm
++1740 2995 0
+cfl=(1)
+cfn=(16)
+calls=0 * 2769
+* * 2052
+
+ob=(1)
+fl=(1)
+fn=(18) runtime.resetspinning
++11412 3882 0
+cfl=(1)
+cfn=(19) runtime.wakep
+calls=0 +198356 3142
+* * 2052
+
+ob=(1)
+fl=(1)
+fn=(15)
++1236 4035 0
+cfl=(1)
+cfn=(18)
+calls=0 * 3882
+* * 2052
+
+ob=(1)
+fl=(1)
+fn=(20) runtime.park_m
++1160 4141 0
+cfl=(1)
+cfn=(15)
+calls=0 * 4035
+* * 1026
+
+ob=(1)
+fl=(1)
+fn=(10)
++29700 7350 0
+cfl=(7) /Users/francisconeves/projects/jxscout/vendor/github.com/projectdiscovery/goflags/port.go
+cfn=(21) github.com/projectdiscovery/goflags.init.0
+calls=0 +4013716 25
+* * 536
+cfl=(8) /Users/francisconeves/projects/jxscout/vendor/github.com/gorilla/css/scanner/scanner.go
+cfn=(22) github.com/gorilla/css/scanner.init.0
+calls=0 +3480224 182
+* * 514
+cfl=(9) /Users/francisconeves/projects/jxscout/vendor/github.com/microcosm-cc/bluemonday/css/handlers.go
+cfn=(23) github.com/microcosm-cc/bluemonday/css.init
+calls=0 +3393192 288
+* * 512
+cfl=(10) /Users/francisconeves/projects/jxscout/vendor/github.com/asaskevich/govalidator/patterns.go
+cfn=(24) github.com/asaskevich/govalidator.init
+calls=0 +3370672 76
+* * 512
+
+ob=(1)
+fl=(1)
+fn=(19)
++154848 3142 0
+cfl=(1)
+cfn=(17)
+calls=0 -43508 2995
+* * 2052
+
+ob=(1)
+fl=(11) /usr/local/go/src/runtime/asm_arm64.s
+fn=(25) runtime.rt0_go
++24088 86 0
+cfl=(1)
+cfn=(12)
+calls=0 -214648 880
+* * 516
+
+ob=(1)
+fl=(11)
+fn=(26) runtime.mstart
++100 129 0
+cfl=(1)
+cfn=(13)
+calls=0 -230536 1808
+* * 1026
+
+ob=(1)
+fl=(11)
+fn=(27) runtime.mcall
++116 193 0
+cfl=(1)
+cfn=(20)
+calls=0 -208736 4141
+* * 1026
+
+ob=(1)
+fl=(12) /usr/local/go/src/reflect/map_swiss.go
+fn=(28) reflect.Value.SetMapIndex
++165968 427 0
+cfl=(13) /usr/local/go/src/reflect/value.go
+cfn=(29) reflect.mapassign_faststr
+calls=0 +254952 3612
+* * 536
+
+ob=(1)
+fl=(13)
+fn=(29)
++88984 3612 0
+cfl=(2)
+cfn=(2)
+calls=0 -199788 269
+* * 536
+
+ob=(1)
+fl=(4)
+fn=(30) regexp/syntax.(*parser).literal
++2215828 368 0
+cfl=(4)
+cfn=(5)
+calls=0 +2215828 146
+* * 512
+
+ob=(1)
+fl=(4)
+fn=(31) regexp/syntax.parse
++13020 930 0
+cfl=(4)
+cfn=(30)
+calls=0 * 368
+* * 512
+
+ob=(1)
+fl=(3)
+fn=(32) regexp.(*Regexp).backtrack
++34884 317 0
+cfl=(3)
+cfn=(4)
+calls=0 +31044 84
+* * 514
+
+ob=(1)
+fl=(14) /usr/local/go/src/regexp/exec.go
+fn=(33) regexp.(*Regexp).doExecute
++7404 535 0
+cfl=(3)
+cfn=(32)
+calls=0 * 317
+* * 514
+
+ob=(1)
+fl=(6)
+fn=(34) regexp.makeOnePass
++5076 442 0
+cfl=(6)
+cfn=(7)
+calls=0 +9496 384
+* * 512
+
+ob=(1)
+fl=(6)
+fn=(35) regexp.compileOnePass
++5564 502 0
+cfl=(6)
+cfn=(34)
+calls=0 * 442
+* * 512
+
+ob=(1)
+fl=(15) /usr/local/go/src/regexp/regexp.go
+fn=(36) regexp.compile
++724 168 0
+cfl=(4)
+cfn=(37) regexp/syntax.Parse
+calls=0 +724 887
+* * 512
+
+ob=(1)
+fl=(4)
+fn=(37)
+* 887 0
+cfl=(4)
+cfn=(31)
+calls=0 -53652 930
+* * 512
+
+ob=(1)
+fl=(15)
+fn=(36)
++72 187 0
+cfl=(6)
+cfn=(35)
+calls=0 -724 502
+* * 512
+
+ob=(1)
+fl=(15)
+fn=(38) regexp.Compile
++2712 131 0
+cfl=(15)
+cfn=(36)
+calls=0 -72 168
+* * 512
+cfl=(15)
+cfn=(36)
+calls=0 * 187
+* * 512
+
+ob=(1)
+fl=(15)
+fn=(39) regexp.MustCompile
+* 311 0
+cfl=(15)
+cfn=(38)
+calls=0 * 131
+* * 1024
+
+ob=(1)
+fl=(16) /usr/local/go/src/encoding/json/decode.go
+fn=(40) encoding/json.Unmarshal
++28116 108 0
+cfl=(16)
+cfn=(41) encoding/json.(*decodeState).unmarshal
+calls=0 +29056 178
+* * 536
+
+ob=(1)
+fl=(16)
+fn=(41)
++940 178 0
+cfl=(16)
+cfn=(42) encoding/json.(*decodeState).value
+calls=0 +2844 375
+* * 536
+
+ob=(1)
+fl=(16)
+fn=(42)
++1904 375 0
+cfl=(16)
+cfn=(43) encoding/json.(*decodeState).object
+calls=0 +9192 806
+* * 536
+
+ob=(1)
+fl=(16)
+fn=(43)
++7288 806 0
+cfl=(12)
+cfn=(28)
+calls=0 -2405228 427
+* * 536
+
+ob=(1)
+fl=(10)
+fn=(24)
++583336 76 0
+cfl=(15)
+cfn=(39)
+calls=0 -38248 311
+* * 512
+
+ob=(1)
+fl=(9)
+fn=(23)
++22520 288 0
+cfl=(15)
+cfn=(39)
+calls=0 -621584 311
+* * 512
+
+ob=(1)
+fl=(8)
+fn=(22)
++87032 182 0
+cfl=(15)
+cfn=(44) regexp.(*Regexp).MatchString
+calls=0 +87032 527
+* * 514
+
+ob=(1)
+fl=(15)
+fn=(44)
+* 527 0
+cfl=(14)
+cfn=(45) regexp.(*Regexp).doMatch
+calls=0 * 514
+* * 514
+
+ob=(1)
+fl=(14)
+fn=(45)
+* 514 0
+cfl=(14)
+cfn=(33)
+calls=0 -745284 535
+* * 514
+
+ob=(1)
+fl=(7)
+fn=(21)
++533492 25 0
+cfl=(16)
+cfn=(40)
+calls=0 -703020 108
+* * 536

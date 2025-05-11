@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/francisconeves97/jxscout/internal/core/database"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/stretchr/testify/assert"
@@ -29,7 +30,7 @@ func setupTestDB(t *testing.T) *sqlx.DB {
 
 func TestEventBus_BasicOperations(t *testing.T) {
 	db := setupTestDB(t)
-	bus, err := NewEventBus(db, slog.Default())
+	bus, err := NewEventBus(&database.Database{RO: db, RW: db}, slog.Default())
 	require.NoError(t, err)
 
 	ctx := context.Background()
@@ -91,7 +92,7 @@ func TestEventBus_BasicOperations(t *testing.T) {
 
 func TestEventBus_ErrorHandling(t *testing.T) {
 	db := setupTestDB(t)
-	bus, err := NewEventBus(db, slog.Default())
+	bus, err := NewEventBus(&database.Database{RO: db, RW: db}, slog.Default())
 	require.NoError(t, err)
 
 	ctx := context.Background()
@@ -150,7 +151,7 @@ func TestEventBus_ErrorHandling(t *testing.T) {
 
 func TestEventBus_Concurrency(t *testing.T) {
 	db := setupTestDB(t)
-	bus, err := NewEventBus(db, slog.Default())
+	bus, err := NewEventBus(&database.Database{RO: db, RW: db}, slog.Default())
 	require.NoError(t, err)
 
 	ctx := context.Background()

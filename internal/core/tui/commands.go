@@ -180,6 +180,8 @@ func (t *TUI) RegisterDefaultCommands() {
 						currentOptions.OverrideContentCheckInterval = constants.DefaultOverrideContentCheckInterval
 					case constants.FlagASTAnalyzerConcurrency:
 						currentOptions.ASTAnalyzerConcurrency = constants.DefaultASTAnalyzerConcurrency
+					case constants.FlagProfiling:
+						currentOptions.Profiling = constants.DefaultProfiling
 					default:
 						return nil, fmt.Errorf("unknown option: %s", option)
 					}
@@ -326,6 +328,12 @@ func (t *TUI) RegisterDefaultCommands() {
 						return nil, fmt.Errorf("invalid override-content-check-interval value: %s", value)
 					}
 					currentOptions.OverrideContentCheckInterval = duration
+				case constants.FlagProfiling:
+					profiling, err := strconv.ParseBool(value)
+					if err != nil {
+						return nil, fmt.Errorf("invalid profiling value: %s", value)
+					}
+					currentOptions.Profiling = profiling
 				default:
 				}
 			}
@@ -387,6 +395,7 @@ func (t *TUI) RegisterDefaultCommands() {
 				CaidoHostname:                    constants.DefaultCaidoHostname,
 				CaidoPort:                        constants.DefaultCaidoPort,
 				OverrideContentCheckInterval:     constants.DefaultOverrideContentCheckInterval,
+				Profiling:                        constants.DefaultProfiling,
 			}
 
 			// Restart jxscout with default options
@@ -1238,4 +1247,9 @@ func (t *TUI) printCurrentConfig() {
 		constants.FlagOverrideContentCheckInterval,
 		fmt.Sprintf("%v", currentOptions.OverrideContentCheckInterval),
 		descStyle.Render(constants.DescriptionOverrideContentCheckInterval)))
+
+	t.writeLineToOutput(formatLine(
+		constants.FlagProfiling,
+		fmt.Sprintf("%v", currentOptions.Profiling),
+		descStyle.Render(constants.DescriptionProfiling)))
 }

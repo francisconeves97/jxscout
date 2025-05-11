@@ -28,7 +28,6 @@ import (
 	"github.com/francisconeves97/jxscout/internal/modules/overrides"
 	"github.com/francisconeves97/jxscout/internal/modules/sourcemaps"
 	jxscouttypes "github.com/francisconeves97/jxscout/pkg/types"
-	"github.com/jmoiron/sqlx"
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
@@ -48,7 +47,7 @@ type jxscout struct {
 	websocketServer *websocket.WebsocketServer
 	scopeChecker    jxscouttypes.Scope
 	fileService     jxscouttypes.FileService
-	db              *sqlx.DB
+	db              *database.Database
 	overridesModule overrides.OverridesModule
 
 	modules      []jxscouttypes.Module
@@ -195,6 +194,7 @@ func (s *jxscout) start() error {
 
 	r.Use(middleware.RequestID)
 	r.Use(middleware.Recoverer)
+	r.Mount("/debug", middleware.Profiler())
 
 	websocketServer := websocket.NewWebsocketServer(r, s.log)
 	s.websocketServer = websocketServer
@@ -330,7 +330,7 @@ func (s *jxscout) GetAssetService() jxscouttypes.AssetService {
 }
 
 func (s *jxscout) TruncateTables() error {
-	_, err := s.db.Exec(`
+	_, err := s.db.RW.ExecContext(context.Background(), `
 		DELETE FROM asset_relationships;
 		DELETE FROM assets;
 		DELETE FROM ast_analysis_results;

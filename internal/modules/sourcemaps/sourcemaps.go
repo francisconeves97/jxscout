@@ -47,7 +47,7 @@ func NewSourceMaps(concurrency int) *sourceMapsModule {
 func (m *sourceMapsModule) Initialize(sdk *jxscouttypes.ModuleSDK) error {
 	m.sdk = sdk
 
-	err := initializeDatabase(m.sdk.Database)
+	err := initializeDatabase(m.sdk.Database.RW)
 	if err != nil {
 		return errutil.Wrap(err, "failed to initialize database")
 	}
@@ -89,12 +89,15 @@ var validsourceMapsContentTypes = map[common.ContentType]bool{
 
 func (m *sourceMapsModule) subscribeAssetSavedEvent() error {
 	err := m.sdk.DBEventBus.Subscribe(m.sdk.Ctx, assetservice.TopicAssetSaved, "sourcemaps", func(ctx context.Context, payload []byte) error {
+
 		// unmarshal payload
 		var event assetservice.EventAssetSaved
 		err := json.Unmarshal(payload, &event)
 		if err != nil {
 			return errutil.Wrap(err, "failed to unmarshal payload")
 		}
+
+		m.sdk.Logger.Info("received asset saved event on source map discovery", "asset_id", event.AssetID)
 
 		asset, err := m.sdk.AssetService.GetAssetByID(ctx, event.AssetID)
 		if err != nil {
@@ -165,7 +168,7 @@ func (s *sourceMapsModule) sourceMapDiscover(ctx context.Context, asset assetser
 		Hash:    common.Hash(sourceMap.OriginalContent),
 	}
 
-	sourceMapID, err := SaveSourcemap(ctx, s.sdk.Database, dbSourceMap)
+	sourceMapID, err := SaveSourcemap(ctx, s.sdk.Database.RW, dbSourceMap)
 	if err != nil {
 		return dbeventbus.NewRetriableError(errutil.Wrap(err, "failed to save source map"))
 	}
@@ -191,10 +194,10 @@ func (s *sourceMapsModule) sourceMapDiscover(ctx context.Context, asset assetser
 		return errutil.Wrap(err, "failed to execute sourcemaps reverse")
 	}
 
-	tx, err := s.sdk.Database.BeginTxx(ctx, nil)
-	if err != nil {
-		return errutil.Wrap(err, "failed to begin transaction")
-	}
+	// tx, err := s.sdk.Database.BeginTxx(ctx, nil)
+	// if err != nil {
+	// 	return errutil.Wrap(err, "failed to begin transaction")
+	// }
 
 	for _, sourcemap := range sourcemaps {
 		reversedSourceMap := &ReversedSourcemap{
@@ -202,12 +205,12 @@ func (s *sourceMapsModule) sourceMapDiscover(ctx context.Context, asset assetser
 			Path:        sourcemap,
 		}
 
-		reversedSourceMapID, err := SaveReversedSourcemap(ctx, tx, reversedSourceMap)
+		reversedSourceMapID, err := SaveReversedSourcemap(ctx, s.sdk.Database.RW, reversedSourceMap)
 		if err != nil {
 			return dbeventbus.NewRetriableError(errutil.Wrap(err, "failed to save reversed source map"))
 		}
 
-		err = s.sdk.DBEventBus.Publish(ctx, tx, TopicSourcemapsReversedSourcemapSaved, EventSourcemapsReversedSourcemapSaved{
+		err = s.sdk.DBEventBus.Publish(ctx, s.sdk.Database.RW, TopicSourcemapsReversedSourcemapSaved, EventSourcemapsReversedSourcemapSaved{
 			ReversedSourcemapID: reversedSourceMapID,
 		})
 		if err != nil {
@@ -215,10 +218,10 @@ func (s *sourceMapsModule) sourceMapDiscover(ctx context.Context, asset assetser
 		}
 	}
 
-	err = tx.Commit()
-	if err != nil {
-		return errutil.Wrap(err, "failed to commit transaction")
-	}
+	// err = tx.Commit()
+	// if err != nil {
+	// 	return errutil.Wrap(err, "failed to commit transaction")
+	// }
 	return nil
 }
 

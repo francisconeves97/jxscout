@@ -22,6 +22,7 @@ import (
 	"github.com/francisconeves97/jxscout/internal/modules/beautifier"
 	"github.com/francisconeves97/jxscout/internal/modules/sourcemaps"
 	jxscouttypes "github.com/francisconeves97/jxscout/pkg/types"
+	"github.com/jmoiron/sqlx"
 )
 
 const analyzerVersion = 1
@@ -198,7 +199,7 @@ func (m *astAnalyzerModule) subscribeAssetBeautified() error {
 		}
 
 		var reversedSourcemap sourcemaps.ReversedSourcemap
-		err = m.sdk.Database.GetContext(ctx, &reversedSourcemap, "SELECT * FROM reversed_sourcemaps WHERE id = ?", event.ReversedSourcemapID)
+		err = sqlx.GetContext(ctx, m.sdk.Database.RO, &reversedSourcemap, "SELECT * FROM reversed_sourcemaps WHERE id = ?", event.ReversedSourcemapID)
 		if err != nil {
 			return dbeventbus.NewRetriableError(errutil.Wrap(err, "failed to get reversed sourcemap"))
 		}

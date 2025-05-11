@@ -27,8 +27,8 @@ type ReversedSourcemap struct {
 	UpdatedAt   time.Time `db:"updated_at"`
 }
 
-func initializeDatabase(db sqlx.Execer) error {
-	_, err := db.Exec(
+func initializeDatabase(db sqlx.ExecerContext) error {
+	_, err := db.ExecContext(context.Background(),
 		`
 		CREATE TABLE IF NOT EXISTS sourcemaps (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,

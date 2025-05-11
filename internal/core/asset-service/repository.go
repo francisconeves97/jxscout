@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/francisconeves97/jxscout/internal/core/database"
 	"github.com/francisconeves97/jxscout/internal/core/errutil"
 	"github.com/francisconeves97/jxscout/pkg/constants"
 
@@ -15,7 +16,6 @@ import (
 )
 
 type queryer interface {
-	sqlx.PreparerContext
 	sqlx.ExecerContext
 	sqlx.QueryerContext
 }
@@ -51,8 +51,8 @@ type AssetRelationship struct {
 	ChildID  int64 `db:"child_id"`
 }
 
-func initializeRepo(db *sqlx.DB) error {
-	_, err := db.Exec(
+func initializeRepo(db *database.Database) error {
+	_, err := db.RW.ExecContext(context.Background(),
 		`
 		CREATE TABLE IF NOT EXISTS assets (
 			id INTEGER PRIMARY KEY AUTOINCREMENT, 
@@ -101,10 +101,10 @@ func initializeRepo(db *sqlx.DB) error {
 }
 
 // migrateAddIsInlineJS safely adds the is_inline_js column if it doesn't exist
-func migrateAddIsInlineJS(db *sqlx.DB) error {
+func migrateAddIsInlineJS(db *database.Database) error {
 	// Check if column exists
 	var count int
-	err := db.Get(&count, `
+	err := sqlx.GetContext(context.Background(), db.RO, &count, `
 		SELECT COUNT(*) FROM pragma_table_info('assets') 
 		WHERE name = 'is_inline_js'
 	`)
@@ -114,7 +114,7 @@ func migrateAddIsInlineJS(db *sqlx.DB) error {
 
 	// If column doesn't exist, add it
 	if count == 0 {
-		_, err := db.Exec(`
+		_, err := db.RW.ExecContext(context.Background(), `
 			ALTER TABLE assets 
 			ADD COLUMN is_inline_js BOOLEAN DEFAULT FALSE
 		`)
@@ -127,10 +127,10 @@ func migrateAddIsInlineJS(db *sqlx.DB) error {
 }
 
 // migrateAddIsChunkDiscovered safely adds the is_chunk_discovered column if it doesn't exist
-func migrateAddIsChunkDiscovered(db *sqlx.DB) error {
+func migrateAddIsChunkDiscovered(db *database.Database) error {
 	// Check if column exists
 	var count int
-	err := db.Get(&count, `
+	err := sqlx.GetContext(context.Background(), db.RO, &count, `
 		SELECT COUNT(*) FROM pragma_table_info('assets') 
 		WHERE name = 'is_chunk_discovered'
 	`)
@@ -140,7 +140,7 @@ func migrateAddIsChunkDiscovered(db *sqlx.DB) error {
 
 	// If column doesn't exist, add it
 	if count == 0 {
-		_, err := db.Exec(`
+		_, err := db.RW.ExecContext(context.Background(), `
 			ALTER TABLE assets 
 			ADD COLUMN is_chunk_discovered BOOLEAN DEFAULT FALSE
 		`)
@@ -153,10 +153,10 @@ func migrateAddIsChunkDiscovered(db *sqlx.DB) error {
 }
 
 // migrateIsBeautified safely adds the is_beautified column if it doesn't exist
-func migrateIsBeautified(db *sqlx.DB) error {
+func migrateIsBeautified(db *database.Database) error {
 	// Check if column exists
 	var count int
-	err := db.Get(&count, `
+	err := sqlx.GetContext(context.Background(), db.RO, &count, `
 		SELECT COUNT(*) FROM pragma_table_info('assets') 
 		WHERE name = 'is_beautified'
 	`)
@@ -166,7 +166,7 @@ func migrateIsBeautified(db *sqlx.DB) error {
 
 	// If column doesn't exist, add it
 	if count == 0 {
-		_, err := db.Exec(`
+		_, err := db.RW.ExecContext(context.Background(), `
 			ALTER TABLE assets 
 			ADD COLUMN is_beautified BOOLEAN DEFAULT FALSE
 		`)
@@ -239,7 +239,7 @@ func SaveAsset(ctx context.Context, db queryer, asset DBAsset) (int64, error) {
 	return assetID, nil
 }
 
-func SaveAssetRelationship(ctx context.Context, db queryer, asset DBAsset) error {
+func SaveAssetRelationship(ctx context.Context, db database.RW, asset DBAsset) error {
 	if asset.Parent == nil || strings.TrimSpace(asset.Parent.URL) == "" {
 		return nil
 	}
@@ -336,7 +336,7 @@ func GetAssetsByProjectName(ctx context.Context, db queryer, projectName string)
 	return assetsReturn, nil
 }
 
-func GetAssetByURLAndProjectName(ctx context.Context, db queryer, url string, projectName string) (DBAsset, bool, error) {
+func GetAssetByURLAndProjectName(ctx context.Context, db sqlx.QueryerContext, url string, projectName string) (DBAsset, bool, error) {
 	query := `
 		SELECT *
 		FROM assets
@@ -355,7 +355,7 @@ func GetAssetByURLAndProjectName(ctx context.Context, db queryer, url string, pr
 	return asset, true, nil
 }
 
-func GetAssets(ctx context.Context, db queryer, params GetAssetsParams) ([]DBAsset, int, error) {
+func GetAssets(ctx context.Context, db sqlx.QueryerContext, params GetAssetsParams) ([]DBAsset, int, error) {
 	// Build the base query
 	baseQuery := "FROM assets WHERE (project = ?"
 	args := []interface{}{params.ProjectName}
@@ -403,7 +403,7 @@ func GetAssets(ctx context.Context, db queryer, params GetAssetsParams) ([]DBAss
 	return assets, total, nil
 }
 
-func GetAssetsThatLoad(ctx context.Context, db queryer, url string, projectName string, params GetAssetsParams) ([]DBAsset, int, error) {
+func GetAssetsThatLoad(ctx context.Context, db sqlx.QueryerContext, url string, projectName string, params GetAssetsParams) ([]DBAsset, int, error) {
 	// First get the target asset
 	targetAsset, exists, err := GetAssetByURLAndProjectName(ctx, db, url, projectName)
 	if err != nil {
@@ -444,7 +444,7 @@ func GetAssetsThatLoad(ctx context.Context, db queryer, url string, projectName 
 	return assets, total, nil
 }
 
-func GetAssetsLoadedBy(ctx context.Context, db queryer, url string, projectName string, params GetAssetsParams) ([]DBAsset, int, error) {
+func GetAssetsLoadedBy(ctx context.Context, db sqlx.QueryerContext, url string, projectName string, params GetAssetsParams) ([]DBAsset, int, error) {
 	// First get the target asset
 	targetAsset, exists, err := GetAssetByURLAndProjectName(ctx, db, url, projectName)
 	if err != nil {
@@ -485,7 +485,7 @@ func GetAssetsLoadedBy(ctx context.Context, db queryer, url string, projectName 
 	return assets, total, nil
 }
 
-func OverrideExists(ctx context.Context, db queryer, assetID int64) (bool, error) {
+func OverrideExists(ctx context.Context, db sqlx.QueryerContext, assetID int64) (bool, error) {
 	query := `
 		SELECT COUNT(*) 
 		FROM overrides
@@ -501,7 +501,7 @@ func OverrideExists(ctx context.Context, db queryer, assetID int64) (bool, error
 	return count > 0, nil
 }
 
-func GetAssetByID(ctx context.Context, db queryer, id int64) (DBAsset, error) {
+func GetAssetByID(ctx context.Context, db sqlx.QueryerContext, id int64) (DBAsset, error) {
 	query := `
 		SELECT * FROM assets WHERE id = ?
 	`
