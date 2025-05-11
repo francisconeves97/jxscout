@@ -5,7 +5,6 @@ import (
 	"context"
 	_ "embed"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -297,13 +296,13 @@ func getLibcVariant() (string, error) {
 	}
 
 	output := out.String()
-	if strings.Contains(output, "musl") {
+	if strings.Contains(strings.ToLower(output), "musl") {
 		return "musl", nil
-	} else if strings.Contains(output, "glibc") || strings.Contains(output, "GNU libc") {
+	} else if strings.Contains(strings.ToLower(output), "glibc") || strings.Contains(strings.ToLower(output), "gnu") {
 		return "gnu", nil
 	}
 
-	return "", errors.New("unknown libc variant")
+	return "gnu", nil // fallback to gnu
 }
 
 func (m *astAnalyzerModule) getNativeLibraryPath() (result string, err error) {
