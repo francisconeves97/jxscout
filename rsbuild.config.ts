@@ -1,4 +1,6 @@
-export default {
+import { defineConfig } from "@rsbuild/core";
+
+export default defineConfig({
   source: {
     entry: {
       sourceMaps: "./pkg/sourcemap-reverse/index.ts",
@@ -9,4 +11,4 @@ export default {
   output: {
     target: "node",
   },
-};
+});
