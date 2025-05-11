@@ -1,0 +1,114 @@
+[
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/regex-pattern/files/1.js",
+    "analyzerName": "regex",
+    "value": "/([a-zA-Z0-9]+|\\s)+$/",
+    "start": {
+      "line": 13,
+      "column": 11
+    },
+    "end": {
+      "line": 13,
+      "column": 32
+    },
+    "tags": {
+      "regex-pattern": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/regex-pattern/files/1.js",
+    "analyzerName": "regex",
+    "value": "/[a-z]+/g",
+    "start": {
+      "line": 3,
+      "column": 15
+    },
+    "end": {
+      "line": 3,
+      "column": 24
+    },
+    "tags": {
+      "regex-pattern": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/regex-pattern/files/1.js",
+    "analyzerName": "regex",
+    "value": "/^\\d{3}-\\d{2}-\\d{4}$/",
+    "start": {
+      "line": 4,
+      "column": 15
+    },
+    "end": {
+      "line": 4,
+      "column": 36
+    },
+    "tags": {
+      "regex-pattern": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/regex-pattern/files/1.js",
+    "analyzerName": "regex",
+    "value": "/test/",
+    "start": {
+      "line": 2,
+      "column": 15
+    },
+    "end": {
+      "line": 2,
+      "column": 21
+    },
+    "tags": {
+      "regex-pattern": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/regex-pattern/files/1.js",
+    "analyzerName": "regex",
+    "value": "new RegExp('[a-z]+', 'g')",
+    "start": {
+      "line": 8,
+      "column": 15
+    },
+    "end": {
+      "line": 8,
+      "column": 40
+    },
+    "tags": {
+      "regex-pattern": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/regex-pattern/files/1.js",
+    "analyzerName": "regex",
+    "value": "new RegExp('^\\\\d{3}-\\\\d{2}-\\\\d{4}$')",
+    "start": {
+      "line": 9,
+      "column": 15
+    },
+    "end": {
+      "line": 9,
+      "column": 51
+    },
+    "tags": {
+      "regex-pattern": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/regex-pattern/files/1.js",
+    "analyzerName": "regex",
+    "value": "new RegExp('test')",
+    "start": {
+      "line": 7,
+      "column": 15
+    },
+    "end": {
+      "line": 7,
+      "column": 33
+    },
+    "tags": {
+      "regex-pattern": true
+    }
+  }
+]

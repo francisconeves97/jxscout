@@ -1,0 +1,66 @@
+[
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/regex-match/files/1.js",
+    "analyzerName": "regex-match",
+    "value": "\"test123\".match(/\\d+/)",
+    "start": {
+      "line": 4,
+      "column": 15
+    },
+    "end": {
+      "line": 4,
+      "column": 37
+    },
+    "tags": {
+      "regex-match": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/regex-match/files/1.js",
+    "analyzerName": "regex-match",
+    "value": "/[a-z]+/.exec(\"abc123\")",
+    "start": {
+      "line": 14,
+      "column": 14
+    },
+    "end": {
+      "line": 14,
+      "column": 37
+    },
+    "tags": {
+      "regex-match": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/regex-match/files/1.js",
+    "analyzerName": "regex-match",
+    "value": "/test/.test(\"testing\")",
+    "start": {
+      "line": 9,
+      "column": 14
+    },
+    "end": {
+      "line": 9,
+      "column": 36
+    },
+    "tags": {
+      "regex-match": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/regex-match/files/1.js",
+    "analyzerName": "regex-match",
+    "value": "str.match(/Hello/)",
+    "start": {
+      "line": 3,
+      "column": 15
+    },
+    "end": {
+      "line": 3,
+      "column": 33
+    },
+    "tags": {
+      "regex-match": true
+    }
+  }
+]

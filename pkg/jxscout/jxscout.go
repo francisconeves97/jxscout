@@ -6,15 +6,18 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
-	"path"
+	"path/filepath"
 	"sync"
+	"time"
 
 	assetfetcher "github.com/francisconeves97/jxscout/internal/core/asset-fetcher"
 	assetservice "github.com/francisconeves97/jxscout/internal/core/asset-service"
 	"github.com/francisconeves97/jxscout/internal/core/common"
 	"github.com/francisconeves97/jxscout/internal/core/database"
+	dbeventbus "github.com/francisconeves97/jxscout/internal/core/dbeventbus"
 	"github.com/francisconeves97/jxscout/internal/core/errutil"
 	"github.com/francisconeves97/jxscout/internal/core/eventbus"
+	"github.com/francisconeves97/jxscout/internal/core/websocket"
 	astanalyzer "github.com/francisconeves97/jxscout/internal/modules/ast-analyzer"
 	"github.com/francisconeves97/jxscout/internal/modules/beautifier"
 	chunkdiscoverer "github.com/francisconeves97/jxscout/internal/modules/chunk-discoverer"
@@ -23,7 +26,7 @@ import (
 	"github.com/francisconeves97/jxscout/internal/modules/ingestion"
 	jsingestion "github.com/francisconeves97/jxscout/internal/modules/js-ingestion"
 	"github.com/francisconeves97/jxscout/internal/modules/overrides"
-	sourcemaps "github.com/francisconeves97/jxscout/internal/modules/source-maps"
+	"github.com/francisconeves97/jxscout/internal/modules/sourcemaps"
 	jxscouttypes "github.com/francisconeves97/jxscout/pkg/types"
 	"github.com/jmoiron/sqlx"
 
@@ -36,11 +39,13 @@ type jxscout struct {
 	cancel          context.CancelFunc
 	logBuffer       *logBuffer
 	log             *slog.Logger
+	dbEventBus      jxscouttypes.DBEventBus
 	eventBus        jxscouttypes.EventBus
 	options         jxscouttypes.Options
 	assetService    jxscouttypes.AssetService
 	assetFetcher    jxscouttypes.AssetFetcher
 	httpServer      jxscouttypes.HTTPServer
+	websocketServer *websocket.WebsocketServer
 	scopeChecker    jxscouttypes.Scope
 	fileService     jxscouttypes.FileService
 	db              *sqlx.DB
@@ -80,7 +85,7 @@ func initJxscout(options jxscouttypes.Options) (*jxscout, error) {
 
 	scopeChecker := newScopeChecker(scopeRegex, logger)
 
-	fileService := assetservice.NewFileService(path.Join(common.GetWorkingDirectory(), options.ProjectName), logger)
+	fileService := assetservice.NewFileService(filepath.Join(common.GetWorkingDirectory(), options.ProjectName), logger)
 
 	eventBus := eventbus.NewInMemoryEventBus()
 
@@ -89,15 +94,21 @@ func initJxscout(options jxscouttypes.Options) (*jxscout, error) {
 		return nil, errutil.Wrap(err, "failed to initialize database")
 	}
 
+	dbEventBus, err := dbeventbus.NewEventBus(db, logger)
+	if err != nil {
+		return nil, errutil.Wrap(err, "failed to initialize db event bus")
+	}
+
 	assetService, err := assetservice.NewAssetService(assetservice.AssetServiceConfig{
-		EventBus:                   eventBus,
-		SaveConcurrency:            options.AssetSaveConcurrency,
-		FetchConcurrency:           options.AssetFetchConcurrency,
-		Logger:                     logger,
-		FileService:                fileService,
-		Database:                   db,
-		HTMLRequestsCacheTTL:       options.HTMLRequestsCacheTTL,
-		JavascriptRequestsCacheTTL: options.JavascriptRequestsCacheTTL,
+		EventBus:         dbEventBus,
+		SaveConcurrency:  options.AssetSaveConcurrency,
+		FetchConcurrency: options.AssetFetchConcurrency,
+		Logger:           logger,
+		FileService:      fileService,
+		Database:         db,
+		ProjectName:      options.ProjectName,
+		HTMLCacheTTL:     options.HTMLRequestsCacheTTL,
+		JSAssetCacheTTL:  options.JavascriptRequestsCacheTTL,
 	})
 	if err != nil {
 		return nil, errutil.Wrap(err, "failed to initialize asset service")
@@ -116,6 +127,7 @@ func initJxscout(options jxscouttypes.Options) (*jxscout, error) {
 		options:      options,
 		logBuffer:    logBuffer,
 		log:          logger,
+		dbEventBus:   dbEventBus,
 		eventBus:     eventBus,
 		assetService: assetService,
 		modules:      []jxscouttypes.Module{},
@@ -137,14 +149,14 @@ func (s *jxscout) registerCoreModules() {
 
 	coreModules := []jxscouttypes.Module{
 		ingestion.NewIngestionModule(),
-		htmlingestion.NewHTMLIngestionModule(s.options.HTMLRequestsCacheTTL),
-		jsingestion.NewJSIngestionModule(s.options.JavascriptRequestsCacheTTL, s.options.DownloadReferedJS),
+		jsingestion.NewJSIngestionModule(s.options.DownloadReferedJS),
+		htmlingestion.NewHTMLIngestionModule(),
 		beautifier.NewBeautifier(s.options.BeautifierConcurrency),
 		chunkdiscoverer.NewChunkDiscovererModule(
 			s.options.ChunkDiscovererConcurrency,
 			s.options.ChunkDiscovererBruteForceLimit,
 		),
-		gitcommiter.NewGitCommiter(s.options.GitCommitInterval),
+		gitcommiter.NewGitCommiter(time.Minute * 5),
 		sourcemaps.NewSourceMaps(s.options.AssetSaveConcurrency),
 		overridesModule,
 		astanalyzer.NewAstAnalyzerModule(s.options.ASTAnalyzerConcurrency),
@@ -186,6 +198,9 @@ func (s *jxscout) start() error {
 	r.Use(middleware.RequestID)
 	r.Use(middleware.Recoverer)
 
+	websocketServer := websocket.NewWebsocketServer(r, s.log)
+	s.websocketServer = websocketServer
+
 	err := s.initializeModules(r)
 	if err != nil {
 		return errutil.Wrap(err, "failed to initialize modules")
@@ -216,17 +231,19 @@ func (s *jxscout) initializeModules(r jxscouttypes.Router) error {
 	s.started = true
 
 	s.modulesSDK = &jxscouttypes.ModuleSDK{
-		EventBus:     s.eventBus,
-		Router:       r,
-		AssetService: s.assetService,
-		Options:      s.options,
-		HTTPServer:   s.httpServer,
-		Logger:       s.log,
-		Scope:        s.scopeChecker,
-		AssetFetcher: s.assetFetcher,
-		FileService:  s.fileService,
-		Database:     s.db,
-		Ctx:          s.ctx,
+		DBEventBus:       s.dbEventBus,
+		InMemoryEventBus: s.eventBus,
+		Router:           r,
+		AssetService:     s.assetService,
+		Options:          s.options,
+		HTTPServer:       s.httpServer,
+		WebsocketServer:  s.websocketServer,
+		Logger:           s.log,
+		Scope:            s.scopeChecker,
+		AssetFetcher:     s.assetFetcher,
+		FileService:      s.fileService,
+		Database:         s.db,
+		Ctx:              s.ctx,
 	}
 
 	for _, module := range s.modules {
@@ -248,6 +265,11 @@ func (s *jxscout) Stop() error {
 	}
 
 	s.log.Info("shutting down server")
+
+	if err := s.websocketServer.Shutdown(time.Second * 10); err != nil {
+		s.log.Error("failed to shutdown websocket server gracefully", "error", err)
+		return errutil.Wrap(err, "failed to shutdown websocket server gracefully")
+	}
 
 	if err := s.server.Shutdown(s.ctx); err != nil {
 		s.log.Error("failed to shutdown server gracefully", "error", err)
@@ -312,9 +334,13 @@ func (s *jxscout) GetAssetService() jxscouttypes.AssetService {
 func (s *jxscout) TruncateTables() error {
 	_, err := s.db.Exec(`
 		DELETE FROM asset_relationships;
-		DELETE FROM overrides;
 		DELETE FROM assets;
-		DELETE FROM sqlite_sequence;
+		DELETE FROM ast_analysis_results;
+		DELETE FROM event_processing;
+		DELETE FROM events;
+		DELETE FROM overrides;
+		DELETE FROM reversed_sourcemaps;
+		DELETE FROM sourcemaps;
 	`)
 	if err != nil {
 		return errutil.Wrap(err, "failed to truncate tables")

@@ -4,7 +4,6 @@ import (
 	"errors"
 	"net/http"
 	"strings"
-	"time"
 
 	assetservice "github.com/francisconeves97/jxscout/internal/core/asset-service"
 	"github.com/francisconeves97/jxscout/internal/core/common"
@@ -15,13 +14,11 @@ import (
 
 type jsIngestionModule struct {
 	sdk               *jxscouttypes.ModuleSDK
-	cacheTTL          time.Duration
 	downloadReferedJS bool
 }
 
-func NewJSIngestionModule(cacheTTL time.Duration, downloadReferedJS bool) jxscouttypes.Module {
+func NewJSIngestionModule(downloadReferedJS bool) jxscouttypes.Module {
 	return &jsIngestionModule{
-		cacheTTL:          cacheTTL,
 		downloadReferedJS: downloadReferedJS,
 	}
 }
@@ -41,7 +38,7 @@ func (m *jsIngestionModule) Initialize(sdk *jxscouttypes.ModuleSDK) error {
 }
 
 func (m *jsIngestionModule) subscribeIngestionRequestTopic() error {
-	messages, err := m.sdk.EventBus.Subscribe(ingestion.TopicIngestionRequestReceived)
+	messages, err := m.sdk.InMemoryEventBus.Subscribe(ingestion.TopicIngestionRequestReceived)
 	if err != nil {
 		return errutil.Wrap(err, "failed to subscribe to ingestion request topic")
 	}
@@ -136,6 +133,10 @@ func (m *jsIngestionModule) validateIngestionRequest(req *ingestion.IngestionReq
 
 	if req.Response.Status != http.StatusOK {
 		return errors.New("response status should be ok")
+	}
+
+	if common.IsProbablyHTML([]byte(req.Response.Body)) {
+		return errors.New("content type is not JS")
 	}
 
 	contentTypeHeader := m.getContentType(*req)

@@ -1,0 +1,249 @@
+[
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/hostname/files/1.js",
+    "analyzerName": "hostname",
+    "value": "'123domain.com'",
+    "start": {
+      "line": 12,
+      "column": 16
+    },
+    "end": {
+      "line": 12,
+      "column": 31
+    },
+    "tags": {
+      "hostname-string": true
+    },
+    "extra": {
+      "hostname": "123domain.com"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/hostname/files/1.js",
+    "analyzerName": "hostname",
+    "value": "'a1-b2-c3.example.com'",
+    "start": {
+      "line": 16,
+      "column": 16
+    },
+    "end": {
+      "line": 16,
+      "column": 38
+    },
+    "tags": {
+      "hostname-string": true
+    },
+    "extra": {
+      "hostname": "a1-b2-c3.example.com"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/hostname/files/1.js",
+    "analyzerName": "hostname",
+    "value": "'domain123.com'",
+    "start": {
+      "line": 11,
+      "column": 16
+    },
+    "end": {
+      "line": 11,
+      "column": 31
+    },
+    "tags": {
+      "hostname-string": true
+    },
+    "extra": {
+      "hostname": "domain123.com"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/hostname/files/1.js",
+    "analyzerName": "hostname",
+    "value": "'example.com'",
+    "start": {
+      "line": 2,
+      "column": 16
+    },
+    "end": {
+      "line": 2,
+      "column": 29
+    },
+    "tags": {
+      "hostname-string": true
+    },
+    "extra": {
+      "hostname": "example.com"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/hostname/files/1.js",
+    "analyzerName": "hostname",
+    "value": "'example.io'",
+    "start": {
+      "line": 22,
+      "column": 17
+    },
+    "end": {
+      "line": 22,
+      "column": 29
+    },
+    "tags": {
+      "hostname-string": true
+    },
+    "extra": {
+      "hostname": "example.io"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/hostname/files/1.js",
+    "analyzerName": "hostname",
+    "value": "'example.net'",
+    "start": {
+      "line": 21,
+      "column": 17
+    },
+    "end": {
+      "line": 21,
+      "column": 30
+    },
+    "tags": {
+      "hostname-string": true
+    },
+    "extra": {
+      "hostname": "example.net"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/hostname/files/1.js",
+    "analyzerName": "hostname",
+    "value": "'example.org'",
+    "start": {
+      "line": 20,
+      "column": 17
+    },
+    "end": {
+      "line": 20,
+      "column": 30
+    },
+    "tags": {
+      "hostname-string": true
+    },
+    "extra": {
+      "hostname": "example.org"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/hostname/files/1.js",
+    "analyzerName": "hostname",
+    "value": "'my-domain.com'",
+    "start": {
+      "line": 7,
+      "column": 16
+    },
+    "end": {
+      "line": 7,
+      "column": 31
+    },
+    "tags": {
+      "hostname-string": true
+    },
+    "extra": {
+      "hostname": "my-domain.com"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/hostname/files/1.js",
+    "analyzerName": "hostname",
+    "value": "'sub-domain.example.com'",
+    "start": {
+      "line": 8,
+      "column": 16
+    },
+    "end": {
+      "line": 8,
+      "column": 40
+    },
+    "tags": {
+      "hostname-string": true
+    },
+    "extra": {
+      "hostname": "sub-domain.example.com"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/hostname/files/1.js",
+    "analyzerName": "hostname",
+    "value": "'sub.example.com'",
+    "start": {
+      "line": 3,
+      "column": 16
+    },
+    "end": {
+      "line": 3,
+      "column": 33
+    },
+    "tags": {
+      "hostname-string": true
+    },
+    "extra": {
+      "hostname": "sub.example.com"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/hostname/files/1.js",
+    "analyzerName": "hostname",
+    "value": "'sub.sub.example.com'",
+    "start": {
+      "line": 4,
+      "column": 16
+    },
+    "end": {
+      "line": 4,
+      "column": 37
+    },
+    "tags": {
+      "hostname-string": true
+    },
+    "extra": {
+      "hostname": "sub.sub.example.com"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/hostname/files/1.js",
+    "analyzerName": "hostname",
+    "value": "'sub123.example.com'",
+    "start": {
+      "line": 13,
+      "column": 16
+    },
+    "end": {
+      "line": 13,
+      "column": 36
+    },
+    "tags": {
+      "hostname-string": true
+    },
+    "extra": {
+      "hostname": "sub123.example.com"
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/hostname/files/1.js",
+    "analyzerName": "hostname",
+    "value": "'test-123.example.com'",
+    "start": {
+      "line": 17,
+      "column": 17
+    },
+    "end": {
+      "line": 17,
+      "column": 39
+    },
+    "tags": {
+      "hostname-string": true
+    },
+    "extra": {
+      "hostname": "test-123.example.com"
+    }
+  }
+]

@@ -31,11 +31,6 @@ jobs:
         id: get_version
         run: echo "VERSION=$(grep 'const Version =' pkg/constants/version.go | awk '{print $4}' | tr -d '"')" >> $GITHUB_OUTPUT
 
-      - name: Build Bun package
-        run: |
-          bun install --frozen-lockfile
-          bun build pkg/chunk-discoverer/index.ts --outfile internal/modules/chunk-discoverer/chunk-discoverer.js --target bun --minify
-
       - name: Build for multiple platforms
         run: |
           GOOS=linux GOARCH=386 go build -o dist/${{ env.PROJECT_NAME }}_${{ steps.get_version.outputs.VERSION }}_linux_386/jxscout cmd/jxscout/main.go

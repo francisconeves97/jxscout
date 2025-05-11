@@ -2,7 +2,9 @@ package tui
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"os/exec"
 	"strings"
 	"time"
 
@@ -11,6 +13,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/francisconeves97/jxscout/internal/modules/overrides"
+	"github.com/francisconeves97/jxscout/pkg/constants"
 	jxscouttypes "github.com/francisconeves97/jxscout/pkg/types"
 	"github.com/muesli/reflow/wordwrap"
 )
@@ -34,6 +37,8 @@ type TUI struct {
 	logsPanelViewportReady bool
 	autoScroll             bool
 	jxscout                JXScout
+	hasUpdate              bool
+	latestVersion          string
 }
 
 type LogBuffer interface {
@@ -83,12 +88,49 @@ func (t *TUI) addToHistory(cmd string) {
 	t.historyIndex = len(t.history)
 }
 
-// Init initializes the TUI
-func (t *TUI) Init() tea.Cmd {
-	return tea.Batch(textinput.Blink, logsTickerCmd())
+type LogsTickMsg time.Time
+
+type VersionCheckMsg struct {
+	HasUpdate bool
+	Version   string
 }
 
-type LogsTickMsg time.Time
+func versionCheckCmd() tea.Cmd {
+	return func() tea.Msg {
+		// Use curl to check the latest release on GitHub
+		cmd := exec.Command("curl", "-s", "https://api.github.com/repos/francisconeves97/jxscout/releases/latest")
+		output, err := cmd.CombinedOutput()
+		if err != nil {
+			return VersionCheckMsg{HasUpdate: false}
+		}
+
+		// Parse the JSON response to extract the tag_name
+		var response struct {
+			TagName string `json:"tag_name"`
+		}
+		if err := json.Unmarshal(output, &response); err != nil {
+			return VersionCheckMsg{HasUpdate: false}
+		}
+
+		// Remove 'v' prefix if present
+		latestVersion := strings.TrimPrefix(response.TagName, "v")
+		currentVersion := constants.Version
+
+		// Compare versions
+		if latestVersion != currentVersion {
+			return VersionCheckMsg{
+				HasUpdate: true,
+				Version:   latestVersion,
+			}
+		}
+
+		return VersionCheckMsg{HasUpdate: false}
+	}
+}
+
+func (t *TUI) Init() tea.Cmd {
+	return tea.Batch(textinput.Blink, logsTickerCmd(), versionCheckCmd())
+}
 
 func logsTickerCmd() tea.Cmd {
 	return tea.Every(530*time.Millisecond, func(t time.Time) tea.Msg {
@@ -191,6 +233,9 @@ func (t *TUI) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	)
 
 	switch msg := msg.(type) {
+	case VersionCheckMsg:
+		t.hasUpdate = msg.HasUpdate
+		t.latestVersion = msg.Version
 	case tea.KeyMsg:
 	case tea.WindowSizeMsg:
 		headerHeight := lipgloss.Height(t.logsHeader())
@@ -275,6 +320,12 @@ func (t *TUI) View() string {
 
 	if t.output == "" {
 		s.WriteString(staticBanner)
+		if t.hasUpdate {
+			updateMsg := fmt.Sprintf("\n🔄 A new version (%s) is available!\nVisit https://github.com/francisconeves97/jxscout to check it out.\n", t.latestVersion)
+			s.WriteString(lipgloss.NewStyle().
+				Foreground(lipgloss.Color("205")).
+				Render(updateMsg))
+		}
 	}
 
 	// Render output

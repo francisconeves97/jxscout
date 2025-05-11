@@ -1,0 +1,82 @@
+[
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/window-open/files/1.js",
+    "analyzerName": "window-open",
+    "value": "window.open('https://example.com', '_blank', 'width=500,height=500')",
+    "start": {
+      "line": 5,
+      "column": 0
+    },
+    "end": {
+      "line": 5,
+      "column": 68
+    },
+    "tags": {
+      "window-open": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/window-open/files/1.js",
+    "analyzerName": "window-open",
+    "value": "window.open('https://example.com')",
+    "start": {
+      "line": 2,
+      "column": 0
+    },
+    "end": {
+      "line": 2,
+      "column": 34
+    },
+    "tags": {
+      "window-open": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/window-open/files/1.js",
+    "analyzerName": "window-open",
+    "value": "window.open(`${baseUrl}/path`)",
+    "start": {
+      "line": 13,
+      "column": 0
+    },
+    "end": {
+      "line": 13,
+      "column": 30
+    },
+    "tags": {
+      "window-open": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/window-open/files/1.js",
+    "analyzerName": "window-open",
+    "value": "window.open(config.url, config.target)",
+    "start": {
+      "line": 20,
+      "column": 0
+    },
+    "end": {
+      "line": 20,
+      "column": 38
+    },
+    "tags": {
+      "window-open": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/window-open/files/1.js",
+    "analyzerName": "window-open",
+    "value": "window.open(url)",
+    "start": {
+      "line": 9,
+      "column": 0
+    },
+    "end": {
+      "line": 9,
+      "column": 16
+    },
+    "tags": {
+      "window-open": true
+    }
+  }
+]

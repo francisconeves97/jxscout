@@ -1,0 +1,542 @@
+[
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/location/files/1.js",
+    "analyzerName": "location",
+    "value": "location.hash",
+    "start": {
+      "line": 10,
+      "column": 21
+    },
+    "end": {
+      "line": 10,
+      "column": 34
+    },
+    "tags": {
+      "location": true,
+      "location-read": true,
+      "property-hash": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/location/files/1.js",
+    "analyzerName": "location",
+    "value": "location.host",
+    "start": {
+      "line": 7,
+      "column": 21
+    },
+    "end": {
+      "line": 7,
+      "column": 34
+    },
+    "tags": {
+      "location": true,
+      "location-read": true,
+      "property-host": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/location/files/1.js",
+    "analyzerName": "location",
+    "value": "location.host",
+    "start": {
+      "line": 61,
+      "column": 41
+    },
+    "end": {
+      "line": 61,
+      "column": 54
+    },
+    "tags": {
+      "location": true,
+      "location-read": true,
+      "property-host": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/location/files/1.js",
+    "analyzerName": "location",
+    "value": "location.href",
+    "start": {
+      "line": 5,
+      "column": 20
+    },
+    "end": {
+      "line": 5,
+      "column": 33
+    },
+    "tags": {
+      "location": true,
+      "location-read": true,
+      "property-href": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/location/files/1.js",
+    "analyzerName": "location",
+    "value": "location.href",
+    "start": {
+      "line": 64,
+      "column": 4
+    },
+    "end": {
+      "line": 64,
+      "column": 17
+    },
+    "tags": {
+      "location": true,
+      "location-read": true,
+      "property-href": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/location/files/1.js",
+    "analyzerName": "location",
+    "value": "location.href = \"https://example.com\"",
+    "start": {
+      "line": 4,
+      "column": 0
+    },
+    "end": {
+      "line": 4,
+      "column": 37
+    },
+    "tags": {
+      "location": true,
+      "location-assignment": true,
+      "property-href": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/location/files/1.js",
+    "analyzerName": "location",
+    "value": "location.href = \"https://example.com\"",
+    "start": {
+      "line": 70,
+      "column": 2
+    },
+    "end": {
+      "line": 70,
+      "column": 39
+    },
+    "tags": {
+      "location": true,
+      "location-assignment": true,
+      "property-href": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/location/files/1.js",
+    "analyzerName": "location",
+    "value": "location.href = \"https://other.com\"",
+    "start": {
+      "line": 65,
+      "column": 2
+    },
+    "end": {
+      "line": 65,
+      "column": 37
+    },
+    "tags": {
+      "location": true,
+      "location-assignment": true,
+      "property-href": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/location/files/1.js",
+    "analyzerName": "location",
+    "value": "location.href = \"https://secure.com\"",
+    "start": {
+      "line": 83,
+      "column": 4
+    },
+    "end": {
+      "line": 83,
+      "column": 40
+    },
+    "tags": {
+      "location": true,
+      "location-assignment": true,
+      "property-href": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/location/files/1.js",
+    "analyzerName": "location",
+    "value": "location.href = \"https://upgrade.com\"",
+    "start": {
+      "line": 86,
+      "column": 4
+    },
+    "end": {
+      "line": 86,
+      "column": 41
+    },
+    "tags": {
+      "location": true,
+      "location-assignment": true,
+      "property-href": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/location/files/1.js",
+    "analyzerName": "location",
+    "value": "location.href = `https://example${i}.com`",
+    "start": {
+      "line": 77,
+      "column": 2
+    },
+    "end": {
+      "line": 77,
+      "column": 43
+    },
+    "tags": {
+      "location": true,
+      "location-assignment": true,
+      "property-href": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/location/files/1.js",
+    "analyzerName": "location",
+    "value": "location.href = url",
+    "start": {
+      "line": 41,
+      "column": 2
+    },
+    "end": {
+      "line": 41,
+      "column": 21
+    },
+    "tags": {
+      "location": true,
+      "location-assignment": true,
+      "property-href": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/location/files/1.js",
+    "analyzerName": "location",
+    "value": "location.href = url",
+    "start": {
+      "line": 47,
+      "column": 2
+    },
+    "end": {
+      "line": 47,
+      "column": 21
+    },
+    "tags": {
+      "location": true,
+      "location-assignment": true,
+      "property-href": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/location/files/1.js",
+    "analyzerName": "location",
+    "value": "location.href = url",
+    "start": {
+      "line": 54,
+      "column": 4
+    },
+    "end": {
+      "line": 54,
+      "column": 23
+    },
+    "tags": {
+      "location": true,
+      "location-assignment": true,
+      "property-href": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/location/files/1.js",
+    "analyzerName": "location",
+    "value": "location.pathname",
+    "start": {
+      "line": 8,
+      "column": 25
+    },
+    "end": {
+      "line": 8,
+      "column": 42
+    },
+    "tags": {
+      "location": true,
+      "location-read": true,
+      "property-pathname": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/location/files/1.js",
+    "analyzerName": "location",
+    "value": "location.pathname",
+    "start": {
+      "line": 61,
+      "column": 57
+    },
+    "end": {
+      "line": 61,
+      "column": 74
+    },
+    "tags": {
+      "location": true,
+      "location-read": true,
+      "property-pathname": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/location/files/1.js",
+    "analyzerName": "location",
+    "value": "location.protocol",
+    "start": {
+      "line": 6,
+      "column": 25
+    },
+    "end": {
+      "line": 6,
+      "column": 42
+    },
+    "tags": {
+      "location": true,
+      "location-read": true,
+      "property-protocol": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/location/files/1.js",
+    "analyzerName": "location",
+    "value": "location.protocol",
+    "start": {
+      "line": 61,
+      "column": 19
+    },
+    "end": {
+      "line": 61,
+      "column": 36
+    },
+    "tags": {
+      "location": true,
+      "location-read": true,
+      "property-protocol": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/location/files/1.js",
+    "analyzerName": "location",
+    "value": "location.protocol",
+    "start": {
+      "line": 81,
+      "column": 8
+    },
+    "end": {
+      "line": 81,
+      "column": 25
+    },
+    "tags": {
+      "location": true,
+      "location-read": true,
+      "property-protocol": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/location/files/1.js",
+    "analyzerName": "location",
+    "value": "location.search",
+    "start": {
+      "line": 9,
+      "column": 23
+    },
+    "end": {
+      "line": 9,
+      "column": 38
+    },
+    "tags": {
+      "location": true,
+      "location-read": true,
+      "property-search": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/location/files/1.js",
+    "analyzerName": "location",
+    "value": "window.location.hash",
+    "start": {
+      "line": 19,
+      "column": 19
+    },
+    "end": {
+      "line": 19,
+      "column": 39
+    },
+    "tags": {
+      "location": true,
+      "location-read": true,
+      "property-hash": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/location/files/1.js",
+    "analyzerName": "location",
+    "value": "window.location.host",
+    "start": {
+      "line": 16,
+      "column": 19
+    },
+    "end": {
+      "line": 16,
+      "column": 39
+    },
+    "tags": {
+      "location": true,
+      "location-read": true,
+      "property-host": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/location/files/1.js",
+    "analyzerName": "location",
+    "value": "window.location.href",
+    "start": {
+      "line": 14,
+      "column": 19
+    },
+    "end": {
+      "line": 14,
+      "column": 39
+    },
+    "tags": {
+      "location": true,
+      "location-read": true,
+      "property-href": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/location/files/1.js",
+    "analyzerName": "location",
+    "value": "window.location.href = \"https://example.com\"",
+    "start": {
+      "line": 13,
+      "column": 0
+    },
+    "end": {
+      "line": 13,
+      "column": 44
+    },
+    "tags": {
+      "location": true,
+      "location-assignment": true,
+      "property-href": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/location/files/1.js",
+    "analyzerName": "location",
+    "value": "window.location.href = url",
+    "start": {
+      "line": 42,
+      "column": 2
+    },
+    "end": {
+      "line": 42,
+      "column": 28
+    },
+    "tags": {
+      "location": true,
+      "location-assignment": true,
+      "property-href": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/location/files/1.js",
+    "analyzerName": "location",
+    "value": "window.location.href = url",
+    "start": {
+      "line": 48,
+      "column": 2
+    },
+    "end": {
+      "line": 48,
+      "column": 28
+    },
+    "tags": {
+      "location": true,
+      "location-assignment": true,
+      "property-href": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/location/files/1.js",
+    "analyzerName": "location",
+    "value": "window.location.href = url",
+    "start": {
+      "line": 55,
+      "column": 4
+    },
+    "end": {
+      "line": 55,
+      "column": 30
+    },
+    "tags": {
+      "location": true,
+      "location-assignment": true,
+      "property-href": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/location/files/1.js",
+    "analyzerName": "location",
+    "value": "window.location.pathname",
+    "start": {
+      "line": 17,
+      "column": 23
+    },
+    "end": {
+      "line": 17,
+      "column": 47
+    },
+    "tags": {
+      "location": true,
+      "location-read": true,
+      "property-pathname": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/location/files/1.js",
+    "analyzerName": "location",
+    "value": "window.location.protocol",
+    "start": {
+      "line": 15,
+      "column": 23
+    },
+    "end": {
+      "line": 15,
+      "column": 47
+    },
+    "tags": {
+      "location": true,
+      "location-read": true,
+      "property-protocol": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/location/files/1.js",
+    "analyzerName": "location",
+    "value": "window.location.search",
+    "start": {
+      "line": 18,
+      "column": 21
+    },
+    "end": {
+      "line": 18,
+      "column": 43
+    },
+    "tags": {
+      "location": true,
+      "location-read": true,
+      "property-search": true
+    }
+  }
+]

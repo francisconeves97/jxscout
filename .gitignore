@@ -3,3 +3,4 @@ github_results*
 dist
 extracted
 .DS_Store
+.cursor

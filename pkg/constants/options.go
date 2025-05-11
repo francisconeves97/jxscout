@@ -26,12 +26,8 @@ const (
 	// Chunk discovery configuration
 	DefaultChunkDiscovererBruteForceLimit = 3000
 
-	// Cache configuration
-	DefaultJavascriptRequestsCacheTTL = time.Hour
-	DefaultHTMLRequestsCacheTTL       = time.Hour
-
-	// Git commiter configuration
-	DefaultGitCommitInterval = time.Minute * 5
+	DefaultJavascriptRequestsCacheTTL = 10 * time.Minute
+	DefaultHTMLRequestsCacheTTL       = 10 * time.Minute
 
 	// Rate limiting configuration
 	DefaultRateLimitingMaxRequestsPerSecond = 2
@@ -75,9 +71,6 @@ const (
 	FlagJavascriptRequestsCacheTTL = "js-requests-cache-ttl"
 	FlagHTMLRequestsCacheTTL       = "html-requests-cache-ttl"
 
-	// Git commiter configuration
-	FlagGitCommitInterval = "git-commit-interval"
-
 	// Rate limiting configuration
 	FlagRateLimitingMaxRequestsPerSecond = "rate-limiter-max-requests-per-second"
 	FlagRateLimitingMaxRequestsPerMinute = "rate-limiter-max-requests-per-minute"
@@ -119,9 +112,6 @@ const (
 	// Cache configuration
 	DescriptionJavascriptRequestsCacheTTL = "how long to wait before re-downloading the same JS file"
 	DescriptionHTMLRequestsCacheTTL       = "how long to wait before re-downloading the same HTML page"
-
-	// Git commiter configuration
-	DescriptionGitCommitInterval = "how often commits are made to the working directory"
 
 	// Rate limiting configuration
 	DescriptionRateLimitingMaxRequestsPerMinute = "max requests per minute for source maps and chunk discovery (0 = unlimited)"

@@ -8,7 +8,9 @@ import (
 
 	assetfetcher "github.com/francisconeves97/jxscout/internal/core/asset-fetcher"
 	assetservice "github.com/francisconeves97/jxscout/internal/core/asset-service"
+	dbeventbus "github.com/francisconeves97/jxscout/internal/core/dbeventbus"
 	"github.com/francisconeves97/jxscout/internal/core/eventbus"
+	"github.com/francisconeves97/jxscout/internal/core/websocket"
 
 	"github.com/go-chi/chi"
 	"github.com/jmoiron/sqlx"
@@ -23,6 +25,7 @@ type HTTPServer interface {
 
 // EventBus interface
 type EventBus = eventbus.EventBus
+type DBEventBus = *dbeventbus.EventBus
 type EventBusMessage = eventbus.Message
 
 // Router interface
@@ -50,7 +53,6 @@ type Options struct {
 	ChunkDiscovererBruteForceLimit   int                 `yaml:"chunk-discoverer-bruteforce-limit"`
 	JavascriptRequestsCacheTTL       time.Duration       `yaml:"js-requests-cache-ttl"`
 	HTMLRequestsCacheTTL             time.Duration       `yaml:"html-requests-cache-ttl"`
-	GitCommitInterval                time.Duration       `yaml:"git-commit-interval"`
 	RateLimitingMaxRequestsPerSecond int                 `yaml:"rate-limiter-max-requests-per-second"`
 	RateLimitingMaxRequestsPerMinute int                 `yaml:"rate-limiter-max-requests-per-minute"`
 	DownloadReferedJS                bool                `yaml:"download-refered-js"`
@@ -72,17 +74,19 @@ type FileService = assetservice.FileService
 
 // ModuleSDK are the exposed dependencies that modules can use
 type ModuleSDK struct {
-	Ctx          context.Context
-	EventBus     EventBus
-	Router       Router
-	AssetService AssetService
-	AssetFetcher AssetFetcher
-	Options      Options
-	HTTPServer   HTTPServer
-	Logger       *slog.Logger
-	Scope        Scope
-	FileService  FileService
-	Database     *sqlx.DB
+	Ctx              context.Context
+	InMemoryEventBus EventBus
+	DBEventBus       DBEventBus
+	Router           Router
+	AssetService     AssetService
+	AssetFetcher     AssetFetcher
+	Options          Options
+	HTTPServer       HTTPServer
+	WebsocketServer  *websocket.WebsocketServer // used to communitate with VSCode
+	Logger           *slog.Logger
+	Scope            Scope
+	FileService      FileService
+	Database         *sqlx.DB
 }
 
 type Module interface {

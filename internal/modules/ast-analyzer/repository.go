@@ -3,26 +3,45 @@ package astanalyzer
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
+	"errors"
 	"time"
 
 	"github.com/francisconeves97/jxscout/internal/core/errutil"
 	"github.com/jmoiron/sqlx"
 )
 
+const (
+	AssetTypeOriginalAsset     = "asset"
+	AssetTypeReversedSourcemap = "reversed_sourcemap"
+)
+
 type astAnalysis struct {
 	ID              int64      `db:"id"`
+	AssetType       string     `db:"asset_type"`
 	AssetID         int64      `db:"asset_id"`
-	Analyzer        string     `db:"analyzer"`
-	AnalyzerVersion string     `db:"analyzer_version"`
-	Results         string     `db:"results"`
+	AssetPath       string     `db:"asset_path"`
+	AnalyzerVersion int64      `db:"analyzer_version"`
+	Results         string     `db:"results"` // stores raw array of matches
 	CreatedAt       time.Time  `db:"created_at"`
 	UpdatedAt       time.Time  `db:"updated_at"`
 	DeletedAt       *time.Time `db:"deleted_at"`
 }
 
+func (a *astAnalysis) GetMatches() ([]AnalyzerMatch, error) {
+	var matches []AnalyzerMatch
+	if err := json.Unmarshal([]byte(a.Results), &matches); err != nil {
+		return nil, errutil.Wrap(err, "failed to unmarshal analysis result")
+	}
+
+	return matches, nil
+}
+
 type asset struct {
-	ID   int64  `db:"id"`
-	Path string `db:"fs_path"`
+	ID           int64  `db:"id"`
+	Path         string `db:"fs_path"`
+	AssetType    string `db:"asset_type"`
+	IsBeautified bool   `db:"is_beautified"`
 }
 
 type astAnalyzerRepository struct {
@@ -44,36 +63,37 @@ func newAstAnalyzerRepository(db *sqlx.DB) (*astAnalyzerRepository, error) {
 func (r *astAnalyzerRepository) initializeTable() error {
 	_, err := r.db.Exec(
 		`
-		CREATE TABLE IF NOT EXISTS ast_analysis (
+		CREATE TABLE IF NOT EXISTS ast_analysis_results (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
-			asset_id INTEGER REFERENCES assets(id),
-			analyzer TEXT NOT NULL,
-			analyzer_version TEXT NOT NULL,
+			asset_id INTEGER NOT NULL,
+			asset_type TEXT NOT NULL,
+			asset_path TEXT NOT NULL,
+			analyzer_version INTEGER NOT NULL,
 			results TEXT NOT NULL,
 			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 			updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 			deleted_at TIMESTAMP,
-			UNIQUE(asset_id, analyzer)
+			UNIQUE(asset_id, asset_type)
 		)
 		`,
 	)
 	if err != nil {
-		return errutil.Wrap(err, "failed to create ast_analysis table schema")
+		return errutil.Wrap(err, "failed to create ast_analysis_results table schema")
 	}
 
 	return nil
 }
 
-func (r *astAnalyzerRepository) createAnalysis(ctx context.Context, analysis *astAnalysis) error {
+func (r *astAnalyzerRepository) createAnalysis(ctx context.Context, analysis astAnalysis) error {
 	query := `
-		INSERT INTO ast_analysis (asset_id, analyzer, analyzer_version, results)
-		VALUES (?, ?, ?, ?)
-		ON CONFLICT(asset_id, analyzer) DO UPDATE SET
+		INSERT INTO ast_analysis_results (asset_id, asset_type, asset_path, analyzer_version, results)
+		VALUES (?, ?, ?, ?, ?)
+		ON CONFLICT(asset_id, asset_type) DO UPDATE SET
 			analyzer_version = excluded.analyzer_version,
 			results = excluded.results,
-			updated_at = CURRENT_TIMESTAMP
+			updated_at = CURRENT_TIMESTAMP	
 	`
-	_, err := r.db.ExecContext(ctx, query, analysis.AssetID, analysis.Analyzer, analysis.AnalyzerVersion, analysis.Results)
+	_, err := r.db.ExecContext(ctx, query, analysis.AssetID, analysis.AssetType, analysis.AssetPath, analysis.AnalyzerVersion, analysis.Results)
 	if err != nil {
 		return errutil.Wrap(err, "failed to create ast analysis")
 	}
@@ -82,14 +102,21 @@ func (r *astAnalyzerRepository) createAnalysis(ctx context.Context, analysis *as
 
 func (r *astAnalyzerRepository) getAssetByPath(ctx context.Context, filePath string) (*asset, error) {
 	query := `
-		SELECT id, fs_path
-		FROM assets
-		WHERE fs_path = ? AND content_type = 'JS'
+		SELECT id, fs_path, asset_type, is_beautified
+		FROM (
+			SELECT id, fs_path, 'asset' as asset_type, is_beautified
+			FROM assets
+			WHERE fs_path = ? AND content_type = 'JS'
+			UNION
+			SELECT id, path as fs_path, 'reversed_sourcemap' as asset_type, true as is_beautified
+			FROM reversed_sourcemaps
+			WHERE path = ?
+		)
 		LIMIT 1
 	`
 
 	var a asset
-	err := r.db.GetContext(ctx, &a, query, filePath)
+	err := r.db.GetContext(ctx, &a, query, filePath, filePath)
 	if err == sql.ErrNoRows {
 		return nil, nil
 	}
@@ -100,23 +127,20 @@ func (r *astAnalyzerRepository) getAssetByPath(ctx context.Context, filePath str
 	return &a, nil
 }
 
-func (r *astAnalyzerRepository) getAnalysesByAssetID(ctx context.Context, assetID int64) (map[string]*astAnalysis, error) {
+func (r *astAnalyzerRepository) getASTAnalysisByAssetID(ctx context.Context, assetID int64, assetType string) (astAnalysis, bool, error) {
 	query := `
-		SELECT id, asset_id, analyzer, analyzer_version, results, created_at, updated_at, deleted_at
-		FROM ast_analysis
-		WHERE asset_id = ? AND deleted_at IS NULL
+		SELECT *
+		FROM ast_analysis_results
+		WHERE asset_id = ? AND asset_type = ? AND deleted_at IS NULL
 	`
 
-	var analyses []*astAnalysis
-	if err := r.db.SelectContext(ctx, &analyses, query, assetID); err != nil {
-		return nil, errutil.Wrap(err, "failed to get ast analyses by asset ID")
+	var analysis astAnalysis
+	if err := r.db.GetContext(ctx, &analysis, query, assetID, assetType); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return astAnalysis{}, false, nil
+		}
+		return astAnalysis{}, false, errutil.Wrap(err, "failed to get ast analysis by asset ID")
 	}
 
-	// Convert to map for easier lookup
-	analysisMap := make(map[string]*astAnalysis)
-	for _, analysis := range analyses {
-		analysisMap[analysis.Analyzer] = analysis
-	}
-
-	return analysisMap, nil
+	return analysis, true, nil
 }

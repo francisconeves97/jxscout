@@ -1,13 +1,15 @@
 install:
 	go mod vendor
 	bun install --frozen-lockfile
-	bun install -g prettier reverse-sourcemap
+	bun install -g prettier
 
 clean:
 	rm -rf dist/
 
 build:
-	make clean
-	bun build pkg/chunk-discoverer/index.ts --outfile internal/modules/chunk-discoverer/chunk-discoverer.js --target bun --minify
-	bun build pkg/ast-analyzer/index.ts --outfile internal/modules/ast-analyzer/ast-analyzer.js --target bun --minify
-	go build -o dist/jxscout cmd/jxscout/main.go
+	bun run rsbuild build
+	mv dist/sourceMaps.js internal/modules/sourcemaps/sourcemaps.js
+	mv dist/astAnalyzer.js internal/modules/ast-analyzer/ast-analyzer.js
+	bun run scripts/patch-ast-analyzer-build/patch.ts internal/modules/ast-analyzer/ast-analyzer.js
+	mv dist/chunkDiscoverer.js internal/modules/chunk-discoverer/chunk-discoverer.js
+	cp node_modules/source-map/lib/mappings.wasm internal/modules/sourcemaps/mappings.wasm

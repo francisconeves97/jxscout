@@ -1,6 +1,7 @@
 package astanalyzer
 
 import (
+	"bytes"
 	"context"
 	_ "embed"
 	"encoding/json"
@@ -8,39 +9,65 @@ import (
 	"io"
 	"os"
 	"os/exec"
-	"path"
 	"path/filepath"
+	"runtime"
 	"strings"
+	"time"
 
 	assetservice "github.com/francisconeves97/jxscout/internal/core/asset-service"
 	"github.com/francisconeves97/jxscout/internal/core/common"
+	"github.com/francisconeves97/jxscout/internal/core/dbeventbus"
 	"github.com/francisconeves97/jxscout/internal/core/errutil"
 	"github.com/francisconeves97/jxscout/internal/modules/beautifier"
-	concurrentqueue "github.com/francisconeves97/jxscout/pkg/concurrent-queue"
+	"github.com/francisconeves97/jxscout/internal/modules/sourcemaps"
 	jxscouttypes "github.com/francisconeves97/jxscout/pkg/types"
 )
 
-var enabledAnalyzers = map[string]string{
-	"paths":  "0.1.0",
-	"emails": "0.1.0",
-}
+const analyzerVersion = 1
 
 //go:embed ast-analyzer.js
 var astAnalyzerBinary []byte
+
+//go:embed parser.darwin-arm64.node
+var parserDarwinArm64 []byte
+
+//go:embed parser.darwin-x64.node
+var parserDarwinX64 []byte
+
+//go:embed parser.linux-arm-gnueabihf.node
+var parserLinuxArmGnueabihf []byte
+
+//go:embed parser.linux-arm64-gnu.node
+var parserLinuxArm64Gnu []byte
+
+//go:embed parser.linux-arm64-musl.node
+var parserLinuxArm64Musl []byte
+
+//go:embed parser.linux-x64-gnu.node
+var parserLinuxX64Gnu []byte
+
+//go:embed parser.linux-x64-musl.node
+var parserLinuxX64Musl []byte
+
+//go:embed parser.win32-arm64-msvc.node
+var parserWin32Arm64Msvc []byte
+
+//go:embed parser.win32-x64-msvc.node
+var parserWin32X64Msvc []byte
 
 type astAnalyzerModule struct {
 	sdk                   *jxscouttypes.ModuleSDK
 	repo                  *astAnalyzerRepository
 	astAnalyzerBinaryPath string
-	queue                 concurrentqueue.Queue[assetservice.Asset]
+	concurrency           int
 	wsServer              *wsServer
+	nativeLibraryPath     string
 }
 
 func NewAstAnalyzerModule(concurrency int) *astAnalyzerModule {
 	module := &astAnalyzerModule{
-		queue: concurrentqueue.NewQueue[assetservice.Asset](concurrency),
+		concurrency: concurrency,
 	}
-	module.wsServer = newWSServer(module)
 	return module
 }
 
@@ -53,7 +80,9 @@ func (m *astAnalyzerModule) Initialize(sdk *jxscouttypes.ModuleSDK) error {
 	}
 	m.repo = repo
 
-	saveDir := path.Join(common.GetPrivateDirectory(), "extracted")
+	m.wsServer = newWsServer(sdk, m)
+
+	saveDir := filepath.Join(common.GetPrivateDirectory(), "extracted")
 
 	// Create the directory if it doesn't exist
 	if err := os.MkdirAll(saveDir, 0755); err != nil {
@@ -66,10 +95,52 @@ func (m *astAnalyzerModule) Initialize(sdk *jxscouttypes.ModuleSDK) error {
 		return errutil.Wrap(err, "failed to write ast analyzer file")
 	}
 
-	m.astAnalyzerBinaryPath = binaryPath
+	parserDarwinArm64Path := filepath.Join(saveDir, "parser.darwin-arm64.node")
+	if err := os.WriteFile(parserDarwinArm64Path, parserDarwinArm64, 0755); err != nil {
+		return errutil.Wrap(err, "failed to write parser darwin arm64 file")
+	}
 
-	// Setup WebSocket endpoint
-	m.sdk.Router.HandleFunc("/ast-analyzer/ws", m.wsServer.handleWebSocket)
+	parserDarwinX64Path := filepath.Join(saveDir, "parser.darwin-x64.node")
+	if err := os.WriteFile(parserDarwinX64Path, parserDarwinX64, 0755); err != nil {
+		return errutil.Wrap(err, "failed to write parser darwin x64 file")
+	}
+
+	parserLinuxArmGnueabihfPath := filepath.Join(saveDir, "parser.linux-arm-gnueabihf.node")
+	if err := os.WriteFile(parserLinuxArmGnueabihfPath, parserLinuxArmGnueabihf, 0755); err != nil {
+		return errutil.Wrap(err, "failed to write parser linux arm gnueabihf file")
+	}
+
+	parserLinuxArm64GnuPath := filepath.Join(saveDir, "parser.linux-arm64-gnu.node")
+	if err := os.WriteFile(parserLinuxArm64GnuPath, parserLinuxArm64Gnu, 0755); err != nil {
+		return errutil.Wrap(err, "failed to write parser linux arm64 gnu file")
+	}
+
+	parserLinuxArm64MuslPath := filepath.Join(saveDir, "parser.linux-arm64-musl.node")
+	if err := os.WriteFile(parserLinuxArm64MuslPath, parserLinuxArm64Musl, 0755); err != nil {
+		return errutil.Wrap(err, "failed to write parser linux arm64 musl file")
+	}
+
+	parserLinuxX64GnuPath := filepath.Join(saveDir, "parser.linux-x64-gnu.node")
+	if err := os.WriteFile(parserLinuxX64GnuPath, parserLinuxX64Gnu, 0755); err != nil {
+		return errutil.Wrap(err, "failed to write parser linux x64 gnu file")
+	}
+
+	parserLinuxX64MuslPath := filepath.Join(saveDir, "parser.linux-x64-musl.node")
+	if err := os.WriteFile(parserLinuxX64MuslPath, parserLinuxX64Musl, 0755); err != nil {
+		return errutil.Wrap(err, "failed to write parser linux x64 musl file")
+	}
+
+	parserWin32Arm64MsvcPath := filepath.Join(saveDir, "parser.win32-arm64-msvc.node")
+	if err := os.WriteFile(parserWin32Arm64MsvcPath, parserWin32Arm64Msvc, 0755); err != nil {
+		return errutil.Wrap(err, "failed to write parser win32 arm64 msvc file")
+	}
+
+	parserWin32X64MsvcPath := filepath.Join(saveDir, "parser.win32-x64-msvc.node")
+	if err := os.WriteFile(parserWin32X64MsvcPath, parserWin32X64Msvc, 0755); err != nil {
+		return errutil.Wrap(err, "failed to write parser win32 x64 msvc file")
+	}
+
+	m.astAnalyzerBinaryPath = binaryPath
 
 	go func() {
 		err := m.subscribeAssetBeautified()
@@ -78,46 +149,78 @@ func (m *astAnalyzerModule) Initialize(sdk *jxscouttypes.ModuleSDK) error {
 		}
 	}()
 
-	m.initializeQueueHandler()
-
 	return nil
 }
 
-func (m *astAnalyzerModule) initializeQueueHandler() {
-	m.queue.StartConsumers(func(ctx context.Context, asset assetservice.Asset) {
-		err := m.analyzeAsset(asset)
-		if err != nil {
-			m.sdk.Logger.ErrorContext(ctx, "failed to analyze asset", "err", err, "asset_url", asset.URL)
-			return
-		}
-	})
-}
-
 func (m *astAnalyzerModule) subscribeAssetBeautified() error {
-	messages, err := m.sdk.EventBus.Subscribe(beautifier.TopicBeautifierAssetSaved)
-	if err != nil {
-		return errutil.Wrap(err, "failed to subscribe to asset saved topic")
-	}
-
-	for msg := range messages {
-		event, ok := msg.Data.(beautifier.EventBeautifierAssetSaved)
-		if !ok {
-			m.sdk.Logger.Error("expected event EventBeautifierAssetSaved but event is other type")
-			continue
+	m.sdk.DBEventBus.Subscribe(m.sdk.Ctx, beautifier.TopicBeautifierAssetSaved, "ast-analyzer", func(ctx context.Context, payload []byte) error {
+		var event beautifier.EventBeautifierAssetSaved
+		err := json.Unmarshal(payload, &event)
+		if err != nil {
+			return errutil.Wrap(err, "failed to unmarshal payload")
 		}
 
-		// Check if the asset is a JavaScript file or contains inline JavaScript
-		if !isJavaScriptAsset(event.Asset) {
-			continue
+		assetServiceAsset, err := m.sdk.AssetService.GetAssetByID(ctx, event.AssetID)
+		if err != nil {
+			return dbeventbus.NewRetriableError(errutil.Wrap(err, "failed to get asset"))
 		}
 
-		if !m.sdk.Scope.IsInScope(event.Asset.URL) {
-			m.sdk.Logger.Debug("skipping ast analysis because asset is not in scope", "asset_url", event.Asset.URL)
-			continue
+		if !isJavaScriptAsset(assetServiceAsset) {
+			return nil
 		}
 
-		m.queue.Produce(m.sdk.Ctx, event.Asset)
-	}
+		asset := asset{
+			ID:        assetServiceAsset.ID,
+			Path:      assetServiceAsset.Path,
+			AssetType: AssetTypeOriginalAsset,
+		}
+
+		_, err = m.analyzeAsset(asset)
+		if err != nil {
+			return errutil.Wrapf(err, "failed to analyze asset: %s", asset.Path)
+		}
+
+		return nil
+	}, dbeventbus.Options{
+		Concurrency:       m.concurrency,
+		MaxRetries:        3,
+		Backoff:           common.ExponentialBackoff,
+		PollInterval:      1 * time.Second,
+		HeartbeatInterval: 10 * time.Second,
+	})
+
+	m.sdk.DBEventBus.Subscribe(m.sdk.Ctx, sourcemaps.TopicSourcemapsReversedSourcemapSaved, "ast-analyzer", func(ctx context.Context, payload []byte) error {
+		var event sourcemaps.EventSourcemapsReversedSourcemapSaved
+		err := json.Unmarshal(payload, &event)
+		if err != nil {
+			return errutil.Wrap(err, "failed to unmarshal payload")
+		}
+
+		var reversedSourcemap sourcemaps.ReversedSourcemap
+		err = m.sdk.Database.GetContext(ctx, &reversedSourcemap, "SELECT * FROM reversed_sourcemaps WHERE id = ?", event.ReversedSourcemapID)
+		if err != nil {
+			return dbeventbus.NewRetriableError(errutil.Wrap(err, "failed to get reversed sourcemap"))
+		}
+
+		asset := asset{
+			ID:        reversedSourcemap.ID,
+			Path:      reversedSourcemap.Path,
+			AssetType: AssetTypeReversedSourcemap,
+		}
+
+		_, err = m.analyzeAsset(asset)
+		if err != nil {
+			return errutil.Wrapf(err, "failed to analyze asset: %s", asset.Path)
+		}
+
+		return nil
+	}, dbeventbus.Options{
+		Concurrency:       m.concurrency,
+		MaxRetries:        3,
+		Backoff:           common.ExponentialBackoff,
+		PollInterval:      1 * time.Second,
+		HeartbeatInterval: 10 * time.Second,
+	})
 
 	return nil
 }
@@ -134,76 +237,141 @@ func isJavaScriptAsset(asset assetservice.Asset) bool {
 	return false
 }
 
-func (m *astAnalyzerModule) analyzeAsset(asset assetservice.Asset) error {
+type Position struct {
+	/** 1-based */
+	Line int64 `json:"line"`
+	/** 0-based */
+	Column int64 `json:"column"`
+}
+
+func (m *astAnalyzerModule) analyzeAsset(asset asset) (astAnalysis, error) {
 	// Get existing analyses for this asset
-	existingAnalyses, err := m.repo.getAnalysesByAssetID(m.sdk.Ctx, asset.ID)
+	analysis, found, err := m.repo.getASTAnalysisByAssetID(m.sdk.Ctx, asset.ID, asset.AssetType)
 	if err != nil {
-		return errutil.Wrap(err, "failed to get existing analyses")
+		return analysis, dbeventbus.NewRetriableError(errutil.Wrap(err, "failed to get existing analyses"))
 	}
 
-	// Determine which analyzers need to run
-	var analyzersToRun []string
-	for analyzerName, version := range enabledAnalyzers {
-		existing, exists := existingAnalyses[analyzerName]
-		if !exists || existing.AnalyzerVersion != version {
-			analyzersToRun = append(analyzersToRun, analyzerName)
-		}
-	}
-
-	// If no analyzers need to run, we're done
-	if len(analyzersToRun) == 0 {
-		m.sdk.Logger.Debug("all analyzers are up to date", "asset_id", asset.ID)
-		return nil
+	if found && analysis.AnalyzerVersion == analyzerVersion {
+		m.sdk.Logger.Debug("analysis is up to date, skipping", "asset_id", asset.ID, "analysis", analysis.ID)
+		return analysis, nil
 	}
 
 	// Run the AST analyzer script with specific analyzers
-	results, err := m.execASTAnalyzer(asset, analyzersToRun)
+	results, err := m.execASTAnalyzer(asset)
 	if err != nil {
-		return errutil.Wrap(err, "failed to execute ast analyzer")
+		return analysis, errutil.Wrap(err, "failed to execute ast analyzer")
 	}
 
-	// Parse the results to get analyzer name and results
-	var output map[string]interface{}
+	// make sure output is in the correct format
+	var output []AnalyzerMatch
 	if err := json.Unmarshal([]byte(results), &output); err != nil {
-		return errutil.Wrap(err, "failed to parse ast analyzer output")
+		return analysis, errutil.Wrapf(err, "failed to parse ast analyzer output: %s", results)
 	}
 
-	for analyzerName, analyzerResults := range output {
-		resultsJSON, err := json.Marshal(analyzerResults)
-		if err != nil {
-			m.sdk.Logger.Error("failed to marshal analyzer results", "err", err, "asset_id", asset.ID, "analyzer", analyzerName)
-			continue
-		}
-
-		analysis := &astAnalysis{
-			AssetID:         asset.ID,
-			Analyzer:        analyzerName,
-			AnalyzerVersion: enabledAnalyzers[analyzerName],
-			Results:         string(resultsJSON),
-		}
-
-		// Store the results in the database
-		if err := m.repo.createAnalysis(m.sdk.Ctx, analysis); err != nil {
-			m.sdk.Logger.Error("failed to store ast analysis results", "err", err, "asset_id", asset.ID, "analyzer", analyzerName)
-			continue
-		}
+	analysis = astAnalysis{
+		AssetID:         asset.ID,
+		AnalyzerVersion: analyzerVersion,
+		Results:         results,
+		AssetType:       asset.AssetType,
+		AssetPath:       asset.Path,
 	}
 
-	return nil
+	// Store the results in the database
+	if err := m.repo.createAnalysis(m.sdk.Ctx, analysis); err != nil {
+		return analysis, dbeventbus.NewRetriableError(errutil.Wrap(err, "failed to store ast analysis results"))
+	}
+
+	return analysis, nil
 }
 
-func (m *astAnalyzerModule) execASTAnalyzer(asset assetservice.Asset, analyzers []string) (string, error) {
+func getLibcVariant() (string, error) {
+	// Try `ldd --version`, which outputs different text for musl vs glibc
+	cmd := exec.Command("ldd", "--version")
+	var out bytes.Buffer
+	cmd.Stdout = &out
+	cmd.Stderr = &out
+
+	if err := cmd.Run(); err != nil {
+		return "", errutil.Wrap(err, "failed to detect libc")
+	}
+
+	output := out.String()
+	if strings.Contains(strings.ToLower(output), "musl") {
+		return "musl", nil
+	} else if strings.Contains(strings.ToLower(output), "glibc") || strings.Contains(strings.ToLower(output), "gnu") {
+		return "gnu", nil
+	}
+
+	return "gnu", nil // fallback to gnu
+}
+
+func (m *astAnalyzerModule) getNativeLibraryPath() (result string, err error) {
+	if m.nativeLibraryPath != "" {
+		return m.nativeLibraryPath, nil
+	}
+
+	basePath := filepath.Join(common.GetPrivateDirectory(), "extracted")
+
+	switch runtime.GOOS {
+	case "darwin":
+		switch runtime.GOARCH {
+		case "arm64":
+			result = filepath.Join(basePath, "parser.darwin-arm64.node")
+		case "amd64":
+			result = filepath.Join(basePath, "parser.darwin-x64.node")
+		}
+
+	case "linux":
+		libc, err := getLibcVariant()
+		if err != nil {
+			return "", err
+		}
+
+		switch runtime.GOARCH {
+		case "arm":
+			result = filepath.Join(basePath, "parser.linux-arm-gnueabihf.node")
+		case "arm64":
+			result = filepath.Join(basePath, fmt.Sprintf("parser.linux-arm64-%s.node", libc))
+		case "amd64":
+			result = filepath.Join(basePath, fmt.Sprintf("parser.linux-x64-%s.node", libc))
+		}
+
+	case "windows":
+		switch runtime.GOARCH {
+		case "arm64":
+			result = filepath.Join(basePath, "parser.win32-arm64-msvc.node")
+		case "amd64":
+			result = filepath.Join(basePath, "parser.win32-x64-msvc.node")
+		}
+	}
+
+	if result == "" {
+		return "", fmt.Errorf("unsupported platform: %s-%s", runtime.GOOS, runtime.GOARCH)
+	}
+
+	m.nativeLibraryPath = result
+
+	return result, nil
+}
+
+func (m *astAnalyzerModule) execASTAnalyzer(asset asset) (string, error) {
 	// Get the absolute path of the asset
 	absPath, err := filepath.Abs(asset.Path)
 	if err != nil {
 		return "", errutil.Wrap(err, "failed to get absolute path of asset")
 	}
 
-	// Join analyzers with commas
-	analyzersArg := strings.Join(analyzers, ",")
-
 	// Run the AST analyzer script with Node.js
-	cmd := exec.Command("bun", "run", m.astAnalyzerBinaryPath, absPath, analyzersArg)
+	cmd := exec.Command("bun", "run", m.astAnalyzerBinaryPath, absPath)
+
+	nativeLibraryPath, err := m.getNativeLibraryPath()
+	if err != nil {
+		return "", errutil.Wrap(err, "failed to get native library path")
+	}
+
+	cmd.Env = append(os.Environ(), "NAPI_RS_NATIVE_LIBRARY_PATH="+nativeLibraryPath)
+
+	m.sdk.Logger.Debug("executing ast analyzer", "asset_id", asset.ID, "path", absPath, "cmd", cmd.String())
 
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
@@ -236,12 +404,6 @@ func (m *astAnalyzerModule) execASTAnalyzer(asset assetservice.Asset, analyzers 
 	// Wait for the command to finish
 	if err := cmd.Wait(); err != nil {
 		return "", errutil.Wrap(err, "error running ast analyzer script")
-	}
-
-	// Parse the output to ensure it's valid JSON
-	var results interface{}
-	if err := json.Unmarshal(outputBytes, &results); err != nil {
-		return "", errutil.Wrap(err, "failed to parse ast analyzer output as JSON")
 	}
 
 	return string(outputBytes), nil

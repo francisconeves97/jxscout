@@ -1,0 +1,121 @@
+[
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/cookie/files/1.js",
+    "analyzerName": "cookie",
+    "value": "document.cookie",
+    "start": {
+      "line": 7,
+      "column": 20
+    },
+    "end": {
+      "line": 7,
+      "column": 35
+    },
+    "tags": {
+      "cookie": true,
+      "cookie-read": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/cookie/files/1.js",
+    "analyzerName": "cookie",
+    "value": "document.cookie",
+    "start": {
+      "line": 8,
+      "column": 18
+    },
+    "end": {
+      "line": 8,
+      "column": 33
+    },
+    "tags": {
+      "cookie": true,
+      "cookie-read": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/cookie/files/1.js",
+    "analyzerName": "cookie",
+    "value": "document.cookie",
+    "start": {
+      "line": 16,
+      "column": 9
+    },
+    "end": {
+      "line": 16,
+      "column": 24
+    },
+    "tags": {
+      "cookie": true,
+      "cookie-read": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/cookie/files/1.js",
+    "analyzerName": "cookie",
+    "value": "document.cookie = \"name=value; expires=Fri, 31 Dec 2023 23:59:59 GMT\"",
+    "start": {
+      "line": 4,
+      "column": 0
+    },
+    "end": {
+      "line": 4,
+      "column": 69
+    },
+    "tags": {
+      "cookie": true,
+      "cookie-assignment": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/cookie/files/1.js",
+    "analyzerName": "cookie",
+    "value": "document.cookie = \"name=value; path=/\"",
+    "start": {
+      "line": 3,
+      "column": 0
+    },
+    "end": {
+      "line": 3,
+      "column": 38
+    },
+    "tags": {
+      "cookie": true,
+      "cookie-assignment": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/cookie/files/1.js",
+    "analyzerName": "cookie",
+    "value": "document.cookie = \"name=value\"",
+    "start": {
+      "line": 2,
+      "column": 0
+    },
+    "end": {
+      "line": 2,
+      "column": 30
+    },
+    "tags": {
+      "cookie": true,
+      "cookie-assignment": true
+    }
+  },
+  {
+    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/cookie/files/1.js",
+    "analyzerName": "cookie",
+    "value": "document.cookie = `${name}=${value}`",
+    "start": {
+      "line": 12,
+      "column": 2
+    },
+    "end": {
+      "line": 12,
+      "column": 38
+    },
+    "tags": {
+      "cookie": true,
+      "cookie-assignment": true
+    }
+  }
+]
