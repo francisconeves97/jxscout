@@ -1,6 +1,5 @@
 import fs from "fs";
-import path from "path";
-import init, { ParseResult, parseSync } from "oxc-parser";
+import { ParseResult, parseSync } from "oxc-parser";
 import { ancestors as traverse } from "./walker";
 import { AnalyzerParams, AnalyzerMatch } from "./types";
 import { regexAnalyzerBuilder } from "./tree-analyzers/regex-pattern";

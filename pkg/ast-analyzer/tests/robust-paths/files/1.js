@@ -165,6 +165,6 @@ const aisdiasjd = "https://www.fasfasf.org";
 
 const oasdpasdp = "www.mercadolibre.com";
 const oasdpasdp2 = "www.mercadolibre.com/my-path";
-const oasdpasdp2 = "www.mercadolibre.com/?test=123123";
+const oasdpasdpasd2 = "www.mercadolibre.com/?test=123123";
 
 ("http://qr.afip.gob.ar/?qr=eqSGL6HcpJM1lYHWSGfj-Q,,");
