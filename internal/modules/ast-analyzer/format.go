@@ -7,6 +7,13 @@ import (
 	"github.com/francisconeves97/jxscout/internal/core/common"
 )
 
+type Position struct {
+	/** 1-based */
+	Line int64 `json:"line"`
+	/** 0-based */
+	Column int64 `json:"column"`
+}
+
 type AnalyzerMatch struct {
 	FilePath     string          `json:"filePath"`
 	AnalyzerName string          `json:"analyzerName"`

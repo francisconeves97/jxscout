@@ -25,6 +25,12 @@ import (
 
 const analyzerVersion = 1
 
+// Constants for asset types, accessible within the 'astanalyzer' package
+const (
+	AssetTypeOriginalAsset     = "asset"
+	AssetTypeReversedSourcemap = "reversed_sourcemap"
+)
+
 //go:embed ast-analyzer.js
 var astAnalyzerBinary []byte
 
@@ -56,12 +62,12 @@ var parserWin32Arm64Msvc []byte
 var parserWin32X64Msvc []byte
 
 type astAnalyzerModule struct {
-	sdk                   *jxscouttypes.ModuleSDK
-	repo                  *astAnalyzerRepository
+	sdk                 *jxscouttypes.ModuleSDK
+	repo                *astAnalyzerRepository
 	astAnalyzerBinaryPath string
-	concurrency           int
-	wsServer              *wsServer
-	nativeLibraryPath     string
+	concurrency         int
+	wsServer            *wsServer
+	nativeLibraryPath   string
 }
 
 func NewAstAnalyzerModule(concurrency int) *astAnalyzerModule {
@@ -74,7 +80,9 @@ func NewAstAnalyzerModule(concurrency int) *astAnalyzerModule {
 func (m *astAnalyzerModule) Initialize(sdk *jxscouttypes.ModuleSDK) error {
 	m.sdk = sdk
 
-	repo, err := newAstAnalyzerRepository(sdk.Database)
+	// Assuming sdk.Database is the *sqlx.DB connection from the ModuleSDK
+	// Pass the module's SDK (m.sdk) which is *jxscouttypes.ModuleSDK
+	repo, err := newAstAnalyzerRepository(m.sdk, sdk.Database) // <--- MODIFIED CALL
 	if err != nil {
 		return errutil.Wrap(err, "failed to create ast analyzer repository")
 	}
@@ -84,12 +92,10 @@ func (m *astAnalyzerModule) Initialize(sdk *jxscouttypes.ModuleSDK) error {
 
 	saveDir := filepath.Join(common.GetPrivateDirectory(), "extracted")
 
-	// Create the directory if it doesn't exist
 	if err := os.MkdirAll(saveDir, 0755); err != nil {
 		return errutil.Wrap(err, "failed to create binaries directory")
 	}
 
-	// Define the path for the extracted binary
 	binaryPath := filepath.Join(saveDir, "ast-analyzer.js")
 	if err := os.WriteFile(binaryPath, astAnalyzerBinary, 0755); err != nil {
 		return errutil.Wrap(err, "failed to write ast analyzer file")
@@ -169,15 +175,17 @@ func (m *astAnalyzerModule) subscribeAssetBeautified() error {
 			return nil
 		}
 
-		asset := asset{
+		// Use the local 'asset' type defined in repository.go (it's package-private)
+		// The constants AssetTypeOriginalAsset and AssetTypeReversedSourcemap are package-level from this file.
+		assetForAnalysis := asset{
 			ID:        assetServiceAsset.ID,
-			Path:      assetServiceAsset.Path,
-			AssetType: AssetTypeOriginalAsset,
+			Path:      assetServiceAsset.Path, // Ensure this is the correct, absolute path
+			AssetType: AssetTypeOriginalAsset, // This should now correctly reference the package-level const
 		}
 
-		_, err = m.analyzeAsset(asset)
+		_, err = m.analyzeAsset(assetForAnalysis)
 		if err != nil {
-			return errutil.Wrapf(err, "failed to analyze asset: %s", asset.Path)
+			return errutil.Wrapf(err, "failed to analyze asset: %s", assetForAnalysis.Path)
 		}
 
 		return nil
@@ -202,15 +210,15 @@ func (m *astAnalyzerModule) subscribeAssetBeautified() error {
 			return dbeventbus.NewRetriableError(errutil.Wrap(err, "failed to get reversed sourcemap"))
 		}
 
-		asset := asset{
+		assetForAnalysis := asset{
 			ID:        reversedSourcemap.ID,
-			Path:      reversedSourcemap.Path,
-			AssetType: AssetTypeReversedSourcemap,
+			Path:      reversedSourcemap.Path, // Ensure this is the correct, absolute path
+			AssetType: AssetTypeReversedSourcemap, // This should now correctly reference the package-level const
 		}
 
-		_, err = m.analyzeAsset(asset)
+		_, err = m.analyzeAsset(assetForAnalysis)
 		if err != nil {
-			return errutil.Wrapf(err, "failed to analyze asset: %s", asset.Path)
+			return errutil.Wrapf(err, "failed to analyze asset: %s", assetForAnalysis.Path)
 		}
 
 		return nil
@@ -237,65 +245,75 @@ func isJavaScriptAsset(asset assetservice.Asset) bool {
 	return false
 }
 
-type Position struct {
-	/** 1-based */
-	Line int64 `json:"line"`
-	/** 0-based */
-	Column int64 `json:"column"`
-}
+// Position struct is defined in format.go, part of the same package.
+// type Position struct {
+// 	/** 1-based */
+// 	Line int64 `json:"line"`
+// 	/** 0-based */
+// 	Column int64 `json:"column"`
+// }
 
-func (m *astAnalyzerModule) analyzeAsset(asset asset) (astAnalysis, error) {
-	// Get existing analyses for this asset
-	analysis, found, err := m.repo.getASTAnalysisByAssetID(m.sdk.Ctx, asset.ID, asset.AssetType)
+func (m *astAnalyzerModule) analyzeAsset(assetForAnalysis asset) (astAnalysis, error) { // Renamed param 'asset' to 'assetForAnalysis'
+	analysis, found, err := m.repo.getASTAnalysisByAssetID(m.sdk.Ctx, assetForAnalysis.ID, assetForAnalysis.AssetType)
 	if err != nil {
 		return analysis, dbeventbus.NewRetriableError(errutil.Wrap(err, "failed to get existing analyses"))
 	}
 
 	if found && analysis.AnalyzerVersion == analyzerVersion {
-		m.sdk.Logger.Debug("analysis is up to date, skipping", "asset_id", asset.ID, "analysis", analysis.ID)
+		m.sdk.Logger.Debug("analysis is up to date, skipping", "asset_id", assetForAnalysis.ID, "analysis_id", analysis.ID)
 		return analysis, nil
 	}
 
-	// Run the AST analyzer script with specific analyzers
-	results, err := m.execASTAnalyzer(asset)
+	results, err := m.execASTAnalyzer(assetForAnalysis)
 	if err != nil {
 		return analysis, errutil.Wrap(err, "failed to execute ast analyzer")
 	}
 
-	// make sure output is in the correct format
-	var output []AnalyzerMatch
+	var output []AnalyzerMatch // AnalyzerMatch is defined in format.go
 	if err := json.Unmarshal([]byte(results), &output); err != nil {
 		return analysis, errutil.Wrapf(err, "failed to parse ast analyzer output: %s", results)
 	}
 
-	analysis = astAnalysis{
-		AssetID:         asset.ID,
+	analysisToCreate := astAnalysis{
+		AssetID:         assetForAnalysis.ID,
 		AnalyzerVersion: analyzerVersion,
 		Results:         results,
-		AssetType:       asset.AssetType,
-		AssetPath:       asset.Path,
+		AssetType:       assetForAnalysis.AssetType,
+		AssetPath:       assetForAnalysis.Path, // This Path must be the one VSCode uses
 	}
 
-	// Store the results in the database
-	if err := m.repo.createAnalysis(m.sdk.Ctx, analysis); err != nil {
-		return analysis, dbeventbus.NewRetriableError(errutil.Wrap(err, "failed to store ast analysis results"))
+	if err := m.repo.createAnalysis(m.sdk.Ctx, analysisToCreate); err != nil {
+		return analysisToCreate, dbeventbus.NewRetriableError(errutil.Wrap(err, "failed to store ast analysis results"))
 	}
 
-	return analysis, nil
+	return analysisToCreate, nil
 }
 
 func getLibcVariant() (string, error) {
-	// Try `ldd --version`, which outputs different text for musl vs glibc
+	if runtime.GOOS != "linux" { // ldd is typically a Linux utility
+		return "gnu", nil // Default or indicate not applicable for non-Linux
+	}
 	cmd := exec.Command("ldd", "--version")
 	var out bytes.Buffer
 	cmd.Stdout = &out
-	cmd.Stderr = &out
+	cmd.Stderr = &out // Capture stderr as well, as musl might print to stderr
 
-	if err := cmd.Run(); err != nil {
-		return "", errutil.Wrap(err, "failed to detect libc")
+	err := cmd.Run()
+	output := out.String() // Read output even if err is not nil
+
+	if err != nil {
+		// If ldd command fails (e.g., not found, or exits with error but still prints version)
+		// Check output first. Some systems might exit > 0 but still give version.
+		if strings.Contains(strings.ToLower(output), "musl") {
+			return "musl", nil
+		} else if strings.Contains(strings.ToLower(output), "glibc") || strings.Contains(strings.ToLower(output), "gnu") {
+			return "gnu", nil
+		}
+		// If output is not conclusive and error occurred, return default for Linux.
+		return "gnu", nil // Fallback to gnu on Linux if ldd fails or output is unclear
+		// return "", errutil.Wrap(err, "failed to run ldd or parse its output")
 	}
 
-	output := out.String()
 	if strings.Contains(strings.ToLower(output), "musl") {
 		return "musl", nil
 	} else if strings.Contains(strings.ToLower(output), "glibc") || strings.Contains(strings.ToLower(output), "gnu") {
@@ -322,13 +340,13 @@ func (m *astAnalyzerModule) getNativeLibraryPath() (result string, err error) {
 		}
 
 	case "linux":
-		libc, err := getLibcVariant()
-		if err != nil {
-			return "", err
+		libc, errLibc := getLibcVariant()
+		if errLibc != nil { // If getLibcVariant itself returned an error we want to propagate
+			return "", errutil.Wrap(errLibc, "failed to determine libc variant")
 		}
 
 		switch runtime.GOARCH {
-		case "arm":
+		case "arm": // Typically 32-bit ARM
 			result = filepath.Join(basePath, "parser.linux-arm-gnueabihf.node")
 		case "arm64":
 			result = filepath.Join(basePath, fmt.Sprintf("parser.linux-arm64-%s.node", libc))
@@ -346,22 +364,19 @@ func (m *astAnalyzerModule) getNativeLibraryPath() (result string, err error) {
 	}
 
 	if result == "" {
-		return "", fmt.Errorf("unsupported platform: %s-%s", runtime.GOOS, runtime.GOARCH)
+		return "", fmt.Errorf("unsupported platform for NAPI-RS parser: %s-%s", runtime.GOOS, runtime.GOARCH)
 	}
 
 	m.nativeLibraryPath = result
-
 	return result, nil
 }
 
-func (m *astAnalyzerModule) execASTAnalyzer(asset asset) (string, error) {
-	// Get the absolute path of the asset
-	absPath, err := filepath.Abs(asset.Path)
+func (m *astAnalyzerModule) execASTAnalyzer(assetForAnalysis asset) (string, error) {
+	absPath, err := filepath.Abs(assetForAnalysis.Path)
 	if err != nil {
 		return "", errutil.Wrap(err, "failed to get absolute path of asset")
 	}
 
-	// Run the AST analyzer script with Node.js
 	cmd := exec.Command("bun", "run", m.astAnalyzerBinaryPath, absPath)
 
 	nativeLibraryPath, err := m.getNativeLibraryPath()
@@ -371,7 +386,7 @@ func (m *astAnalyzerModule) execASTAnalyzer(asset asset) (string, error) {
 
 	cmd.Env = append(os.Environ(), "NAPI_RS_NATIVE_LIBRARY_PATH="+nativeLibraryPath)
 
-	m.sdk.Logger.Debug("executing ast analyzer", "asset_id", asset.ID, "path", absPath, "cmd", cmd.String())
+	m.sdk.Logger.Debug("executing ast analyzer", "asset_id", assetForAnalysis.ID, "path", absPath, "cmd", cmd.String())
 
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
@@ -386,25 +401,36 @@ func (m *astAnalyzerModule) execASTAnalyzer(asset asset) (string, error) {
 		return "", errutil.Wrap(err, "error starting command")
 	}
 
-	// Read the output
 	outputBytes, err := io.ReadAll(stdout)
 	if err != nil {
 		return "", errutil.Wrap(err, "failed to read stdout")
 	}
 
-	// Check for errors in stderr
 	stderrBytes, err := io.ReadAll(stderr)
 	if err != nil {
-		return "", errutil.Wrap(err, "failed to read stderr")
-	}
-	if len(stderrBytes) > 0 {
-		return "", fmt.Errorf("error executing ast analyzer: %s", strings.TrimSpace(string(stderrBytes)))
+		// This error is about reading stderr pipe, not script error itself
+		m.sdk.Logger.Error("Failed to read stderr from ast analyzer script", "asset_path", absPath, "read_error", err)
+		// Continue to cmd.Wait() as the script might have finished successfully despite stderr read issue
 	}
 
-	// Wait for the command to finish
 	if err := cmd.Wait(); err != nil {
-		return "", errutil.Wrap(err, "error running ast analyzer script")
+		// Script exited with non-zero status
+		scriptErrorOutput := strings.TrimSpace(string(stderrBytes))
+		m.sdk.Logger.Error("AST analyzer script execution failed (cmd.Wait)", "asset_path", absPath, "wait_error", err, "stderr", scriptErrorOutput)
+		if scriptErrorOutput != "" {
+			return "", fmt.Errorf("error running ast analyzer script (exit status: %s): %s", err.Error(), scriptErrorOutput)
+		}
+		return "", errutil.Wrap(err, "error running ast analyzer script (cmd.Wait)")
 	}
+	
+	// Check stderr even if cmd.Wait() is nil, as some scripts might print warnings/errors to stderr and still exit 0
+	if len(stderrBytes) > 0 {
+		// Log it as a warning or debug if it's not considered a fatal error for an exit 0
+		m.sdk.Logger.Warn("AST analyzer script produced stderr output with exit 0", "asset_path", absPath, "stderr", strings.TrimSpace(string(stderrBytes)))
+		// Depending on policy, you might choose to return an error here or just the stdout
+		// For now, let's assume stdout is primary if exit code was 0.
+	}
+
 
 	return string(outputBytes), nil
 }
