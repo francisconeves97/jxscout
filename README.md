@@ -219,6 +219,7 @@ Feel free to leave suggestions and open pull requests, all contributions are wel
 Thanks goes to these wonderful people for contributing!
 
 - [@BigCod3](https://github.com/BigCod3) 💻 🐛
+- [@abdilahrf](https://github.com/abdilahrf) 💻 💡
 
 ## Support
 
