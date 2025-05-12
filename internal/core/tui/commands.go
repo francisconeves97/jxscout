@@ -476,7 +476,7 @@ func (t *TUI) RegisterDefaultCommands() {
 
 				// Install prettier using bun
 				t.writeLineToOutput("\nInstalling prettier...")
-				cmd = exec.Command("bun", "install", "-g", "prettier")
+				cmd = exec.Command("npm", "install", "-g", "prettier")
 				output, err = cmd.CombinedOutput()
 				if err != nil {
 					t.writeLineToOutput(fmt.Sprintf("❌ Failed to install prettier: %v\nOutput: %s", err, string(output)))

@@ -5,6 +5,8 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"runtime"
+	"strings"
 	"time"
 
 	"github.com/francisconeves97/jxscout/internal/core/errutil"
@@ -101,6 +103,12 @@ func (r *astAnalyzerRepository) createAnalysis(ctx context.Context, analysis ast
 }
 
 func (r *astAnalyzerRepository) getAssetByPath(ctx context.Context, filePath string) (*asset, error) {
+	if runtime.GOOS == "windows" && len(filePath) >= 2 && filePath[1] == ':' {
+		// Normalize drive letter to uppercase for comparison, assuming DB stores uppercase
+		driveLetter := strings.ToUpper(string(filePath[0]))
+		filePath = driveLetter + filePath[1:]
+	}
+
 	query := `
 		SELECT id, fs_path, asset_type, is_beautified
 		FROM (
