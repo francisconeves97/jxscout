@@ -5,7 +5,6 @@ import (
 	"log/slog"
 	"net/url"
 	"os"
-	"path"
 	"path/filepath"
 	"regexp"
 	"runtime"
@@ -65,7 +64,10 @@ func (s *fileServiceImpl) Save(ctx context.Context, req SaveFileRequest) (string
 }
 
 func cleanWindows(p string) string {
-	m1 := regexp.MustCompile(`[?%*|:"<>]`)
+	// This regex should ideally only be applied to the filename component, not the whole path.
+	// Applying to the whole path might remove valid characters from directory names if they are unusual.
+	// However, keeping original logic for now.
+	m1 := regexp.MustCompile(`[?%*|:"<>()]`)
 	return m1.ReplaceAllString(p, "")
 }
 
@@ -112,15 +114,20 @@ func (s *fileServiceImpl) URLToPath(pathURL string) ([]string, error) {
 
 func (s *fileServiceImpl) SimpleSave(filePath string, content string) (string, error) {
 	if runtime.GOOS == "windows" {
-		filePath = cleanWindows(filePath)
+		base := filepath.Base(filePath)
+		dir := filepath.Dir(filePath)
+		cleanedBase := cleanWindows(base)
+		filePath = filepath.Join(dir, cleanedBase)
 	}
 
 	filePath = filepath.Clean(filePath)
 
-	dir := path.Dir(filePath)
+	dir := filepath.Dir(filePath)
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		return filePath, errutil.Wrap(err, "failed to create directory")
 	}
+
+	s.log.Debug("saving to file", "filepath", filePath, "dir", dir)
 
 	err := os.WriteFile(filePath, []byte(content), 0644)
 	if err != nil {

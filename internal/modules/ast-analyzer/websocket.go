@@ -51,6 +51,8 @@ func (s *wsServer) getAnalysisHandler(msg jxwebsocket.WebsocketMessage, conn *we
 		return
 	}
 
+	s.sdk.Logger.Debug("get analysis handler request received", "path", req.FilePath)
+
 	tree, err := s.getAnalysis(req)
 	if err != nil {
 		s.sdk.WebsocketServer.SendErrorResponse(conn, msg.ID, MsgTypeGetAnalysisResponse, fmt.Sprintf("failed to get analysis: %s", err.Error()))

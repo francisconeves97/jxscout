@@ -214,6 +214,12 @@ OVERRIDES CONFIGURATION:
 
 Feel free to leave suggestions and open pull requests, all contributions are welcome!
 
+### Contributors ✨
+
+Thanks goes to these wonderful people for contributing!
+
+- [@BigCod3](https://github.com/juliangsibecas) 💻 🐛
+
 ## Support
 
 Happy hunting! 🐛 If jxscout helped you find cool bugs, [consider buying me a coffee](https://ko-fi.com/francisconeves97)! ☕
