@@ -31,7 +31,8 @@ type FileService interface {
 	SimpleSave(path string, content string) (string, error)
 	SaveInSubfolder(ctx context.Context, subfolder string, req SaveFileRequest) (string, error)
 	UpdateWorkingDirectory(newPath string)
-	URLToPath(pathURL string) ([]string, error)
+	URLToPath(pathURL string) (string, error)
+	FileExists(pathURL string) (bool, error)
 }
 
 type fileServiceImpl struct {
@@ -72,7 +73,21 @@ func cleanWindows(p string) string {
 }
 
 func (s *fileServiceImpl) save(ctx context.Context, filePath []string, req SaveFileRequest) (string, error) {
-	parsedURL, err := url.Parse(req.PathURL)
+	targetPath, err := s.urlToPath(req.PathURL, filePath)
+	if err != nil {
+		return "", errutil.Wrap(err, "failed to convert url to path")
+	}
+
+	targetPath, err = s.SimpleSave(targetPath, req.Content)
+	if err != nil {
+		return "", errutil.Wrap(err, "failed to write file")
+	}
+
+	return targetPath, nil
+}
+
+func (s *fileServiceImpl) urlToPath(pathURL string, filePath []string) (string, error) {
+	parsedURL, err := url.Parse(pathURL)
 	if err != nil {
 		return "", errutil.Wrap(err, "failed to parse url")
 	}
@@ -85,43 +100,43 @@ func (s *fileServiceImpl) save(ctx context.Context, filePath []string, req SaveF
 	filePath = append(filePath, pathParts...)
 
 	targetPath := filepath.Join(filePath...)
-	targetPath, err = s.SimpleSave(targetPath, req.Content)
-	if err != nil {
-		return "", errutil.Wrap(err, "failed to write file")
+
+	if runtime.GOOS == "windows" {
+		base := filepath.Base(targetPath)
+		dir := filepath.Dir(targetPath)
+		cleanedBase := cleanWindows(base)
+		targetPath = filepath.Join(dir, cleanedBase)
 	}
+
+	targetPath = filepath.Clean(targetPath)
 
 	return targetPath, nil
 }
 
-func (s *fileServiceImpl) URLToPath(pathURL string) ([]string, error) {
-	filePath := []string{}
+func (s *fileServiceImpl) URLToPath(pathURL string) (string, error) {
+	return s.urlToPath(pathURL, []string{
+		s.workingDirectory,
+	})
+}
 
-	parsedURL, err := url.Parse(pathURL)
+func (s *fileServiceImpl) FileExists(pathURL string) (bool, error) {
+	filePath, err := s.URLToPath(pathURL)
 	if err != nil {
-		return nil, errutil.Wrap(err, "failed to parse url")
+		return false, errutil.Wrap(err, "failed to convert url to path")
 	}
 
-	filePath = append(filePath, parsedURL.Host)
+	_, err = os.Stat(filePath)
+	if err == nil {
+		return true, nil
+	}
+	if os.IsNotExist(err) {
+		return false, nil
+	}
 
-	path := parsedURL.Path
-	pathParts := strings.Split(path, urlDelimiter)
-
-	filePath = append(filePath, pathParts...)
-
-	return filePath, nil
-
+	return false, errutil.Wrap(err, "failed to check if file exists")
 }
 
 func (s *fileServiceImpl) SimpleSave(filePath string, content string) (string, error) {
-	if runtime.GOOS == "windows" {
-		base := filepath.Base(filePath)
-		dir := filepath.Dir(filePath)
-		cleanedBase := cleanWindows(base)
-		filePath = filepath.Join(dir, cleanedBase)
-	}
-
-	filePath = filepath.Clean(filePath)
-
 	dir := filepath.Dir(filePath)
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		return filePath, errutil.Wrap(err, "failed to create directory")
