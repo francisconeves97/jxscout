@@ -574,7 +574,12 @@ function createPathMatch(
     }
   }
 
-  const isPathOnly = !isUrl && !isMimeType && !extension;
+  const isAPIPath =
+    processedValue.includes("/api") || processedValue.includes("api/");
+
+  const isAPI = processedValue.includes("api.") || isAPIPath;
+
+  const isPathOnly = !isUrl && !isMimeType;
 
   const extra: Record<string, any> = {};
 
@@ -621,8 +626,7 @@ function createPathMatch(
       ...(isUrl && !isUrlOnly && { "is-url": true }),
       ...(isUrlOnly && { "is-url-only": true }),
       ...(isPathOnly && { "is-path-only": true }),
-      ...((processedValue.includes("/api") ||
-        processedValue.includes("api/")) && { api: true }),
+      ...(isAPI && { api: true }),
       ...(processedValue.includes("?") && { query: true }),
       ...(processedValue.includes("#") && { fragment: true }),
     },
