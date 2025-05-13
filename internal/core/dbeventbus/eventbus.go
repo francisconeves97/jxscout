@@ -184,7 +184,8 @@ func (b *EventBus) fetchAndDistributeEvents(ctx context.Context, topic, queueNam
 	}
 	defer tx.Rollback()
 
-	b.log.DebugContext(ctx, "Fetching events for processing", "topic", topic, "queue", queueName, "concurrency", opts.Concurrency)
+	// To noisy: re-add and compile for debugging
+	// b.log.DebugContext(ctx, "Fetching events for processing", "topic", topic, "queue", queueName, "concurrency", opts.Concurrency)
 
 	// Get multiple events that are ready to be processed and lock them
 	var eventsToProcess []Event

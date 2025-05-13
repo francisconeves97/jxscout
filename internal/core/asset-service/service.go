@@ -158,6 +158,24 @@ func (s *assetService) handleSaveAssetRequest(ctx context.Context, asset Asset) 
 		if dbAsset.ContentHash == common.Hash(asset.Content) && dbAsset.Project == s.projectName {
 			s.log.DebugContext(ctx, "asset content has not changed within the same project, skipping", "asset_url", asset.URL)
 
+			exists, err := s.fileService.FileExists(asset.URL)
+			if err != nil {
+				return errutil.Wrap(err, "failed to save file")
+			}
+
+			// if the file was deleted for some reason, save it again
+			if !exists {
+				s.log.DebugContext(ctx, "file was deleted, saving again", "asset_url", asset.URL)
+
+				_, err := s.fileService.Save(ctx, SaveFileRequest{
+					PathURL: asset.URL,
+					Content: asset.Content,
+				})
+				if err != nil {
+					return errutil.Wrap(err, "failed to save file")
+				}
+			}
+
 			return nil
 		}
 
