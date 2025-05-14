@@ -33,12 +33,12 @@ jobs:
 
       - name: Build for multiple platforms
         run: |
-          GOOS=linux GOARCH=386 go build -o dist/${{ env.PROJECT_NAME }}_${{ steps.get_version.outputs.VERSION }}_linux_386/jxscout cmd/jxscout/main.go
-          GOOS=linux GOARCH=amd64 go build -o dist/${{ env.PROJECT_NAME }}_${{ steps.get_version.outputs.VERSION }}_linux_amd64/jxscout cmd/jxscout/main.go
-          GOOS=linux GOARCH=arm64 go build -o dist/${{ env.PROJECT_NAME }}_${{ steps.get_version.outputs.VERSION }}_linux_arm64/jxscout cmd/jxscout/main.go
-          GOOS=darwin GOARCH=amd64 go build -o dist/${{ env.PROJECT_NAME }}_${{ steps.get_version.outputs.VERSION }}_macOS_amd64/jxscout cmd/jxscout/main.go
-          GOOS=darwin GOARCH=arm64 go build -o dist/${{ env.PROJECT_NAME }}_${{ steps.get_version.outputs.VERSION }}_macOS_arm64/jxscout cmd/jxscout/main.go
-          GOOS=windows GOARCH=amd64 go build -o dist/${{ env.PROJECT_NAME }}_${{ steps.get_version.outputs.VERSION }}_windows_amd64/jxscout.exe cmd/jxscout/main.go
+          CGO_ENABLED=1 GOOS=linux GOARCH=386  -o dist/${{ env.PROJECT_NAME }}_${{ steps.get_version.outputs.VERSION }}_linux_386/jxscout cmd/jxscout/main.go
+          CGO_ENABLED=1 GOOS=linux GOARCH=amd64  -o dist/${{ env.PROJECT_NAME }}_${{ steps.get_version.outputs.VERSION }}_linux_amd64/jxscout cmd/jxscout/main.go
+          CGO_ENABLED=1 GOOS=linux GOARCH=arm64  -o dist/${{ env.PROJECT_NAME }}_${{ steps.get_version.outputs.VERSION }}_linux_arm64/jxscout cmd/jxscout/main.go
+          CGO_ENABLED=1 GOOS=darwin GOARCH=amd64  -o dist/${{ env.PROJECT_NAME }}_${{ steps.get_version.outputs.VERSION }}_macOS_amd64/jxscout cmd/jxscout/main.go
+          CGO_ENABLED=1 GOOS=darwin GOARCH=arm64  -o dist/${{ env.PROJECT_NAME }}_${{ steps.get_version.outputs.VERSION }}_macOS_arm64/jxscout cmd/jxscout/main.go
+          CGO_ENABLED=1 GOOS=windows GOARCH=amd64  -o dist/${{ env.PROJECT_NAME }}_${{ steps.get_version.outputs.VERSION }}_windows_amd64/jxscout.exe cmd/jxscout/main.go
 
       - name: Create ZIP archives
         run: |
