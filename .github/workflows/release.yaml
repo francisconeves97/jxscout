@@ -60,6 +60,20 @@ jobs:
             echo "🎯 Target: $target"
             echo "📝 Output: $output_name"
             
+            # Set framework paths for macOS builds
+            if [[ $os == "darwin" ]]; then
+              # Get the SDK path
+              SDK_PATH=$(xcrun --show-sdk-path)
+              echo "📦 Using macOS SDK at: $SDK_PATH"
+              
+              export CGO_CFLAGS="-I$SDK_PATH/System/Library/Frameworks/CoreFoundation.framework/Headers -I$SDK_PATH/System/Library/Frameworks/Security.framework/Headers"
+              export CGO_LDFLAGS="-F$SDK_PATH/System/Library/Frameworks -framework CoreFoundation -framework Security"
+              
+              # Print the environment for debugging
+              echo "🔧 CGO_CFLAGS: $CGO_CFLAGS"
+              echo "🔧 CGO_LDFLAGS: $CGO_LDFLAGS"
+            fi
+            
             CGO_ENABLED=1 GOOS=$os GOARCH=$arch CC="zig cc -target $target" CXX="zig c++ -target $target" go build -v -o "dist/${{ env.PROJECT_NAME }}_${{ steps.get_version.outputs.VERSION }}_${platform}/${output_name}" cmd/jxscout/main.go
             
             if [ $? -eq 0 ]; then
