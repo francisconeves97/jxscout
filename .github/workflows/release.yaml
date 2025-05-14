@@ -57,6 +57,9 @@ jobs:
           # Windows AMD64
           CGO_ENABLED=1 GOOS=windows GOARCH=amd64 CC="zig cc -target x86_64-windows" CXX="zig c++ -target x86_64-windows" go build -o dist/${{ env.PROJECT_NAME }}_${{ steps.get_version.outputs.VERSION }}_windows_amd64/jxscout.exe cmd/jxscout/main.go
 
+          # Windows ARM64
+          CGO_ENABLED=1 GOOS=windows GOARCH=arm64 CC="zig cc -target aarch64-windows" CXX="zig c++ -target aarch64-windows" go build -o dist/${{ env.PROJECT_NAME }}_${{ steps.get_version.outputs.VERSION }}_windows_arm64/jxscout.exe cmd/jxscout/main.go
+
       - name: Create ZIP archives
         run: |
           cd dist
