@@ -73,7 +73,7 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: linux-builds
+          name: linux-${{ matrix.artifact_name }}
           path: dist/
 
   build-macos:
@@ -121,7 +121,7 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: macos-builds
+          name: macos-${{ matrix.artifact_name }}
           path: dist/
 
   build-windows:
@@ -143,6 +143,12 @@ jobs:
     steps:
       - name: Checkout project
         uses: actions/checkout@v4
+
+      - name: Install zip
+        shell: pwsh
+        run: |
+          choco install zip -y
+          refreshenv
 
       - name: Set up Go
         uses: actions/setup-go@v4
@@ -172,7 +178,7 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: windows-builds
+          name: windows-${{ matrix.artifact_name }}
           path: dist/
 
   release:
