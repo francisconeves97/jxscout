@@ -57,7 +57,7 @@ jobs:
           sha256sum ${{ env.PROJECT_NAME }}_${{ needs.prepare.outputs.version }}_linux_*.zip > ${{ env.PROJECT_NAME }}-linux-checksums.txt
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: linux-builds
           path: dist/
@@ -94,7 +94,7 @@ jobs:
           sha256sum ${{ env.PROJECT_NAME }}_${{ needs.prepare.outputs.version }}_macOS_*.zip > ${{ env.PROJECT_NAME }}-mac-checksums.txt
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: macos-builds
           path: dist/
@@ -130,7 +130,7 @@ jobs:
           Get-FileHash -Algorithm SHA256 ${{ env.PROJECT_NAME }}_${{ needs.prepare.outputs.version }}_windows_*.zip | Format-Table -HideTableHeaders | Out-File -Encoding utf8 ${{ env.PROJECT_NAME }}-windows-checksums.txt
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: windows-builds
           path: dist/
@@ -143,7 +143,7 @@ jobs:
       contents: write
     steps:
       - name: Download all artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           path: dist
 
