@@ -110,9 +110,9 @@ jobs:
       - name: Generate checksums
         run: |
           cd dist
-          sha256sum ${{ env.PROJECT_NAME }}_${{ steps.get_version.outputs.VERSION }}_linux_*.zip > ${{ env.PROJECT_NAME }}-linux-checksums.txt
-          sha256sum ${{ env.PROJECT_NAME }}_${{ steps.get_version.outputs.VERSION }}_macOS_*.zip > ${{ env.PROJECT_NAME }}-mac-checksums.txt
-          sha256sum ${{ env.PROJECT_NAME }}_${{ steps.get_version.outputs.VERSION }}_windows_*.zip > ${{ env.PROJECT_NAME }}-windows-checksums.txt
+          shasum -a 256 ${{ env.PROJECT_NAME }}_${{ steps.get_version.outputs.VERSION }}_linux_*.zip > ${{ env.PROJECT_NAME }}-linux-checksums.txt
+          shasum -a 256 ${{ env.PROJECT_NAME }}_${{ steps.get_version.outputs.VERSION }}_macOS_*.zip > ${{ env.PROJECT_NAME }}-mac-checksums.txt
+          shasum -a 256 ${{ env.PROJECT_NAME }}_${{ steps.get_version.outputs.VERSION }}_windows_*.zip > ${{ env.PROJECT_NAME }}-windows-checksums.txt
 
       - name: Create source archives
         run: |
