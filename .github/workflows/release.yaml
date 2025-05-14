@@ -24,7 +24,23 @@ jobs:
   build-linux:
     name: Build Linux
     needs: prepare
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            goos: linux
+            goarch: amd64
+            artifact_name: linux_amd64
+          - os: ubuntu-latest-arm64
+            goos: linux
+            goarch: arm64
+            artifact_name: linux_arm64
+          - os: ubuntu-latest
+            goos: linux
+            goarch: 386
+            artifact_name: linux_386
+
     steps:
       - name: Checkout project
         uses: actions/checkout@v4
@@ -39,9 +55,7 @@ jobs:
 
       - name: Build for Linux
         run: |
-          CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -o dist/${{ env.PROJECT_NAME }}_${{ needs.prepare.outputs.version }}_linux_amd64/jxscout cmd/jxscout/main.go
-          CGO_ENABLED=1 GOOS=linux GOARCH=arm64 go build -o dist/${{ env.PROJECT_NAME }}_${{ needs.prepare.outputs.version }}_linux_arm64/jxscout cmd/jxscout/main.go
-          CGO_ENABLED=0 GOOS=linux GOARCH=386 go build -o dist/${{ env.PROJECT_NAME }}_${{ needs.prepare.outputs.version }}_linux_386/jxscout cmd/jxscout/main.go
+          CGO_ENABLED=1 GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o dist/${{ env.PROJECT_NAME }}_${{ needs.prepare.outputs.version }}_${{ matrix.artifact_name }}/jxscout cmd/jxscout/main.go
 
       - name: Create ZIP archives
         run: |
@@ -54,7 +68,7 @@ jobs:
       - name: Generate checksums
         run: |
           cd dist
-          sha256sum ${{ env.PROJECT_NAME }}_${{ needs.prepare.outputs.version }}_linux_*.zip > ${{ env.PROJECT_NAME }}-linux-checksums.txt
+          sha256sum ${{ env.PROJECT_NAME }}_${{ needs.prepare.outputs.version }}_${{ matrix.artifact_name }}.zip >> ${{ env.PROJECT_NAME }}-linux-checksums.txt
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -65,7 +79,19 @@ jobs:
   build-macos:
     name: Build macOS
     needs: prepare
-    runs-on: macos-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: macos-latest
+            goos: darwin
+            goarch: amd64
+            artifact_name: macOS_amd64
+          - os: macos-latest-arm64
+            goos: darwin
+            goarch: arm64
+            artifact_name: macOS_arm64
+
     steps:
       - name: Checkout project
         uses: actions/checkout@v4
@@ -77,8 +103,7 @@ jobs:
 
       - name: Build for macOS
         run: |
-          CGO_ENABLED=1 GOOS=darwin GOARCH=amd64 go build -o dist/${{ env.PROJECT_NAME }}_${{ needs.prepare.outputs.version }}_macOS_amd64/jxscout cmd/jxscout/main.go
-          CGO_ENABLED=1 GOOS=darwin GOARCH=arm64 go build -o dist/${{ env.PROJECT_NAME }}_${{ needs.prepare.outputs.version }}_macOS_arm64/jxscout cmd/jxscout/main.go
+          CGO_ENABLED=1 GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o dist/${{ env.PROJECT_NAME }}_${{ needs.prepare.outputs.version }}_${{ matrix.artifact_name }}/jxscout cmd/jxscout/main.go
 
       - name: Create ZIP archives
         run: |
@@ -91,7 +116,7 @@ jobs:
       - name: Generate checksums
         run: |
           cd dist
-          sha256sum ${{ env.PROJECT_NAME }}_${{ needs.prepare.outputs.version }}_macOS_*.zip > ${{ env.PROJECT_NAME }}-mac-checksums.txt
+          shasum -a 256 ${{ env.PROJECT_NAME }}_${{ needs.prepare.outputs.version }}_${{ matrix.artifact_name }}.zip >> ${{ env.PROJECT_NAME }}-mac-checksums.txt
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -102,7 +127,19 @@ jobs:
   build-windows:
     name: Build Windows
     needs: prepare
-    runs-on: windows-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            goos: windows
+            goarch: amd64
+            artifact_name: windows_amd64
+          - os: windows-latest-arm64
+            goos: windows
+            goarch: arm64
+            artifact_name: windows_arm64
+
     steps:
       - name: Checkout project
         uses: actions/checkout@v4
@@ -113,21 +150,24 @@ jobs:
           go-version: ${{ env.GO_VERSION }}
 
       - name: Build for Windows
+        shell: bash
         run: |
-          CGO_ENABLED=1 GOOS=windows GOARCH=amd64 go build -o dist/${{ env.PROJECT_NAME }}_${{ needs.prepare.outputs.version }}_windows_amd64/jxscout.exe cmd/jxscout/main.go
+          CGO_ENABLED=1 GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o dist/${{ env.PROJECT_NAME }}_${{ needs.prepare.outputs.version }}_${{ matrix.artifact_name }}/jxscout.exe cmd/jxscout/main.go
 
       - name: Create ZIP archives
+        shell: bash
         run: |
           cd dist
           for dir in ${{ env.PROJECT_NAME }}_*; do
-            Compress-Archive -Path "$dir" -DestinationPath "${dir}.zip"
-            Remove-Item -Recurse -Force "$dir"
+            zip -r "${dir}.zip" "$dir"
+            rm -rf "$dir"
           done
 
       - name: Generate checksums
+        shell: bash
         run: |
           cd dist
-          Get-FileHash -Algorithm SHA256 ${{ env.PROJECT_NAME }}_${{ needs.prepare.outputs.version }}_windows_*.zip | Format-Table -HideTableHeaders | Out-File -Encoding utf8 ${{ env.PROJECT_NAME }}-windows-checksums.txt
+          sha256sum ${{ env.PROJECT_NAME }}_${{ needs.prepare.outputs.version }}_${{ matrix.artifact_name }}.zip >> ${{ env.PROJECT_NAME }}-windows-checksums.txt
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
