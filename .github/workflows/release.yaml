@@ -144,12 +144,6 @@ jobs:
       - name: Checkout project
         uses: actions/checkout@v4
 
-      - name: Install zip
-        shell: pwsh
-        run: |
-          choco install zip -y
-          refreshenv
-
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
@@ -161,19 +155,22 @@ jobs:
           CGO_ENABLED=1 GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o dist/${{ env.PROJECT_NAME }}_${{ needs.prepare.outputs.version }}_${{ matrix.artifact_name }}/jxscout.exe cmd/jxscout/main.go
 
       - name: Create ZIP archives
-        shell: bash
+        shell: pwsh
         run: |
           cd dist
-          for dir in ${{ env.PROJECT_NAME }}_*; do
-            zip -r "${dir}.zip" "$dir"
-            rm -rf "$dir"
-          done
+          Get-ChildItem -Directory | ForEach-Object {
+            $zipName = "$($_.Name).zip"
+            Compress-Archive -Path $_.FullName -DestinationPath $zipName
+            Remove-Item -Recurse -Force $_.FullName
+          }
 
       - name: Generate checksums
-        shell: bash
+        shell: pwsh
         run: |
           cd dist
-          sha256sum ${{ env.PROJECT_NAME }}_${{ needs.prepare.outputs.version }}_${{ matrix.artifact_name }}.zip >> ${{ env.PROJECT_NAME }}-windows-checksums.txt
+          Get-FileHash -Algorithm SHA256 -Path "${{ env.PROJECT_NAME }}_${{ needs.prepare.outputs.version }}_${{ matrix.artifact_name }}.zip" | 
+          Select-Object -ExpandProperty Hash | 
+          Out-File -Encoding utf8 -Append "${{ env.PROJECT_NAME }}-windows-checksums.txt"
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
