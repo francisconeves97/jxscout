@@ -6,56 +6,56 @@ env:
   GO_VERSION: 1.23
   BUN_VERSION: 1.1.30
   PROJECT_NAME: jxscout
+  ZIG_VERSION: 0.11.0
 
 jobs:
-  prepare:
-    name: Prepare
+  release:
+    name: Release
     runs-on: ubuntu-latest
-    outputs:
-      version: ${{ steps.get_version.outputs.VERSION }}
+    permissions:
+      contents: write
     steps:
       - name: Checkout project
         uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+
+      - name: Set up Zig
+        uses: korandoru/setup-zig@v1
+        with:
+          version: ${{ env.ZIG_VERSION }}
 
       - name: Get version
         id: get_version
         run: echo "VERSION=$(grep 'const Version =' pkg/constants/version.go | awk '{print $4}' | tr -d '"')" >> $GITHUB_OUTPUT
 
-  build-linux:
-    name: Build Linux
-    needs: prepare
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        include:
-          - os: ubuntu-latest
-            goos: linux
-            goarch: amd64
-            artifact_name: linux_amd64
-          - os: ubuntu-latest-arm64
-            goos: linux
-            goarch: arm64
-            artifact_name: linux_arm64
-          - os: ubuntu-latest
-            goos: linux
-            goarch: 386
-            artifact_name: linux_386
-
-    steps:
-      - name: Checkout project
-        uses: actions/checkout@v4
-
-      - name: Install libc headers (for cgo)
-        run: sudo apt-get update && sudo apt-get install -y build-essential gcc-multilib
-
-      - name: Set up Go
-        uses: actions/setup-go@v4
-        with:
-          go-version: ${{ env.GO_VERSION }}
-
-      - name: Build for Linux
+      - name: Build for multiple platforms
         run: |
-          CGO_ENABLED=1 GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o dist/${{ env.PROJECT_NAME }}_${{ needs.prepare.outputs.version }}_${{ matrix.artifact_name }}/jxscout cmd/jxscout/main.go
+          # Linux 386
+          CGO_ENABLED=1 GOOS=linux GOARCH=386 CC="zig cc -target i386-linux" CXX="zig c++ -target i386-linux" go build -o dist/${{ env.PROJECT_NAME }}_${{ steps.get_version.outputs.VERSION }}_linux_386/jxscout cmd/jxscout/main.go
+
+          # Linux AMD64
+          CGO_ENABLED=1 GOOS=linux GOARCH=amd64 CC="zig cc -target x86_64-linux" CXX="zig c++ -target x86_64-linux" go build -o dist/${{ env.PROJECT_NAME }}_${{ steps.get_version.outputs.VERSION }}_linux_amd64/jxscout cmd/jxscout/main.go
+
+          # Linux ARM64
+          CGO_ENABLED=1 GOOS=linux GOARCH=arm64 CC="zig cc -target aarch64-linux" CXX="zig c++ -target aarch64-linux" go build -o dist/${{ env.PROJECT_NAME }}_${{ steps.get_version.outputs.VERSION }}_linux_arm64/jxscout cmd/jxscout/main.go
+
+          # macOS AMD64
+          CGO_ENABLED=1 GOOS=darwin GOARCH=amd64 CC="zig cc -target x86_64-macos" CXX="zig c++ -target x86_64-macos" go build -o dist/${{ env.PROJECT_NAME }}_${{ steps.get_version.outputs.VERSION }}_macOS_amd64/jxscout cmd/jxscout/main.go
+
+          # macOS ARM64
+          CGO_ENABLED=1 GOOS=darwin GOARCH=arm64 CC="zig cc -target aarch64-macos" CXX="zig c++ -target aarch64-macos" go build -o dist/${{ env.PROJECT_NAME }}_${{ steps.get_version.outputs.VERSION }}_macOS_arm64/jxscout cmd/jxscout/main.go
+
+          # Windows AMD64
+          CGO_ENABLED=1 GOOS=windows GOARCH=amd64 CC="zig cc -target x86_64-windows" CXX="zig c++ -target x86_64-windows" go build -o dist/${{ env.PROJECT_NAME }}_${{ steps.get_version.outputs.VERSION }}_windows_amd64/jxscout.exe cmd/jxscout/main.go
 
       - name: Create ZIP archives
         run: |
@@ -68,138 +68,20 @@ jobs:
       - name: Generate checksums
         run: |
           cd dist
-          sha256sum ${{ env.PROJECT_NAME }}_${{ needs.prepare.outputs.version }}_${{ matrix.artifact_name }}.zip >> ${{ env.PROJECT_NAME }}-linux-checksums.txt
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: linux-${{ matrix.artifact_name }}
-          path: dist/
-
-  build-macos:
-    name: Build macOS
-    needs: prepare
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        include:
-          - os: macos-latest
-            goos: darwin
-            goarch: amd64
-            artifact_name: macOS_amd64
-          - os: macos-latest-arm64
-            goos: darwin
-            goarch: arm64
-            artifact_name: macOS_arm64
-
-    steps:
-      - name: Checkout project
-        uses: actions/checkout@v4
-
-      - name: Set up Go
-        uses: actions/setup-go@v4
-        with:
-          go-version: ${{ env.GO_VERSION }}
-
-      - name: Build for macOS
-        run: |
-          CGO_ENABLED=1 GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o dist/${{ env.PROJECT_NAME }}_${{ needs.prepare.outputs.version }}_${{ matrix.artifact_name }}/jxscout cmd/jxscout/main.go
-
-      - name: Create ZIP archives
-        run: |
-          cd dist
-          for dir in ${{ env.PROJECT_NAME }}_*; do
-            zip -r "${dir}.zip" "$dir"
-            rm -rf "$dir"
-          done
-
-      - name: Generate checksums
-        run: |
-          cd dist
-          shasum -a 256 ${{ env.PROJECT_NAME }}_${{ needs.prepare.outputs.version }}_${{ matrix.artifact_name }}.zip >> ${{ env.PROJECT_NAME }}-mac-checksums.txt
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: macos-${{ matrix.artifact_name }}
-          path: dist/
-
-  build-windows:
-    name: Build Windows
-    needs: prepare
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        include:
-          - os: windows-latest
-            goos: windows
-            goarch: amd64
-            artifact_name: windows_amd64
-          - os: windows-latest-arm64
-            goos: windows
-            goarch: arm64
-            artifact_name: windows_arm64
-
-    steps:
-      - name: Checkout project
-        uses: actions/checkout@v4
-
-      - name: Set up Go
-        uses: actions/setup-go@v4
-        with:
-          go-version: ${{ env.GO_VERSION }}
-
-      - name: Build for Windows
-        shell: bash
-        run: |
-          CGO_ENABLED=1 GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o dist/${{ env.PROJECT_NAME }}_${{ needs.prepare.outputs.version }}_${{ matrix.artifact_name }}/jxscout.exe cmd/jxscout/main.go
-
-      - name: Create ZIP archives
-        shell: pwsh
-        run: |
-          cd dist
-          Get-ChildItem -Directory | ForEach-Object {
-            $zipName = "$($_.Name).zip"
-            Compress-Archive -Path $_.FullName -DestinationPath $zipName
-            Remove-Item -Recurse -Force $_.FullName
-          }
-
-      - name: Generate checksums
-        shell: pwsh
-        run: |
-          cd dist
-          Get-FileHash -Algorithm SHA256 -Path "${{ env.PROJECT_NAME }}_${{ needs.prepare.outputs.version }}_${{ matrix.artifact_name }}.zip" | 
-          Select-Object -ExpandProperty Hash | 
-          Out-File -Encoding utf8 -Append "${{ env.PROJECT_NAME }}-windows-checksums.txt"
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: windows-${{ matrix.artifact_name }}
-          path: dist/
-
-  release:
-    name: Create Release
-    needs: [prepare, build-linux, build-macos, build-windows]
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: dist
+          sha256sum ${{ env.PROJECT_NAME }}_${{ steps.get_version.outputs.VERSION }}_linux_*.zip > ${{ env.PROJECT_NAME }}-linux-checksums.txt
+          sha256sum ${{ env.PROJECT_NAME }}_${{ steps.get_version.outputs.VERSION }}_macOS_*.zip > ${{ env.PROJECT_NAME }}-mac-checksums.txt
+          sha256sum ${{ env.PROJECT_NAME }}_${{ steps.get_version.outputs.VERSION }}_windows_*.zip > ${{ env.PROJECT_NAME }}-windows-checksums.txt
 
       - name: Create source archives
         run: |
-          git archive --format=zip --output=dist/${{ env.PROJECT_NAME }}_${{ needs.prepare.outputs.version }}_source.zip HEAD
-          git archive --format=tar.gz --output=dist/${{ env.PROJECT_NAME }}_${{ needs.prepare.outputs.version }}_source.tar.gz HEAD
+          git archive --format=zip --output=dist/${{ env.PROJECT_NAME }}_${{ steps.get_version.outputs.VERSION }}_source.zip HEAD
+          git archive --format=tar.gz --output=dist/${{ env.PROJECT_NAME }}_${{ steps.get_version.outputs.VERSION }}_source.tar.gz HEAD
 
       - name: Create release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: v${{ needs.prepare.outputs.version }}
-          name: Release ${{ needs.prepare.outputs.version }}
+          tag_name: v${{ steps.get_version.outputs.VERSION }}
+          name: Release ${{ steps.get_version.outputs.VERSION }}
           draft: false
           prerelease: false
           files: |
