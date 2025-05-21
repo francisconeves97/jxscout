@@ -13,6 +13,7 @@ import (
 	"github.com/francisconeves97/jxscout/internal/core/dbeventbus"
 	"github.com/francisconeves97/jxscout/internal/core/errutil"
 	jxscouttypes "github.com/francisconeves97/jxscout/pkg/types"
+	"github.com/jmoiron/sqlx"
 )
 
 type beautifierModule struct {
@@ -82,7 +83,7 @@ func (m *beautifierModule) handleAssetSavedEvent(ctx context.Context, asset asse
 		return nil
 	}
 
-	err := m.beautify(asset.Path, asset.ContentType)
+	err := beautify(asset.Path, asset.ContentType)
 	if err != nil {
 		return errutil.Wrap(err, "failed to beautify asset")
 	}
@@ -102,7 +103,21 @@ func (m *beautifierModule) handleAssetSavedEvent(ctx context.Context, asset asse
 	return nil
 }
 
-func (m *beautifierModule) beautify(filePath string, contentType common.ContentType) error {
+func BeautifyAsset(ctx context.Context, assetID int64, filePath string, contentType common.ContentType, db *sqlx.DB) error {
+	err := beautify(filePath, contentType)
+	if err != nil {
+		return errutil.Wrap(err, "failed to beautify asset")
+	}
+
+	err = assetservice.UpdateAssetIsBeautified(ctx, db, assetID, true)
+	if err != nil {
+		return errutil.Wrap(err, "failed to update asset is beautified")
+	}
+
+	return nil
+}
+
+func beautify(filePath string, contentType common.ContentType) error {
 	parser := "babel"
 	if contentType == common.ContentTypeHTML {
 		parser = "html"

@@ -16,6 +16,10 @@ import (
 	"github.com/francisconeves97/jxscout/pkg/constants"
 )
 
+const (
+	assetsFolder = "original" // original source code that was received
+)
+
 type AssetService interface {
 	AsyncSaveAsset(ctx context.Context, asset Asset)
 	UpdateWorkingDirectory(path string)
@@ -167,7 +171,7 @@ func (s *assetService) handleSaveAssetRequest(ctx context.Context, asset Asset) 
 			if !exists {
 				s.log.DebugContext(ctx, "file was deleted, saving again", "asset_url", asset.URL)
 
-				_, err := s.fileService.Save(ctx, SaveFileRequest{
+				_, err := s.fileService.SaveInSubfolder(ctx, assetsFolder, SaveFileRequest{
 					PathURL: asset.URL,
 					Content: asset.Content,
 				})
@@ -190,7 +194,7 @@ func (s *assetService) handleSaveAssetRequest(ctx context.Context, asset Asset) 
 		}
 	}
 
-	path, err := s.fileService.Save(ctx, SaveFileRequest{
+	path, err := s.fileService.SaveInSubfolder(ctx, assetsFolder, SaveFileRequest{
 		PathURL: asset.URL,
 		Content: asset.Content,
 	})

@@ -27,7 +27,6 @@ type SaveFileRequest struct {
 }
 
 type FileService interface {
-	Save(ctx context.Context, req SaveFileRequest) (string, error)
 	SimpleSave(path string, content string) (string, error)
 	SaveInSubfolder(ctx context.Context, subfolder string, req SaveFileRequest) (string, error)
 	UpdateWorkingDirectory(newPath string)
@@ -51,14 +50,6 @@ func (s *fileServiceImpl) SaveInSubfolder(ctx context.Context, subfolder string,
 	filePath := []string{
 		s.workingDirectory,
 		subfolder,
-	}
-
-	return s.save(ctx, filePath, req)
-}
-
-func (s *fileServiceImpl) Save(ctx context.Context, req SaveFileRequest) (string, error) {
-	filePath := []string{
-		s.workingDirectory,
 	}
 
 	return s.save(ctx, filePath, req)

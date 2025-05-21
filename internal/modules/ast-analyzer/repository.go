@@ -44,6 +44,7 @@ type asset struct {
 	Path         string `db:"fs_path"`
 	AssetType    string `db:"asset_type"`
 	IsBeautified bool   `db:"is_beautified"`
+	ContentType  string `db:"content_type"`
 }
 
 type astAnalyzerRepository struct {
@@ -110,13 +111,13 @@ func (r *astAnalyzerRepository) getAssetByPath(ctx context.Context, filePath str
 	}
 
 	query := `
-		SELECT id, fs_path, asset_type, is_beautified
+		SELECT id, fs_path, asset_type, is_beautified, content_type
 		FROM (
-			SELECT id, fs_path, 'asset' as asset_type, is_beautified
+			SELECT id, fs_path, 'asset' as asset_type, is_beautified, content_type
 			FROM assets
 			WHERE fs_path = ? AND content_type = 'JS'
 			UNION
-			SELECT id, path as fs_path, 'reversed_sourcemap' as asset_type, true as is_beautified
+			SELECT id, path as fs_path, 'reversed_sourcemap' as asset_type, true as is_beautified, 'JS' as content_type
 			FROM reversed_sourcemaps
 			WHERE path = ?
 		)

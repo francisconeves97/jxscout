@@ -7,6 +7,7 @@ import (
 
 	"github.com/francisconeves97/jxscout/internal/core/errutil"
 	jxwebsocket "github.com/francisconeves97/jxscout/internal/core/websocket"
+	"github.com/francisconeves97/jxscout/internal/modules/beautifier"
 	jxscouttypes "github.com/francisconeves97/jxscout/pkg/types"
 	"github.com/gorilla/websocket"
 )
@@ -73,7 +74,10 @@ func (s *wsServer) getAnalysis(req getAnalysisRequest) (getAnalysisResponse, err
 	}
 
 	if !asset.IsBeautified {
-		return getAnalysisResponse{}, errors.New("asset is not yet beautified. please wait for the beautifier to finish")
+		err := beautifier.BeautifyAsset(s.sdk.Ctx, asset.ID, asset.Path, asset.ContentType, s.sdk.Database)
+		if err != nil {
+			return getAnalysisResponse{}, errutil.Wrap(err, "failed to beautify asset")
+		}
 	}
 
 	// Trigger analysis

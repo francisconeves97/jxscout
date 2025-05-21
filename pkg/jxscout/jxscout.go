@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
-	"path/filepath"
 	"sync"
 	"time"
 
@@ -76,6 +75,11 @@ func initJxscout(options jxscouttypes.Options) (*jxscout, error) {
 		return nil, errutil.Wrap(err, "provided options are not valid")
 	}
 
+	err = common.UpdateProjectName(options.ProjectName)
+	if err != nil {
+		return nil, errutil.Wrap(err, "failed to update project name")
+	}
+
 	// buffer that stores logs to show in the UI
 	logBuffer := newLogBuffer(options.LogBufferSize)
 
@@ -85,11 +89,11 @@ func initJxscout(options jxscouttypes.Options) (*jxscout, error) {
 
 	scopeChecker := newScopeChecker(scopeRegex, logger)
 
-	fileService := assetservice.NewFileService(filepath.Join(common.GetWorkingDirectory(), options.ProjectName), logger)
+	fileService := assetservice.NewFileService(common.GetWorkingDirectory(options.ProjectName), logger)
 
 	eventBus := eventbus.NewInMemoryEventBus()
 
-	db, err := database.GetDatabase()
+	db, err := database.GetDatabase(options.ProjectName)
 	if err != nil {
 		return nil, errutil.Wrap(err, "failed to initialize database")
 	}

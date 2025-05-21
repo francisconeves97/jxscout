@@ -13,6 +13,7 @@ import (
 	"unicode"
 
 	"github.com/francisconeves97/jxscout/internal/core/errutil"
+	"github.com/francisconeves97/jxscout/pkg/constants"
 )
 
 func StrPtr(s *string) string {
@@ -120,12 +121,16 @@ func getHome() string {
 	return home
 }
 
-func GetWorkingDirectory() string {
-	return filepath.Join(getHome(), "jxscout")
+func GetWorkingDirectory(projectName string) string {
+	return filepath.Join(getHome(), "jxscout", projectName)
 }
 
-func GetPrivateDirectory() string {
+func GetPrivateDirectoryRoot() string {
 	return filepath.Join(getHome(), ".jxscout")
+}
+
+func GetPrivateDirectory(projectName string) string {
+	return filepath.Join(getHome(), ".jxscout", projectName)
 }
 
 func FileExists(filePath string) (bool, error) {
@@ -187,4 +192,31 @@ func IsProbablyHTML(source []byte) bool {
 	}
 
 	return false
+}
+
+func GetProjectName() (string, error) {
+	projectNamePath := filepath.Join(GetPrivateDirectoryRoot(), "current_project")
+	content, err := os.ReadFile(projectNamePath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return constants.DefaultProjectName, nil
+		}
+		return "", errutil.Wrap(err, "failed to read current project name")
+	}
+	return strings.TrimSpace(string(content)), nil
+}
+
+func UpdateProjectName(projectName string) error {
+	projectNamePath := filepath.Join(GetPrivateDirectoryRoot(), "current_project")
+
+	// Ensure the directory exists
+	if err := os.MkdirAll(filepath.Dir(projectNamePath), 0755); err != nil {
+		return errutil.Wrap(err, "failed to create directory for project name file")
+	}
+
+	if err := os.WriteFile(projectNamePath, []byte(projectName), 0644); err != nil {
+		return errutil.Wrap(err, "failed to write project name")
+	}
+
+	return nil
 }

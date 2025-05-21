@@ -69,7 +69,15 @@ func main() {
 		flagSet.DurationVar(&options.OverrideContentCheckInterval, constants.FlagOverrideContentCheckInterval, constants.DefaultOverrideContentCheckInterval, constants.DescriptionOverrideContentCheckInterval),
 	)
 
-	configFileLocation := filepath.Join(common.GetPrivateDirectory(), constants.ConfigFileName)
+	if options.ProjectName == constants.DefaultProjectName {
+		projectName, err := common.GetProjectName()
+		if err != nil {
+			log.Fatalf("failed to get project name: %s", err.Error())
+		}
+		options.ProjectName = projectName
+	}
+
+	configFileLocation := filepath.Join(common.GetPrivateDirectory(options.ProjectName), constants.ConfigFileName)
 	flagSet.SetConfigFilePath(configFileLocation)
 
 	if err := flagSet.Parse(); err != nil {

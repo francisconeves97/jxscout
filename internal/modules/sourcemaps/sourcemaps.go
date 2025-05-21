@@ -59,7 +59,7 @@ func (m *sourceMapsModule) Initialize(sdk *jxscouttypes.ModuleSDK) error {
 		}
 	}()
 
-	saveDir := filepath.Join(common.GetPrivateDirectory(), "extracted")
+	saveDir := filepath.Join(common.GetPrivateDirectoryRoot(), "extracted")
 
 	// Create the directory if it doesn't exist
 	if err := os.MkdirAll(saveDir, 0755); err != nil {
@@ -176,8 +176,7 @@ func (s *sourceMapsModule) sourceMapDiscover(ctx context.Context, asset assetser
 	// }
 
 	reverseSourceMapsDir := []string{
-		common.GetWorkingDirectory(),
-		s.sdk.Options.ProjectName,
+		common.GetWorkingDirectory(s.sdk.Options.ProjectName),
 		sourceMapsFolder,
 		sourceMapsReversed,
 	}
