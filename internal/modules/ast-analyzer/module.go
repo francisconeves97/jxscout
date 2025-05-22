@@ -23,7 +23,7 @@ import (
 	jxscouttypes "github.com/francisconeves97/jxscout/pkg/types"
 )
 
-const analyzerVersion = 2
+const analyzerVersion = 4
 
 //go:embed ast-analyzer.js
 var astAnalyzerBinary []byte
@@ -82,7 +82,7 @@ func (m *astAnalyzerModule) Initialize(sdk *jxscouttypes.ModuleSDK) error {
 
 	m.wsServer = newWsServer(sdk, m)
 
-	saveDir := filepath.Join(common.GetPrivateDirectory(), "extracted")
+	saveDir := filepath.Join(common.GetPrivateDirectoryRoot(), "extracted")
 
 	// Create the directory if it doesn't exist
 	if err := os.MkdirAll(saveDir, 0755); err != nil {
@@ -310,7 +310,7 @@ func (m *astAnalyzerModule) getNativeLibraryPath() (result string, err error) {
 		return m.nativeLibraryPath, nil
 	}
 
-	basePath := filepath.Join(common.GetPrivateDirectory(), "extracted")
+	basePath := filepath.Join(common.GetPrivateDirectoryRoot(), "extracted")
 
 	switch runtime.GOOS {
 	case "darwin":

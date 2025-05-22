@@ -508,25 +508,6 @@
   {
     "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/robust-paths/files/1.js",
     "analyzerName": "robust-paths",
-    "value": "\"abc/def\"",
-    "start": {
-      "line": 22,
-      "column": 27
-    },
-    "end": {
-      "line": 22,
-      "column": 36
-    },
-    "tags": {
-      "is-path-only": true
-    },
-    "extra": {
-      "pathname": "/abc/def"
-    }
-  },
-  {
-    "filePath": "/Users/francisconeves/projects/jxscout/pkg/ast-analyzer/tests/robust-paths/files/1.js",
-    "analyzerName": "robust-paths",
     "value": "\"api/\" + abc",
     "start": {
       "line": 19,

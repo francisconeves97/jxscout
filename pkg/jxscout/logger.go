@@ -69,7 +69,7 @@ func (lb *logBuffer) Clear() {
 
 func initializeLogger(logBuffer *logBuffer, options jxscouttypes.Options) *slog.Logger {
 	var logger *slog.Logger
-	workingDir := common.GetPrivateDirectory()
+	workingDir := common.GetPrivateDirectory(options.ProjectName)
 
 	logLevel := slog.LevelInfo
 	if options.Debug {

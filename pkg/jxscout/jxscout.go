@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
-	"path/filepath"
+	"os"
 	"sync"
 	"time"
 
@@ -76,6 +76,11 @@ func initJxscout(options jxscouttypes.Options) (*jxscout, error) {
 		return nil, errutil.Wrap(err, "provided options are not valid")
 	}
 
+	err = common.UpdateProjectName(options.ProjectName)
+	if err != nil {
+		return nil, errutil.Wrap(err, "failed to update project name")
+	}
+
 	// buffer that stores logs to show in the UI
 	logBuffer := newLogBuffer(options.LogBufferSize)
 
@@ -85,11 +90,11 @@ func initJxscout(options jxscouttypes.Options) (*jxscout, error) {
 
 	scopeChecker := newScopeChecker(scopeRegex, logger)
 
-	fileService := assetservice.NewFileService(filepath.Join(common.GetWorkingDirectory(), options.ProjectName), logger)
+	fileService := assetservice.NewFileService(common.GetWorkingDirectory(options.ProjectName), logger)
 
 	eventBus := eventbus.NewInMemoryEventBus()
 
-	db, err := database.GetDatabase()
+	db, err := database.GetDatabase(options.ProjectName)
 	if err != nil {
 		return nil, errutil.Wrap(err, "failed to initialize database")
 	}
@@ -213,13 +218,20 @@ func (s *jxscout) start() error {
 		Handler: r,
 	}
 
-	go func() {
+	if os.Getenv("JXSCOUT_DEBUG") == "true" {
 		err := s.server.ListenAndServe()
 		if err != nil && err != http.ErrServerClosed {
 			s.log.Error("failed to start server", "port", s.options.Port, "error", err)
-			return
 		}
-	}()
+	} else {
+		go func() {
+			err := s.server.ListenAndServe()
+			if err != nil && err != http.ErrServerClosed {
+				s.log.Error("failed to start server", "port", s.options.Port, "error", err)
+				return
+			}
+		}()
+	}
 
 	return nil
 }

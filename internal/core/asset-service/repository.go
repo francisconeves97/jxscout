@@ -39,6 +39,7 @@ type DBAsset struct {
 	UpdatedAt         time.Time `db:"updated_at"`
 	IsInlineJS        bool      `db:"is_inline_js"`
 	IsChunkDiscovered bool      `db:"is_chunk_discovered"`
+	ChunkFromAssetID  *int64    `db:"chunk_from_asset_id"`
 	IsBeautified      bool      `db:"is_beautified"`
 	Parent            *DBAsset
 
@@ -94,6 +95,10 @@ func initializeRepo(db *sqlx.DB) error {
 	}
 
 	if err := migrateIsBeautified(db); err != nil {
+		return errutil.Wrap(err, "failed to run migrations")
+	}
+
+	if err := migrateAddChunkFromAssetID(db); err != nil {
 		return errutil.Wrap(err, "failed to run migrations")
 	}
 
@@ -178,15 +183,40 @@ func migrateIsBeautified(db *sqlx.DB) error {
 	return nil
 }
 
+func migrateAddChunkFromAssetID(db *sqlx.DB) error {
+	// Check if column exists
+	var count int
+	err := db.Get(&count, `
+		SELECT COUNT(*) FROM pragma_table_info('assets') 
+		WHERE name = 'chunk_from_asset_id'
+	`)
+	if err != nil {
+		return errutil.Wrap(err, "failed to check if column exists")
+	}
+
+	// If column doesn't exist, add it
+	if count == 0 {
+		_, err := db.Exec(`
+			ALTER TABLE assets 
+			ADD COLUMN chunk_from_asset_id INTEGER
+		`)
+		if err != nil {
+			return errutil.Wrap(err, "failed to add chunk_from_asset_id column")
+		}
+	}
+
+	return nil
+}
+
 func SaveAsset(ctx context.Context, db queryer, asset DBAsset) (int64, error) {
 	var assetID int64
 	err := sqlx.GetContext(ctx, db, &assetID, `
-	INSERT INTO assets (url, content_hash, content_type, fs_path, project, request_headers, is_inline_js, is_chunk_discovered, created_at, updated_at)
-	VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-	ON CONFLICT(url) DO UPDATE SET content_hash = ?, content_type = ?, fs_path = ?, project = ?, request_headers = ?, is_inline_js = ?, is_chunk_discovered = ?, updated_at = CURRENT_TIMESTAMP
+	INSERT INTO assets (url, content_hash, content_type, fs_path, project, request_headers, is_inline_js, is_chunk_discovered, chunk_from_asset_id, created_at, updated_at)
+	VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+	ON CONFLICT(url) DO UPDATE SET content_hash = ?, content_type = ?, fs_path = ?, project = ?, request_headers = ?, is_inline_js = ?, is_chunk_discovered = ?, chunk_from_asset_id = ?, updated_at = CURRENT_TIMESTAMP
 	RETURNING id
 	`, asset.URL, asset.ContentHash, asset.ContentType, asset.FileSystemPath, asset.Project, asset.RequestHeaders, asset.IsInlineJS, asset.IsChunkDiscovered,
-		asset.ContentHash, asset.ContentType, asset.FileSystemPath, asset.Project, asset.RequestHeaders, asset.IsInlineJS, asset.IsChunkDiscovered)
+		asset.ChunkFromAssetID, asset.ContentHash, asset.ContentType, asset.FileSystemPath, asset.Project, asset.RequestHeaders, asset.IsInlineJS, asset.IsChunkDiscovered, asset.ChunkFromAssetID)
 	if err != nil {
 		return 0, errutil.Wrap(err, "failed to insert the asset")
 	}
