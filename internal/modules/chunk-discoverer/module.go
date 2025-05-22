@@ -47,7 +47,7 @@ func (m *chunkDiscovererModule) Initialize(sdk *jxscouttypes.ModuleSDK) error {
 		}
 	}()
 
-	saveDir := filepath.Join(common.GetPrivateDirectory(), "extracted")
+	saveDir := filepath.Join(common.GetPrivateDirectoryRoot(), "extracted")
 
 	// Create the directory if it doesn't exist
 	if err := os.MkdirAll(saveDir, 0755); err != nil {
@@ -198,6 +198,7 @@ func (s *chunkDiscovererModule) discoverPossibleChunks(ctx context.Context, asse
 				Project:           s.sdk.Options.ProjectName,
 				RequestHeaders:    asset.RequestHeaders,
 				IsChunkDiscovered: true,
+				ChunkFromAssetID:  &asset.ID,
 			}
 
 			if common.StrPtr(asset.GetParentURL()) != "" {

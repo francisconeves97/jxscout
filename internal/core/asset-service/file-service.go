@@ -27,12 +27,9 @@ type SaveFileRequest struct {
 }
 
 type FileService interface {
-	Save(ctx context.Context, req SaveFileRequest) (string, error)
-	SimpleSave(path string, content string) (string, error)
 	SaveInSubfolder(ctx context.Context, subfolder string, req SaveFileRequest) (string, error)
 	UpdateWorkingDirectory(newPath string)
-	URLToPath(pathURL string) (string, error)
-	FileExists(pathURL string) (bool, error)
+	FileExists(pathURL string, subfolder string) (bool, error)
 }
 
 type fileServiceImpl struct {
@@ -51,14 +48,6 @@ func (s *fileServiceImpl) SaveInSubfolder(ctx context.Context, subfolder string,
 	filePath := []string{
 		s.workingDirectory,
 		subfolder,
-	}
-
-	return s.save(ctx, filePath, req)
-}
-
-func (s *fileServiceImpl) Save(ctx context.Context, req SaveFileRequest) (string, error) {
-	filePath := []string{
-		s.workingDirectory,
 	}
 
 	return s.save(ctx, filePath, req)
@@ -113,14 +102,15 @@ func (s *fileServiceImpl) urlToPath(pathURL string, filePath []string) (string, 
 	return targetPath, nil
 }
 
-func (s *fileServiceImpl) URLToPath(pathURL string) (string, error) {
+func (s *fileServiceImpl) URLToPath(pathURL string, subfolder string) (string, error) {
 	return s.urlToPath(pathURL, []string{
 		s.workingDirectory,
+		subfolder,
 	})
 }
 
-func (s *fileServiceImpl) FileExists(pathURL string) (bool, error) {
-	filePath, err := s.URLToPath(pathURL)
+func (s *fileServiceImpl) FileExists(pathURL string, subfolder string) (bool, error) {
+	filePath, err := s.URLToPath(pathURL, subfolder)
 	if err != nil {
 		return false, errutil.Wrap(err, "failed to convert url to path")
 	}

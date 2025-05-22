@@ -25,7 +25,7 @@ func NewGitCommiter(commitInterval time.Duration) jxscouttypes.Module {
 
 func (m *gitCommiterModule) Initialize(sdk *jxscouttypes.ModuleSDK) error {
 	m.sdk = sdk
-	m.gitService = newGitService(common.GetWorkingDirectory())
+	m.gitService = newGitService(common.GetWorkingDirectory(sdk.Options.ProjectName))
 
 	// Ensure git repository exists
 	if err := m.gitService.ensureGitRepo(); err != nil {

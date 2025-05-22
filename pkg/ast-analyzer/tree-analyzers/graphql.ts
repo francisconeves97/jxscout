@@ -34,7 +34,7 @@ function isValidGraphQLOperation(str: string): boolean {
   }
 
   // Must contain at least one field selection
-  if (!trimmed.includes("{") || !trimmed.includes("}")) {
+  if (!trimmed.includes("}") || !trimmed.match(/(?<!\$){/)) {
     return false;
   }
 
@@ -48,7 +48,11 @@ function isValidGraphQLOperation(str: string): boolean {
     }
   }
 
-  return braceCount === 0;
+  if (braceCount !== 0) {
+    return false;
+  }
+
+  return trimmed.includes("{") && trimmed.includes("}");
 }
 
 export const GRAPHQL_ANALYZER_NAME = "graphql";

@@ -5,10 +5,9 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
-	"runtime"
-	"strings"
 	"time"
 
+	"github.com/francisconeves97/jxscout/internal/core/common"
 	"github.com/francisconeves97/jxscout/internal/core/errutil"
 	"github.com/jmoiron/sqlx"
 )
@@ -44,6 +43,7 @@ type asset struct {
 	Path         string `db:"fs_path"`
 	AssetType    string `db:"asset_type"`
 	IsBeautified bool   `db:"is_beautified"`
+	ContentType  string `db:"content_type"`
 }
 
 type astAnalyzerRepository struct {
@@ -103,20 +103,16 @@ func (r *astAnalyzerRepository) createAnalysis(ctx context.Context, analysis ast
 }
 
 func (r *astAnalyzerRepository) getAssetByPath(ctx context.Context, filePath string) (*asset, error) {
-	if runtime.GOOS == "windows" && len(filePath) >= 2 && filePath[1] == ':' {
-		// Normalize drive letter to uppercase for comparison, assuming DB stores uppercase
-		driveLetter := strings.ToUpper(string(filePath[0]))
-		filePath = driveLetter + filePath[1:]
-	}
+	filePath = common.NormalizePathForDBCheck(filePath)
 
 	query := `
-		SELECT id, fs_path, asset_type, is_beautified
+		SELECT id, fs_path, asset_type, content_type, is_beautified
 		FROM (
-			SELECT id, fs_path, 'asset' as asset_type, is_beautified
+			SELECT id, fs_path, 'asset' as asset_type, content_type, is_beautified
 			FROM assets
 			WHERE fs_path = ? AND content_type = 'JS'
 			UNION
-			SELECT id, path as fs_path, 'reversed_sourcemap' as asset_type, true as is_beautified
+			SELECT id, path as fs_path, 'reversed_sourcemap' as asset_type, 'reversed_sourcemap' as content_type, true as is_beautified
 			FROM reversed_sourcemaps
 			WHERE path = ?
 		)

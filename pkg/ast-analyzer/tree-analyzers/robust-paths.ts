@@ -639,8 +639,12 @@ const robustPathsAnalyzerBuilder = (
   matchesReturn: AnalyzerMatch[]
 ): Visitor => {
   return {
-    Literal(node) {
+    Literal(node, ancestors) {
       if (!node.loc || typeof (node as Literal).value !== "string") {
+        return;
+      }
+
+      if (ancestors.some((a) => a.type === "ImportDeclaration")) {
         return;
       }
 

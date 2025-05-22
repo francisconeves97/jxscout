@@ -16,6 +16,10 @@ import (
 	"github.com/francisconeves97/jxscout/pkg/constants"
 )
 
+const (
+	assetsFolder = "original" // original source code that was received
+)
+
 type AssetService interface {
 	AsyncSaveAsset(ctx context.Context, asset Asset)
 	UpdateWorkingDirectory(path string)
@@ -43,6 +47,8 @@ type Asset struct {
 	IsInlineJS bool `json:"is_inline_js"`
 	// IsChunkDiscovered is true if the asset is a chunk
 	IsChunkDiscovered bool `json:"is_chunk_discovered"`
+	// ChunkFromAssetID is the id of the asset that this asset was discovered from, nil if it doesn't exist
+	ChunkFromAssetID *int64 `json:"chunk_from_asset_id"`
 	// IsBeautified is true if the asset has been beautified
 	IsBeautified bool `json:"is_beautified"`
 	// Parent is the asset that loaded the current asset, nil if it doesn't exist. (e.g. html page loading a js script)
@@ -158,7 +164,7 @@ func (s *assetService) handleSaveAssetRequest(ctx context.Context, asset Asset) 
 		if dbAsset.ContentHash == common.Hash(asset.Content) && dbAsset.Project == s.projectName {
 			s.log.DebugContext(ctx, "asset content has not changed within the same project, skipping", "asset_url", asset.URL)
 
-			exists, err := s.fileService.FileExists(asset.URL)
+			exists, err := s.fileService.FileExists(asset.URL, assetsFolder)
 			if err != nil {
 				return errutil.Wrap(err, "failed to save file")
 			}
@@ -167,12 +173,20 @@ func (s *assetService) handleSaveAssetRequest(ctx context.Context, asset Asset) 
 			if !exists {
 				s.log.DebugContext(ctx, "file was deleted, saving again", "asset_url", asset.URL)
 
-				_, err := s.fileService.Save(ctx, SaveFileRequest{
+				_, err := s.fileService.SaveInSubfolder(ctx, assetsFolder, SaveFileRequest{
 					PathURL: asset.URL,
 					Content: asset.Content,
 				})
 				if err != nil {
 					return errutil.Wrap(err, "failed to save file")
+				}
+
+				// republish the asset event so we rerun other modules
+				err = s.eventBus.Publish(ctx, s.db, TopicAssetSaved, EventAssetSaved{
+					AssetID: dbAsset.ID,
+				})
+				if err != nil {
+					return errutil.Wrap(err, "failed to publish asset saved even")
 				}
 			}
 
@@ -190,7 +204,7 @@ func (s *assetService) handleSaveAssetRequest(ctx context.Context, asset Asset) 
 		}
 	}
 
-	path, err := s.fileService.Save(ctx, SaveFileRequest{
+	path, err := s.fileService.SaveInSubfolder(ctx, assetsFolder, SaveFileRequest{
 		PathURL: asset.URL,
 		Content: asset.Content,
 	})
@@ -216,6 +230,7 @@ func (s *assetService) handleSaveAssetRequest(ctx context.Context, asset Asset) 
 		RequestHeaders:    string(headers),
 		IsInlineJS:        asset.IsInlineJS,
 		IsChunkDiscovered: asset.IsChunkDiscovered,
+		ChunkFromAssetID:  asset.ChunkFromAssetID,
 	}
 
 	if asset.Parent != nil {
@@ -232,6 +247,7 @@ func (s *assetService) handleSaveAssetRequest(ctx context.Context, asset Asset) 
 			RequestHeaders:    string(headers),
 			IsInlineJS:        asset.Parent.IsInlineJS,
 			IsChunkDiscovered: asset.Parent.IsChunkDiscovered,
+			ChunkFromAssetID:  asset.Parent.ChunkFromAssetID,
 		}
 	}
 

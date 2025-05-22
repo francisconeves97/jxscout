@@ -12,8 +12,8 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-func GetDatabase() (*sqlx.DB, error) {
-	saveDir := filepath.Join(common.GetPrivateDirectory(), "db")
+func GetDatabase(projectName string) (*sqlx.DB, error) {
+	saveDir := filepath.Join(common.GetPrivateDirectory(projectName), "db")
 	dbPath := filepath.Join(saveDir, "db.sql")
 
 	err := os.MkdirAll(saveDir, 0755)

@@ -153,7 +153,7 @@ var regexPatternTags = []string{"regex-pattern"}
 var secretTags = []string{"secret"}
 
 // graphql Tags
-var graphqlTags = []string{"graphql"}
+var graphqlTags = []string{"graphql-query", "graphql-mutation", "graphql-other"}
 var graphqlQueryTags = []string{"graphql-query"}
 var graphqlMutationTags = []string{"graphql-mutation"}
 var graphqlOtherTags = []string{"graphql-other"}
