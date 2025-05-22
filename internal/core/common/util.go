@@ -113,7 +113,7 @@ func Hash(content string) string {
 	return fmt.Sprintf("%x", hasher.Sum(nil))
 }
 
-func getHome() string {
+func GetHome() string {
 	home, err := os.UserHomeDir()
 	if err != nil {
 		home = os.Getenv("HOME")
@@ -123,15 +123,15 @@ func getHome() string {
 }
 
 func GetWorkingDirectory(projectName string) string {
-	return filepath.Join(getHome(), "jxscout", projectName)
+	return filepath.Join(GetHome(), "jxscout", projectName)
 }
 
 func GetPrivateDirectoryRoot() string {
-	return filepath.Join(getHome(), ".jxscout")
+	return filepath.Join(GetHome(), ".jxscout")
 }
 
 func GetPrivateDirectory(projectName string) string {
-	return filepath.Join(getHome(), ".jxscout", projectName)
+	return filepath.Join(GetHome(), ".jxscout", projectName)
 }
 
 func FileExists(filePath string) (bool, error) {

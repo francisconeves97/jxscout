@@ -7,6 +7,8 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"path/filepath"
+	"strings"
 	"sync"
 	"time"
 
@@ -59,7 +61,57 @@ type jxscout struct {
 	server  *http.Server
 }
 
+func checkAndMigrateOldVersion() error {
+	privateDirRoot := common.GetPrivateDirectoryRoot()
+	workingDirRoot := filepath.Join(common.GetHome(), "jxscout")
+	currentProjectPath := filepath.Join(privateDirRoot, "current_project")
+
+	// Check if .jxscout exists but current_project doesn't
+	_, err := os.Stat(privateDirRoot)
+	if err == nil {
+		// .jxscout exists
+		_, err = os.Stat(currentProjectPath)
+		if os.IsNotExist(err) {
+			// current_project doesn't exist, this is an old version
+			fmt.Println("This version of jxscout contains a breaking change in how projects are managed.")
+			fmt.Println("Projects will now have their own database and configuration.")
+			fmt.Println("Your existing data will be backed up to:")
+			fmt.Printf("- %s\n", privateDirRoot+"bak")
+			fmt.Printf("- %s\n", workingDirRoot+"bak")
+			fmt.Println("\nDo you want to proceed with the migration? (y/n)")
+
+			var response string
+			fmt.Scanln(&response)
+
+			if strings.ToLower(strings.TrimSpace(response)) != "y" {
+				return fmt.Errorf("migration aborted by user")
+			}
+
+			// Backup .jxscout
+			if err := os.Rename(privateDirRoot, privateDirRoot+"bak"); err != nil {
+				return errutil.Wrap(err, "failed to backup .jxscout directory")
+			}
+
+			// Backup jxscout
+			if _, err := os.Stat(workingDirRoot); err == nil {
+				if err := os.Rename(workingDirRoot, workingDirRoot+"bak"); err != nil {
+					return errutil.Wrap(err, "failed to backup jxscout directory")
+				}
+			}
+
+			fmt.Println("\nBackup completed successfully.")
+			fmt.Println("You can find your old data in the .bak directories.")
+		}
+	}
+
+	return nil
+}
+
 func NewJXScout(options jxscouttypes.Options) (jxscouttypes.JXScout, error) {
+	if err := checkAndMigrateOldVersion(); err != nil {
+		return nil, errutil.Wrap(err, "failed to check and migrate old version")
+	}
+
 	jxscout, err := initJxscout(options)
 	if err != nil {
 		return nil, errutil.Wrap(err, "failed to initialize jxscout")
