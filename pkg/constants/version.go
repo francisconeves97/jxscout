@@ -1,4 +1,4 @@
 package constants
 
 // Version is the current version of jxscout
-const Version = "0.9.0"
+const Version = "0.9.1"
