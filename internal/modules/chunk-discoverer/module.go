@@ -191,13 +191,14 @@ func (s *chunkDiscovererModule) discoverPossibleChunks(ctx context.Context, asse
 				return
 			}
 
+			chunkDiscovered := true
 			asset := assetservice.Asset{
 				URL:               chunk,
 				ContentType:       common.ContentTypeJS,
 				Content:           content,
 				Project:           s.sdk.Options.ProjectName,
 				RequestHeaders:    asset.RequestHeaders,
-				IsChunkDiscovered: true,
+				IsChunkDiscovered: &chunkDiscovered,
 				ChunkFromAssetID:  &asset.ID,
 			}
 

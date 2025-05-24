@@ -38,7 +38,7 @@ type DBAsset struct {
 	CreatedAt         time.Time `db:"created_at"`
 	UpdatedAt         time.Time `db:"updated_at"`
 	IsInlineJS        bool      `db:"is_inline_js"`
-	IsChunkDiscovered bool      `db:"is_chunk_discovered"`
+	IsChunkDiscovered *bool     `db:"is_chunk_discovered"`
 	ChunkFromAssetID  *int64    `db:"chunk_from_asset_id"`
 	IsBeautified      bool      `db:"is_beautified"`
 	Parent            *DBAsset

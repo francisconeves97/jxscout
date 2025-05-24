@@ -61,15 +61,15 @@ type jxscout struct {
 	server  *http.Server
 }
 
-func checkAndMigrateOldVersion() error {
+func CheckAndMigrateOldVersion() error {
 	privateDirRoot := common.GetPrivateDirectoryRoot()
 	workingDirRoot := filepath.Join(common.GetHome(), "jxscout")
 	currentProjectPath := filepath.Join(privateDirRoot, "current_project")
 
 	// Check if .jxscout exists but current_project doesn't
-	_, err := os.Stat(privateDirRoot)
-	if err == nil {
-		// .jxscout exists
+	info, err := os.Stat(privateDirRoot)
+	if err == nil && info.IsDir() {
+		// .jxscout exists and is a directory
 		_, err = os.Stat(currentProjectPath)
 		if os.IsNotExist(err) {
 			// current_project doesn't exist, this is an old version
@@ -108,10 +108,6 @@ func checkAndMigrateOldVersion() error {
 }
 
 func NewJXScout(options jxscouttypes.Options) (jxscouttypes.JXScout, error) {
-	if err := checkAndMigrateOldVersion(); err != nil {
-		return nil, errutil.Wrap(err, "failed to check and migrate old version")
-	}
-
 	jxscout, err := initJxscout(options)
 	if err != nil {
 		return nil, errutil.Wrap(err, "failed to initialize jxscout")

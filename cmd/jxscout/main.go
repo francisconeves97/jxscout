@@ -77,6 +77,11 @@ func main() {
 		options.ProjectName = projectName
 	}
 
+	err := jxscout.CheckAndMigrateOldVersion()
+	if err != nil {
+		log.Fatalf("failed to check and migrate old version: %s", err.Error())
+	}
+
 	configFileLocation := filepath.Join(common.GetPrivateDirectory(options.ProjectName), constants.ConfigFileName)
 	flagSet.SetConfigFilePath(configFileLocation)
 

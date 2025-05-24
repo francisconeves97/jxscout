@@ -46,7 +46,7 @@ type Asset struct {
 	// IsInlineJS is true if the asset is an inline js
 	IsInlineJS bool `json:"is_inline_js"`
 	// IsChunkDiscovered is true if the asset is a chunk
-	IsChunkDiscovered bool `json:"is_chunk_discovered"`
+	IsChunkDiscovered *bool `json:"is_chunk_discovered"`
 	// ChunkFromAssetID is the id of the asset that this asset was discovered from, nil if it doesn't exist
 	ChunkFromAssetID *int64 `json:"chunk_from_asset_id"`
 	// IsBeautified is true if the asset has been beautified
