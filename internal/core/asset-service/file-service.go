@@ -23,7 +23,7 @@ type SaveFileRequest struct {
 	// because in reality this will be a URL
 	PathURL string
 	// Content is the file content
-	Content string
+	Content *string
 }
 
 type FileService interface {
@@ -126,7 +126,7 @@ func (s *fileServiceImpl) FileExists(pathURL string, subfolder string) (bool, er
 	return false, errutil.Wrap(err, "failed to check if file exists")
 }
 
-func (s *fileServiceImpl) SimpleSave(filePath string, content string) (string, error) {
+func (s *fileServiceImpl) SimpleSave(filePath string, content *string) (string, error) {
 	dir := filepath.Dir(filePath)
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		return filePath, errutil.Wrap(err, "failed to create directory")
@@ -134,7 +134,7 @@ func (s *fileServiceImpl) SimpleSave(filePath string, content string) (string, e
 
 	s.log.Debug("saving to file", "filepath", filePath, "dir", dir)
 
-	err := os.WriteFile(filePath, []byte(content), 0644)
+	err := os.WriteFile(filePath, []byte(*content), 0644)
 	if err != nil {
 		return filePath, errutil.Wrap(err, "failed to create file and write content")
 	}

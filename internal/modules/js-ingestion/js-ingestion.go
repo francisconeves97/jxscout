@@ -60,8 +60,8 @@ func (m *jsIngestionModule) subscribeIngestionRequestTopic() error {
 	return nil
 }
 
-func (m *jsIngestionModule) handleIngestionRequest(req ingestion.IngestionRequest) error {
-	err := m.validateIngestionRequest(&req)
+func (m *jsIngestionModule) handleIngestionRequest(req *ingestion.IngestionRequest) error {
+	err := m.validateIngestionRequest(req)
 	if err != nil {
 		m.sdk.Logger.Debug("request is not valid", "err", err, "req_url", req.Request.URL)
 		return nil // request is not valid, skip
@@ -80,9 +80,9 @@ func (m *jsIngestionModule) handleIngestionRequest(req ingestion.IngestionReques
 		parentURL = common.NormalizeURL(m.getReferer(req))
 	}
 
-	m.sdk.AssetService.AsyncSaveAsset(m.sdk.Ctx, assetservice.Asset{
+	m.sdk.AssetService.AsyncSaveAsset(m.sdk.Ctx, &assetservice.Asset{
 		URL:            req.Request.URL,
-		Content:        req.Response.Body,
+		Content:        &req.Response.Body,
 		ContentType:    common.ContentTypeJS,
 		Project:        m.sdk.Options.ProjectName,
 		RequestHeaders: req.Request.Headers,
@@ -94,7 +94,7 @@ func (m *jsIngestionModule) handleIngestionRequest(req ingestion.IngestionReques
 	return nil
 }
 
-func (m *jsIngestionModule) getReferer(req ingestion.IngestionRequest) string {
+func (m *jsIngestionModule) getReferer(req *ingestion.IngestionRequest) string {
 	headers := req.Request.Headers
 
 	referer := headers["Referer"]
@@ -102,7 +102,7 @@ func (m *jsIngestionModule) getReferer(req ingestion.IngestionRequest) string {
 	return referer
 }
 
-func (m *jsIngestionModule) getContentType(req ingestion.IngestionRequest) string {
+func (m *jsIngestionModule) getContentType(req *ingestion.IngestionRequest) string {
 	headers := req.Response.Headers
 
 	return headers["Content-Type"]
@@ -114,7 +114,7 @@ func (m *jsIngestionModule) validateIngestionRequest(req *ingestion.IngestionReq
 	}
 
 	if m.downloadReferedJS {
-		if !m.sdk.Scope.IsInScope(req.Request.URL) && !m.sdk.Scope.IsInScope(m.getReferer(*req)) {
+		if !m.sdk.Scope.IsInScope(req.Request.URL) && !m.sdk.Scope.IsInScope(m.getReferer(req)) {
 			return errors.New("request is not in scope")
 		}
 	} else {
@@ -139,10 +139,10 @@ func (m *jsIngestionModule) validateIngestionRequest(req *ingestion.IngestionReq
 		return errors.New("content type is not JS")
 	}
 
-	contentTypeHeader := m.getContentType(*req)
+	contentTypeHeader := m.getContentType(req)
 	if !strings.Contains(contentTypeHeader, "javascript") {
 		// try to detect from the response body
-		contentType := common.DetectContentType(req.Response.Body)
+		contentType := common.DetectContentType(&req.Response.Body)
 
 		m.sdk.Logger.Debug("jsingestion - detected content type from response body", "url", req.Request.URL, "content-type", contentType, "content-type-header", contentTypeHeader)
 

@@ -21,7 +21,7 @@ const (
 )
 
 type AssetService interface {
-	AsyncSaveAsset(ctx context.Context, asset Asset)
+	AsyncSaveAsset(ctx context.Context, asset *Asset)
 	UpdateWorkingDirectory(path string)
 	GetAssetByURL(ctx context.Context, url string) (Asset, bool, error)
 	GetAssetByID(ctx context.Context, id int64) (Asset, error)
@@ -36,7 +36,7 @@ type Asset struct {
 	// URL is the url where this asset was found
 	URL string `json:"url"`
 	// Content is the original content of the asset
-	Content string `json:"content"`
+	Content *string `json:"content"`
 	// ContentType is the type of the content of this file
 	ContentType string `json:"content_type"`
 	// Project is the project name for this asset
@@ -74,7 +74,7 @@ func (a Asset) GetParentURL() *string {
 type assetService struct {
 	db             *sqlx.DB
 	eventBus       *dbeventbus.EventBus
-	assetSaveQueue concurrentqueue.Queue[Asset]
+	assetSaveQueue concurrentqueue.Queue[*Asset]
 	log            *slog.Logger
 	fileService    FileService
 	projectName    string
@@ -103,7 +103,7 @@ func NewAssetService(cfg AssetServiceConfig) (AssetService, error) {
 	s := &assetService{
 		db:             cfg.Database,
 		eventBus:       cfg.EventBus,
-		assetSaveQueue: concurrentqueue.NewQueue[Asset](cfg.SaveConcurrency),
+		assetSaveQueue: concurrentqueue.NewQueue[*Asset](cfg.SaveConcurrency),
 		log:            cfg.Logger,
 		fileService:    cfg.FileService,
 		projectName:    cfg.ProjectName,
@@ -117,7 +117,7 @@ func NewAssetService(cfg AssetServiceConfig) (AssetService, error) {
 }
 
 func (s *assetService) initializeQueueHandlers() {
-	s.assetSaveQueue.StartConsumers(func(ctx context.Context, asset Asset) {
+	s.assetSaveQueue.StartConsumers(func(ctx context.Context, asset *Asset) {
 		err := s.handleSaveAssetRequest(ctx, asset)
 		if err != nil {
 			s.log.ErrorContext(ctx, "failed to save asset", "err", err)
@@ -126,7 +126,7 @@ func (s *assetService) initializeQueueHandlers() {
 	})
 }
 
-func (s *assetService) handleSaveAssetRequest(ctx context.Context, asset Asset) error {
+func (s *assetService) handleSaveAssetRequest(ctx context.Context, asset *Asset) error {
 	s.log.DebugContext(ctx, "processing request to save asset", "asset_url", asset.URL)
 
 	dbAsset, exists, err := GetAssetByURLAndProjectName(ctx, s.db, asset.URL, s.projectName)
@@ -147,7 +147,7 @@ func (s *assetService) handleSaveAssetRequest(ctx context.Context, asset Asset) 
 			}
 		}
 
-		if asset.ContentType == common.ContentTypeJS && dbAsset.ContentHash != common.Hash(asset.Content) {
+		if asset.ContentType == common.ContentTypeJS && asset.Content != nil && dbAsset.ContentHash != common.Hash(*asset.Content) {
 			overrideExists, err := OverrideExists(ctx, s.db, dbAsset.ID)
 			if err != nil {
 				return errutil.Wrap(err, "failed to check if override exists")
@@ -161,7 +161,7 @@ func (s *assetService) handleSaveAssetRequest(ctx context.Context, asset Asset) 
 			s.log.DebugContext(ctx, "asset content has changed, updating", "asset_url", asset.URL)
 		}
 
-		if dbAsset.ContentHash == common.Hash(asset.Content) && dbAsset.Project == s.projectName {
+		if asset.Content != nil && dbAsset.ContentHash == common.Hash(*asset.Content) && dbAsset.Project == s.projectName {
 			s.log.DebugContext(ctx, "asset content has not changed within the same project, skipping", "asset_url", asset.URL)
 
 			exists, err := s.fileService.FileExists(asset.URL, assetsFolder)
@@ -223,7 +223,7 @@ func (s *assetService) handleSaveAssetRequest(ctx context.Context, asset Asset) 
 
 	repoAsset := DBAsset{
 		URL:               asset.URL,
-		ContentHash:       common.Hash(asset.Content),
+		ContentHash:       common.Hash(*asset.Content),
 		ContentType:       asset.ContentType,
 		FileSystemPath:    path,
 		Project:           asset.Project,
@@ -239,9 +239,14 @@ func (s *assetService) handleSaveAssetRequest(ctx context.Context, asset Asset) 
 			return errutil.Wrap(err, "failed to marshal headers")
 		}
 
+		contentHash := ""
+		if asset.Parent.Content != nil {
+			contentHash = common.Hash(*asset.Parent.Content)
+		}
+
 		repoAsset.Parent = &DBAsset{
 			URL:               asset.Parent.URL,
-			ContentHash:       common.Hash(asset.Parent.Content),
+			ContentHash:       contentHash,
 			ContentType:       asset.Parent.ContentType,
 			Project:           asset.Parent.Project,
 			RequestHeaders:    string(headers),
@@ -281,7 +286,7 @@ func (s *assetService) handleSaveAssetRequest(ctx context.Context, asset Asset) 
 }
 
 // this method is asynchronous so no error will be returned
-func (s *assetService) AsyncSaveAsset(ctx context.Context, asset Asset) {
+func (s *assetService) AsyncSaveAsset(ctx context.Context, asset *Asset) {
 	s.assetSaveQueue.Produce(ctx, asset)
 }
 

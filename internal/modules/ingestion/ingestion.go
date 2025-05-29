@@ -83,7 +83,7 @@ func (m *ingestionModule) handleIngestionCaidoIngestionEndpoint(w http.ResponseW
 func (m *ingestionModule) handleIngestionRequest(req IngestionRequest) {
 	m.sdk.InMemoryEventBus.Publish(TopicIngestionRequestReceived, eventbus.Message{
 		Data: EventIngestionRequestReceived{
-			IngestionRequest: req,
+			IngestionRequest: &req,
 		},
 	})
 }

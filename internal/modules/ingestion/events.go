@@ -5,5 +5,5 @@ const (
 )
 
 type EventIngestionRequestReceived struct {
-	IngestionRequest IngestionRequest
+	IngestionRequest *IngestionRequest
 }

@@ -59,8 +59,8 @@ func (m *htmlIngestionModule) subscribeIngestionRequestTopic() error {
 	return nil
 }
 
-func (m *htmlIngestionModule) handleIngestionRequest(req ingestion.IngestionRequest) error {
-	err := m.validateIngestionRequest(&req)
+func (m *htmlIngestionModule) handleIngestionRequest(req *ingestion.IngestionRequest) error {
+	err := m.validateIngestionRequest(req)
 	if err != nil {
 		m.sdk.Logger.Debug("request is not valid", "err", err, "req_url", req.Request.URL)
 		return nil // request is not valid, skip
@@ -75,9 +75,9 @@ func (m *htmlIngestionModule) handleIngestionRequest(req ingestion.IngestionRequ
 
 	m.sdk.Logger.Debug("htmlingestion - saving html asset", "html_path", htmlPath)
 
-	m.sdk.AssetService.AsyncSaveAsset(m.sdk.Ctx, assetservice.Asset{
+	m.sdk.AssetService.AsyncSaveAsset(m.sdk.Ctx, &assetservice.Asset{
 		URL:            htmlPath,
-		Content:        req.Response.Body,
+		Content:        &req.Response.Body,
 		ContentType:    common.ContentTypeHTML,
 		Project:        m.sdk.Options.ProjectName,
 		RequestHeaders: req.Request.Headers,
@@ -94,9 +94,9 @@ func (m *htmlIngestionModule) handleIngestionRequest(req ingestion.IngestionRequ
 			return errutil.Wrap(err, "failed to join inline js path")
 		}
 
-		m.sdk.AssetService.AsyncSaveAsset(m.sdk.Ctx, assetservice.Asset{
+		m.sdk.AssetService.AsyncSaveAsset(m.sdk.Ctx, &assetservice.Asset{
 			URL:            inlinePath,
-			Content:        content,
+			Content:        &content,
 			ContentType:    common.ContentTypeJS,
 			Project:        m.sdk.Options.ProjectName,
 			RequestHeaders: req.Request.Headers,
@@ -128,7 +128,7 @@ func (m *htmlIngestionModule) validateIngestionRequest(req *ingestion.IngestionR
 	contentTypeHeader := m.getContentType(*req)
 	if !strings.Contains(contentTypeHeader, "html") {
 		// try to detect from the response body
-		contentType := common.DetectContentType(req.Response.Body)
+		contentType := common.DetectContentType(&req.Response.Body)
 
 		m.sdk.Logger.Debug("htmlingestion - detected content from response body", "url", req.Request.URL, "content-type", contentType, "content-type-header", contentTypeHeader)
 

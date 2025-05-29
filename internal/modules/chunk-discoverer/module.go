@@ -116,7 +116,7 @@ func (m *chunkDiscovererModule) handleAssetSavedEvent(ctx context.Context, asset
 }
 
 func (s *chunkDiscovererModule) discoverPossibleChunks(ctx context.Context, asset assetservice.Asset) error {
-	chunksRaw, err := s.execChunkDiscoverer(asset)
+	chunksRaw, err := s.execChunkDiscoverer(ctx, asset)
 	if err != nil {
 		return errutil.Wrap(err, "failed to exec chunk discoverer")
 	}
@@ -175,30 +175,32 @@ func (s *chunkDiscovererModule) discoverPossibleChunks(ctx context.Context, asse
 		s.sdk.Logger.Info("discovered possible chunks 🔎", "chunks", chunks, "asset_url", asset.URL)
 	}
 	wg := &sync.WaitGroup{}
+	sem := make(chan struct{}, s.concurrency)
 
 	for _, chunk := range chunks {
 		wg.Add(1)
-		go func() {
+		sem <- struct{}{} // Acquire semaphore
+		go func(chunkURL string) {
 			defer wg.Done()
+			defer func() { <-sem }() // Release semaphore
 
-			content, found, err := s.sdk.AssetFetcher.RateLimitedGet(ctx, chunk, asset.RequestHeaders)
+			content, found, err := s.sdk.AssetFetcher.RateLimitedGet(ctx, chunkURL, asset.RequestHeaders)
 			if err != nil {
 				s.sdk.Logger.Error("failed to perform get request", "err", err)
 				return
 			}
 			if !found {
-				s.sdk.Logger.Debug("asset not found", "asset_url", chunk)
+				s.sdk.Logger.Debug("asset not found", "asset_url", chunkURL)
 				return
 			}
 
-			chunkDiscovered := true
 			asset := assetservice.Asset{
-				URL:               chunk,
+				URL:               chunkURL,
 				ContentType:       common.ContentTypeJS,
-				Content:           content,
+				Content:           &content,
 				Project:           s.sdk.Options.ProjectName,
 				RequestHeaders:    asset.RequestHeaders,
-				IsChunkDiscovered: &chunkDiscovered,
+				IsChunkDiscovered: common.ToPtr(true),
 				ChunkFromAssetID:  &asset.ID,
 			}
 
@@ -208,16 +210,18 @@ func (s *chunkDiscovererModule) discoverPossibleChunks(ctx context.Context, asse
 				}
 			}
 
-			s.sdk.AssetService.AsyncSaveAsset(ctx, asset)
-		}()
+			s.sdk.AssetService.AsyncSaveAsset(ctx, &asset)
+		}(chunk)
 	}
+
+	wg.Wait()
 
 	return nil
 }
 
-func (s *chunkDiscovererModule) execChunkDiscoverer(asset assetservice.Asset) ([]string, error) {
+func (s *chunkDiscovererModule) execChunkDiscoverer(ctx context.Context, asset assetservice.Asset) ([]string, error) {
 	// Prepare the command to run the JavaScript script with Bun
-	cmd := exec.Command("bun", "run", s.chunkDiscovererBinaryPath, asset.Path, fmt.Sprintf("%d", s.sdk.Options.ChunkDiscovererBruteForceLimit))
+	cmd := exec.CommandContext(ctx, "bun", "run", s.chunkDiscovererBinaryPath, asset.Path, fmt.Sprintf("%d", s.sdk.Options.ChunkDiscovererBruteForceLimit))
 
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
