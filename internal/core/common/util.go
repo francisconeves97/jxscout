@@ -84,14 +84,14 @@ const (
 	ContentTypeJS   = "JS"
 )
 
-func DetectContentType(content string) ContentType {
-	mimeType := http.DetectContentType([]byte(content))
+func DetectContentType(content *string) ContentType {
+	mimeType := http.DetectContentType([]byte(*content))
 
 	if strings.Contains(mimeType, "html") {
 		return ContentTypeHTML
 	}
 
-	if strings.Contains(mimeType, "text/plain") && isLikelyJavaScript(content) {
+	if strings.Contains(mimeType, "text/plain") && isLikelyJavaScript(*content) {
 		return ContentTypeJS
 	}
 
@@ -230,4 +230,8 @@ func UpdateProjectName(projectName string) error {
 	}
 
 	return nil
+}
+
+func ToPtr[T any](v T) *T {
+	return &v
 }

@@ -149,7 +149,7 @@ func (s *sourceMapsModule) sourceMapDiscover(ctx context.Context, asset assetser
 
 	filePath, err := s.sdk.FileService.SaveInSubfolder(ctx, SourceMapsFolder, assetservice.SaveFileRequest{
 		PathURL: urlToSave,
-		Content: sourceMap.OriginalContent,
+		Content: &sourceMap.OriginalContent,
 	})
 	if err != nil {
 		return dbeventbus.NewRetriableError(errors.Wrapf(err, "failed to save source map for asset %s", asset.URL))
@@ -179,6 +179,7 @@ func (s *sourceMapsModule) sourceMapDiscover(ctx context.Context, asset assetser
 		common.GetWorkingDirectory(s.sdk.Options.ProjectName),
 		SourceMapsFolder,
 		SourceMapsReversed,
+		sourceMap.URL.Host,
 	}
 
 	// reverseSourceMapsDir = append(reverseSourceMapsDir, assetPath...)
