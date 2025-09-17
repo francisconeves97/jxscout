@@ -1,6 +1,6 @@
 > ⚠️ **Development paused**
 >
-> Since the launch of the pro version of jxscout (https://jxscout.app/), my focus has been to add features and improve that version. Because of this, development to the open source version is paused for now. However PRs from the community are always welcome!
+> Since the launch of the pro version of jxscout (https://jxscout.app/), my focus has been to add features and improve that version. Because of this, development to the open source version is paused for now. However PRs from the community are always welcome! This means that many general improvements and bug fixes were added to the pro version and weren't yet backported to the OSS version.
 >
 > As of today, the pro version offers these additional features (more to be added with the support of the community):
 >
@@ -24,7 +24,7 @@
 >
 > If these sound interesting head over to the website and request a free trial!
 >
-> Please join the discord server to follow updates: https://discord.com/invite/qu9AMdjZFj
+> Please join the discord server to follow updates or for any questions: https://discord.com/invite/qu9AMdjZFj
 
 # jxscout
 

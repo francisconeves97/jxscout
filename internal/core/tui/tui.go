@@ -323,7 +323,7 @@ func (t *TUI) View() string {
 
 		s.WriteString(lipgloss.NewStyle().
 			Foreground(lipgloss.Color("205")).
-			Render("\nCheck out the pro version for more features: https://jxscout.app/\n"))
+			Render("\nCheck out the pro version for more features and many improvements: https://jxscout.app/\n"))
 
 		if t.hasUpdate {
 			updateMsg := fmt.Sprintf("\n🔄 A new version (%s) is available!\nVisit https://github.com/francisconeves97/jxscout to check it out.\n", t.latestVersion)
