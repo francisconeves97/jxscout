@@ -581,33 +581,43 @@ func (t *TUI) RegisterDefaultCommands() {
 				npmVersion := strings.TrimSpace(string(output))
 				t.writeLineToOutput(fmt.Sprintf("✅ npm is installed (version %s)", npmVersion))
 
-				// Install bun using npm
-				t.writeLineToOutput("\nInstalling bun...")
-				cmd = exec.Command("npm", "install", "-g", "bun")
+				// Check if bun is already installed
+				t.writeLineToOutput("\nChecking if bun is already installed...")
+				cmd = exec.Command("bun", "--version")
 				output, err = cmd.CombinedOutput()
 				if err != nil {
-					t.writeLineToOutput(fmt.Sprintf("❌ Failed to install bun: %v\nOutput: %s", err, string(output)))
-					return
+					// Bun is not installed, install it using npm
+					t.writeLineToOutput("Bun is not installed. Installing bun...")
+					cmd = exec.Command("npm", "install", "-g", "bun")
+					output, err = cmd.CombinedOutput()
+					if err != nil {
+						t.writeLineToOutput(fmt.Sprintf("❌ Failed to install bun: %v\nOutput: %s", err, string(output)))
+						return
+					}
+					t.writeLineToOutput("✅ bun installed successfully")
+				} else {
+					bunVersion := strings.TrimSpace(string(output))
+					t.writeLineToOutput(fmt.Sprintf("✅ bun is already installed (version %s)", bunVersion))
 				}
-				t.writeLineToOutput("✅ bun installed successfully")
 
-				t.writeLineToOutput("\nEnsuring bun is up to date...")
-				cmd = exec.Command("bun", "upgrade")
+				// Check if prettier is already installed
+				t.writeLineToOutput("\nChecking if prettier is already installed...")
+				cmd = exec.Command("prettier", "--version")
 				output, err = cmd.CombinedOutput()
 				if err != nil {
-					t.writeLineToOutput(fmt.Sprintf("❌ Failed to upgrade bun: %v\nOutput: %s", err, string(output)))
-					return
+					// Prettier is not installed, install it using npm
+					t.writeLineToOutput("Prettier is not installed. Installing prettier...")
+					cmd = exec.Command("npm", "install", "-g", "prettier")
+					output, err = cmd.CombinedOutput()
+					if err != nil {
+						t.writeLineToOutput(fmt.Sprintf("❌ Failed to install prettier: %v\nOutput: %s", err, string(output)))
+						return
+					}
+					t.writeLineToOutput("✅ prettier installed successfully")
+				} else {
+					prettierVersion := strings.TrimSpace(string(output))
+					t.writeLineToOutput(fmt.Sprintf("✅ prettier is already installed (version %s)", prettierVersion))
 				}
-
-				// Install prettier using bun
-				t.writeLineToOutput("\nInstalling prettier...")
-				cmd = exec.Command("npm", "install", "-g", "prettier")
-				output, err = cmd.CombinedOutput()
-				if err != nil {
-					t.writeLineToOutput(fmt.Sprintf("❌ Failed to install prettier: %v\nOutput: %s", err, string(output)))
-					return
-				}
-				t.writeLineToOutput("✅ prettier installed successfully")
 
 				t.writeLineToOutput("\n🎉 All jxscout dependencies have been installed successfully!")
 			}()
