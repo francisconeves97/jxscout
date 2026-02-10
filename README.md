@@ -249,6 +249,7 @@ Thanks goes to these wonderful people for contributing!
 
 - [@BigCod3](https://github.com/BigCod3) 💻 🐛
 - [@abdilahrf](https://github.com/abdilahrf) 💻 💡
+- [@Hi-Timofey](https://github.com/Hi-Timofey) 💻
 
 ## Support
 
