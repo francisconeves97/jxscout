@@ -258,3 +258,11 @@ Happy hunting! 🐛 If jxscout helped you find cool bugs, [consider buying me a 
 ## License
 
 This project is licensed under the GNU General Public License. See the COPYING file for the full license text.
+
+## ⚠️ Disclaimer
+
+This tool is intended for educational and authorized security testing purposes only.
+
+You may use this software only on systems you own or have explicit permission to test.
+
+Any misuse of this tool is strictly prohibited. The author is not responsible for any damage, legal issues, or misuse caused by this software.
